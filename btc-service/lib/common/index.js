@@ -1,3 +1,5 @@
+'use strict';
+
 var Common = {};
 
 Common.Defaults = require('./defaults');

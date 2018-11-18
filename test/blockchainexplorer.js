@@ -4,17 +4,17 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('..');
-var Service = WalletService.BTC;
+var Service = require('../');
+var WalletService = Service.BTC.WalletService;
 
-var BlockchainExplorer = Service.BlockchainExplorer;
+var BlockchainExplorer = WalletService.BlockchainExplorer;
 
 describe('Blockchain explorer', function() {
   describe('#constructor', function() {
     it('should return a blockchain explorer with basic methods', function() {
       var exp = new BlockchainExplorer({
         provider: 'explorer',
-        network: 'BTCTEST',
+        network: 'testnet'
       });
       should.exist(exp);
       exp.should.respondTo('broadcast');
@@ -25,14 +25,14 @@ describe('Blockchain explorer', function() {
       exp.should.respondTo('initSocket');
       var exp = new BlockchainExplorer({
         provider: 'explorer',
-        network: 'BTC',
+        network: 'livenet'
       });
       should.exist(exp);
     });
     it('should fail on unsupported provider', function() {
       (function() {
         var exp = new BlockchainExplorer({
-          provider: 'dummy',
+          provider: 'dummy'
         });
       }).should.throw('not supported');
     });

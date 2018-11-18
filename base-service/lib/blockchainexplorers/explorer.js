@@ -15,8 +15,8 @@ function Explorer(context, opts) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
-  this.TESTNET = this.ctx.Networks.testnet.code;
+  this.LIVENET = this.ctx.Networks.livenet.alias;
+  this.TESTNET = this.ctx.Networks.testnet.alias;
 
   $.checkArgument(opts);
   $.checkArgument(lodash.includes([this.LIVENET, this.TESTNET], opts.network));

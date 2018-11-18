@@ -3,16 +3,16 @@
 var should = require('chai').should();
 var sinon = require('sinon');
 
-var WalletService = require('..');
-var Service = WalletService.BTC;
+var Service = require('../');
+var WalletService = Service.BTC.WalletService;
 
 var proxyquire = require('proxyquire');
-var xyBlockchainmonitor = '../lib/btc-service/blockchainmonitor';
-var xyEmailService = '../lib/btc-service/emailservice';
-var xyExpressApp = '../lib/btc-service/expressapp';
-var xyNode = '../lib/btc-service/node';
+var xyBlockchainmonitor = '../btc-service/blockchainmonitor/blockchainmonitor';
+var xyEmailService = '../btc-service/emailservice/emailservice';
+var xyExpressApp = '../btc-service/lib/expressapp';
+var xyNode = '../btc-service/node/node';
 
-var Node = Service.Node;
+var Node = WalletService.Node;
 
 describe('OWS Node Service', function() {
   describe('#constructor', function() {

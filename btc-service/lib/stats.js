@@ -1,9 +1,11 @@
 'use strict';
 
-var baseService = require('../base-service');
-var btcLib = require('@owstack/btc-lib');
-var Defaults = btcLib.Defaults;
-var Stats = baseService.Stats;
+var baseService = require('../../base-service');
+var baseWalletService = baseService.WalletService;
+
+var Common = require('./common');
+var Defaults = Common.Defaults;
+var Stats = baseWalletService.Stats;
 var inherits = require('inherits');
 
 function BtcStats(opts) {
@@ -11,7 +13,7 @@ function BtcStats(opts) {
 		Defaults: Defaults
 	};
 
-  Stats.apply(this, [context, opts]);
+  return Stats.apply(this, [context, opts]);
 };
 inherits(BtcStats, Stats);
 

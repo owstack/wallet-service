@@ -1,7 +1,9 @@
 'use strict';
 
-var baseService = require('../base-service');
-var BaseAddress = baseService.Model.Address;
+var baseService = require('../../../base-service');
+var baseWalletService = baseService.WalletService;
+
+var BaseAddress = baseWalletService.Model.Address;
 var btcLib = require('@owstack/btc-lib');
 var Address = btcLib.Address;
 var Transaction = btcLib.Transaction;
@@ -13,7 +15,7 @@ function BtcAddress() {
 		Transaction: Transaction
 	};
 
-  BaseAddress.apply(this, [context]);
+  return BaseAddress.apply(this, [context]);
 };
 inherits(BtcAddress, BaseAddress);
 

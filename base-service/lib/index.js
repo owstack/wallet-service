@@ -5,27 +5,28 @@
  * @module Base Service
  */
 
-var BaseService = {};
-var BaseCommon = require('./common');
+var Common = require('./common');
+var Lib = {};
 
-BaseService.BlockchainExplorer = require('./baseblockchainexplorer');
-BaseService.BlockchainExplorers = require('./baseblockchainexplorers');
-BaseService.BlockchainMonitor = require('./blockchainmonitor');
-BaseService.EmailService = require('./emailservice');
-BaseService.Errors = require('./errors');
-BaseService.ExpressApp = require('./expressapp');
-BaseService.FiatRateProviders = require('./fiatrateproviders');
-BaseService.FiatRateService = require('./fiatrateservice');
-BaseService.LocalLock = require('./locallock');
-BaseService.Lock = require('./lock');
-BaseService.MessageBroker = require('./messagebroker');
-BaseService.Model = require('./model');
-BaseService.Node = require('./node');
-BaseService.NotificationBroadcaster = require('./notificationbroadcaster');
-BaseService.PushNotificationService = require('./pushnotificationservice');
-BaseService.Server = require('./server');
-BaseService.Stats = require('./stats');
-BaseService.Storage = require('./storage');
-BaseService.Utils = BaseCommon.Utils;
+Lib.BlockchainExplorer = require('./blockchainexplorer');
+Lib.BlockchainExplorers = require('./blockchainexplorers');
+Lib.BlockchainMonitor = require('./blockchainmonitor');
+Lib.Defaults = Common.Defaults;
+Lib.EmailService = require('./emailservice');
+Lib.Errors = require('./errors');
+Lib.ExpressApp = require('./expressapp');
+Lib.FiatRateProviders = require('./fiatrateproviders');
+Lib.FiatRateService = require('./fiatrateservice');
+Lib.LocalLock = require('./locallock');
+Lib.Lock = require('./lock');
+Lib.MessageBroker = require('./messagebroker');
+Lib.Model = require('./model');
+Lib.NotificationBroadcaster = require('./notificationbroadcaster');
+Lib.PushNotificationsService = require('./pushnotificationsservice');
+Lib.Server = require('./server');
+Lib.Stats = require('./stats');
+Lib.Storage = require('./storage');
+Lib.Utils = Common.Utils;
 
-module.exports = BaseService;
+
+module.exports = Lib;

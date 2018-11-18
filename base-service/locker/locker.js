@@ -1,10 +1,18 @@
 #!/usr/bin/env node
 
-var PORT = 3231;
+'use strict';
 
 var Locker = require('locker-server');
-var locker = new Locker();
 
-locker.listen(PORT);
+var PORT = 3231;
 
-console.log('Server started at port ' + PORT + '...');
+var Service = function() {
+	this.lockerService = new Locker();	
+};
+
+Service.prototype.start = function() {
+	this.lockerService.listen(PORT);
+	console.log('Locker service started at port ' + PORT);
+};
+
+module.exports = Service;

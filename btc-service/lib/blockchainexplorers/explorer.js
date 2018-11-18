@@ -1,7 +1,9 @@
 'use strict';
 
-var baseService = require('../base-service');
-var Explorer = baseService.BlockchainExplorers.explorer;
+var baseService = require('../../../base-service');
+var baseWalletService = baseService.WalletService;
+
+var Explorer = baseWalletService.BlockchainExplorers.Explorer;
 var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
@@ -11,7 +13,7 @@ function BtcExplorer(opts) {
 		Networks: Networks
 	};
 
-  Explorer.apply(this, [context, opts]);
+  return Explorer.apply(this, [context, opts]);
 };
 inherits(BtcExplorer, Explorer);
 

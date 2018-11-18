@@ -23,21 +23,21 @@ var config = {
 
   storageOpts: {
     mongoDb: {
-      uri: 'mongodb://localhost:27017/btcws',
-    },
+      uri: 'mongodb://localhost:27017/btcws'
+    }
   },
   lockOpts: {
     //  To use locker-server, uncomment this:
     lockerServer: {
       host: 'localhost',
-      port: 3231,
-    },
+      port: 3231
+    }
   },
   messageBrokerOpts: {
     //  To use message broker server, uncomment this:
     messageBrokerServer: {
-      url: 'http://localhost:3380',
-    },
+      url: 'http://localhost:3380'
+    }
   },
   blockchainExplorerOpts: {
     defaultProvider: 'explorer',
@@ -51,8 +51,8 @@ var config = {
       testnet: {
         url: 'https://test-insight.bitpay.com',
         apiPrefix: '/api'
-      },
-    },
+      }
+    }
   },
   pushNotificationsOpts: {
     templatePath: './lib/templates',
@@ -60,11 +60,11 @@ var config = {
     defaultUnit: 'btc',
     subjectPrefix: '',
     pushServerUrl: 'https://fcm.googleapis.com/fcm',
-    authorizationKey: '',
+    authorizationKey: ''
   },
   fiatRateServiceOpts: {
     defaultProvider: 'BitPay',
-    fetchInterval: 60, // in minutes
+    fetchInterval: 60 // in minutes
   },
   // To use email notifications uncomment this:
   // emailOpts: {

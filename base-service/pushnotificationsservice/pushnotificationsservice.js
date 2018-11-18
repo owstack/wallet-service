@@ -2,19 +2,28 @@
 
 'use strict';
 
-var config = require('../config');
 var log = require('npmlog');
 var PushNotificationsService = require('../lib/pushnotificationsservice');
 
 log.debug = log.verbose;
 log.level = 'debug';
 
-var pushNotificationsService = new PushNotificationsService();
+var Service = function(context) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
 
-pushNotificationsService.start(config, function(err) {
-  if (err) {
-  	throw err;
-  }
+	this.pushNotificationsService = new PushNotificationsService();	
+};
 
-  log.debug('Push Notification Service started');
-});
+Service.prototype.start = function() {
+	this.pushNotificationsService.start(this.ctx.config, function(err) {
+	  if (err) {
+	  	throw err;
+	  }
+
+	  log.debug('Push Notification service started');
+	});
+};
+
+module.exports = Service;

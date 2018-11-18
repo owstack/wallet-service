@@ -4,11 +4,11 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('../../');
-var Service = WalletService.BTC;
+var Service = require('../../');
+var WalletService = Service.BTC.WalletService;
 
 var async = require('async');
-var FiatRateService = Service.FiatRateService;
+var FiatRateService = WalletService.FiatRateService;
 var helpers = require('./helpers');
 var log = require('npmlog');
 

@@ -1,15 +1,11 @@
 'use strict';
 
 var owsCommon = require('@owstack/ows-common');
-var config = require('../config');
-var Constants = require('./common/constants');
-var Explorer = require('./blockchainexplorers/explorer');
 var log = require('npmlog');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
-var providers = config.blockchainExplorerOpts;
 
 function BlockchainExplorer(context, opts) {
   // Context defines the coin network and is set by the implementing service in
@@ -17,12 +13,13 @@ function BlockchainExplorer(context, opts) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
+  this.LIVENET = this.ctx.Networks.livenet.alias;
 
   $.checkArgument(opts);
 
   var network = opts.network || this.LIVENET;
-  var provider = opts.provider || config.blockchainExplorerOpts.defaultProvider;
+  var providers = this.ctx.config.blockchainExplorerOpts;
+  var provider = opts.provider || providers.defaultProvider;
 
   $.checkState(providers[provider], 'Provider ' + provider + ' not supported');
   $.checkState(lodash.includes(lodash.keys(providers[provider]), network), 'Network ' + network + ' not supported by this provider');
@@ -32,7 +29,7 @@ function BlockchainExplorer(context, opts) {
 
   switch (provider) {
     case 'explorer':
-      return new Explorer({
+      return new this.ctx.Explorer({
         network: network,
         url: url,
         apiPrefix: apiPrefix,

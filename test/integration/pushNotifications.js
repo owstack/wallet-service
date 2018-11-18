@@ -4,17 +4,17 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('../../');
-var Service = WalletService.BTC;
+var Service = require('../../');
+var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
 var helpers = require('./helpers');
 var log = require('npmlog');
-var PushNotificationsService = Service.PushNotificationsService;
+var PushNotificationsService = WalletService.PushNotificationsService;
 var sjcl = require('sjcl');
 var TestData = require('../testdata');
-var Server = Service.Server;
+var Server = WalletService.Server;
 var lodash = owsCommon.deps.lodash;
 
 log.debug = log.verbose;

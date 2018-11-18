@@ -8,7 +8,6 @@ var express = require('express');
 var log = require('npmlog');
 var RateLimit = require('express-rate-limit');
 var Stats = require('./stats');
-var WalletService = require('./server');
 var lodash = owsCommon.deps.lodash;
 
 log.disableColor();
@@ -26,12 +25,13 @@ var ExpressApp = function(context) {
 /**
  * start
  *
- * @param opts.WalletService options for WalletService class
+ * @param opts.Server options for Server class
  * @param opts.basePath
  * @param opts.disableLogs
  * @param {Callback} cb
  */
 ExpressApp.prototype.start = function(opts, cb) {
+  var self = this;
   opts = opts || {};
 
   this.app.use(compression());
@@ -40,7 +40,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'x-signature,x-identity,x-session,x-client-version,x-wallet-id,X-Requested-With,Content-Type,Authorization');
-    res.setHeader('x-service-version', WalletService.getServiceVersion());
+    res.setHeader('x-service-version', self.ctx.Server.getServiceVersion());
     next();
   });
   var allowCORS = function(req, res, next) {
@@ -93,7 +93,7 @@ ExpressApp.prototype.start = function(opts, cb) {
   var router = express.Router();
 
   function returnError(err, res, req) {
-    if (err instanceof WalletService.ClientError) {
+    if (err instanceof self.ctx.Server.ClientError) {
 
       var status = (err.code == 'NOT_AUTHORIZED') ? 401 : 400;
       if (!opts.disableLogs)
@@ -138,24 +138,25 @@ ExpressApp.prototype.start = function(opts, cb) {
   };
 
   function getServer(req, res) {
-    var opts = {
+    var config = {
       clientVersion: req.header('x-client-version'),
     };
-    return WalletService.getInstance(opts);
+    return self.ctx.Server.getInstance(config);
   };
 
-  function getServerWithAuth(req, res, opts, cb) {
-    if (lodash.isFunction(opts)) {
-      cb = opts;
-      opts = {};
+  function getServerWithAuth(req, res, auth, cb) {
+    if (lodash.isFunction(auth)) {
+      cb = auth;
+      auth = {};
     }
-    opts = opts || {};
+    auth = auth || {};
 
     var credentials = getCredentials(req);
-    if (!credentials)
-      return returnError(new WalletService.ClientError({
+    if (!credentials) {
+      return returnError(new self.ctx.Server.ClientError({
         code: 'NOT_AUTHORIZED'
       }), res, req);
+    }
 
     var auth = {
       copayerId: credentials.copayerId,
@@ -164,14 +165,17 @@ ExpressApp.prototype.start = function(opts, cb) {
       clientVersion: req.header('x-client-version'),
       walletId: req.header('x-wallet-id'),
     };
-    if (opts.allowSession) {
+    if (auth.allowSession) {
       auth.session = credentials.session;
     }
-    WalletService.getInstanceWithAuth(auth, function(err, server) {
-      if (err) return returnError(err, res, req);
 
-      if (opts.onlySupportStaff && !server.copayerIsSupportStaff) {
-        return returnError(new WalletService.ClientError({
+    self.ctx.Server.getInstanceWithAuth(auth, function(err, server) {
+      if (err) {
+        return returnError(err, res, req);
+      }
+
+      if (auth.onlySupportStaff && !server.copayerIsSupportStaff) {
+        return returnError(new this.ctx.Server.ClientError({
           code: 'NOT_AUTHORIZED'
         }), res, req);
       }
@@ -626,7 +630,7 @@ ExpressApp.prototype.start = function(opts, cb) {
 
   router.get('/v1/version/', function(req, res) {
     res.json({
-      serviceVersion: WalletService.getServiceVersion(),
+      serviceVersion: self.ctx.Server.getServiceVersion(),
     });
     res.end();
   });
@@ -653,7 +657,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     getServerWithAuth(req, res, {
       allowSession: true,
     }, function(server) {
-      var timeSpan = req.query.timeSpan ? Math.min(+req.query.timeSpan || 0, this.ctx.Defaults.MAX_NOTIFICATIONS_TIMESPAN) : this.ctx.Defaults.NOTIFICATIONS_TIMESPAN;
+      var timeSpan = req.query.timeSpan ? Math.min(+req.query.timeSpan || 0, self.ctx.Defaults.MAX_NOTIFICATIONS_TIMESPAN) : self.ctx.Defaults.NOTIFICATIONS_TIMESPAN;
       var opts = {
         minTs: +Date.now() - (timeSpan * 1000),
         notificationId: req.query.notificationId,
@@ -776,9 +780,7 @@ ExpressApp.prototype.start = function(opts, cb) {
   });
 
   this.app.use(opts.basePath || '/ws/api', router);
-
-  WalletService.initialize(opts, cb);
-
+  cb();
 };
 
 module.exports = ExpressApp;

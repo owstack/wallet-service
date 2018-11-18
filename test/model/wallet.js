@@ -4,10 +4,10 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('../../');
-var Service = WalletService.BTC;
+var Service = require('../../');
+var WalletService = Service.BTC.WalletService;
 
-var Wallet = Service.Model.Wallet;
+var Wallet = WalletService.Model.Wallet;
 
 describe('Wallet', function() {
 

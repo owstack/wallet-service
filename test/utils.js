@@ -4,11 +4,11 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('..');
-var Service = WalletService.BTC;
+var Service = require('../');
+var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
-var Utils = Service.Utils;
+var Utils = WalletService.Utils;
 var lodash = owsCommon.deps.lodash;
 
 describe('Utils', function() {

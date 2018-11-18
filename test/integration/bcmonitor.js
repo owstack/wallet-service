@@ -4,12 +4,12 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('../../');
-var Service = WalletService.BTC;
+var Service = require('../../');
+var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
-var BlockchainMonitor = Service.BlockchainMonitor;
+var BlockchainMonitor = WalletService.BlockchainMonitor;
 var helpers = require('./helpers');
 var log = require('npmlog');
 var TestData = require('../testdata');
@@ -39,20 +39,30 @@ describe('Blockchain monitor', function() {
     helpers.after(done);
   });
   beforeEach(function(done) {
-    helpers.beforeEach(function(res) {
-      storage = res.storage;
-      blockchainExplorer = res.blockchainExplorer;
+//    helpers.beforeEach(function(res, server) {
+    helpers.beforeEach(function(newServer) {
+console.log('TEST 0');
+//console.log('TEST '+JSON.stringify(res));
+//console.log('TEST '+Object.keys(res));
+console.log('TEST 1');
+//      storage = res.storage;
+      storage = newServer.storage;
+console.log('TEST 2');
+//      blockchainExplorer = res.blockchainExplorer;
+      blockchainExplorer = newServer.blockchainExplorer;
+console.log('TEST 3');
       blockchainExplorer.initSocket = sinon.stub().returns(socket);
+console.log('TEST 4');
 
-      helpers.createAndJoinWallet(2, 3, function(s, w) {
+      helpers.createAndJoinWallet(newServer, 2, 3, function(s, w) {
         server = s;
         wallet = w;
 
         var bcmonitor = new BlockchainMonitor();
 
         var blockchainExplorers = {};
-        blockchainExplorers['BTCTEST'] = blockchainExplorer;
-        blockchainExplorers['BTC'] = blockchainExplorer;
+        blockchainExplorers['testnet'] = blockchainExplorer;
+        blockchainExplorers['livenet'] = blockchainExplorer;
 
         bcmonitor.start({
           lockOpts: {},

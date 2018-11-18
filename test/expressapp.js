@@ -4,15 +4,15 @@ var chai = require('chai');
 var should = chai.should();
 var sinon = require('sinon');
 
-var WalletService = require('..');
-var Service = WalletService.BTC;
+var Service = require('../');
+var WalletService = Service.BTC.WalletService;
+var config = require('../btc-service/config');
 
 var proxyquire = require('proxyquire');
-var xyExpressApp = '../lib/btc-service/expressapp';
+var xyExpressApp = '../btc-service/lib/expressapp';
 
-var config = require('../config.js');
-var Defaults = Service.Defaults;
-var ExpressApp = Service.ExpressApp;
+var Defaults = WalletService.Defaults;
+var ExpressApp = WalletService.ExpressApp;
 var http = require('http');
 var request = require('request');
 
@@ -27,22 +27,6 @@ describe('ExpressApp', function() {
     });
   });
   describe('#start', function() {
-    it('will listen at the specified port', function(done) {
-      var initialize = sinon.stub().callsArg(1);
-      var TestExpressApp = proxyquire(xyExpressApp, {
-        './server': {
-          initialize: initialize
-        }
-      });
-      var app = new TestExpressApp();
-      var options = {};
-      app.start(config, function(err) {
-        should.not.exist(err);
-        initialize.callCount.should.equal(1);
-        done();
-      });
-    });
-
     describe('Routes', function() {
       var testPort = 3239;
       var testHost = 'http://127.0.0.1';
@@ -61,19 +45,23 @@ describe('ExpressApp', function() {
 
       afterEach(function() {
         httpServer.close();
+
+        // Remove wrappers
+        WalletService.Server.prototype.initialize.restore();
+        WalletService.Server.getInstanceWithAuth.restore();
       });
 
       it('/v2/wallets', function(done) {
         var server = {
-          getStatus: sinon.stub().callsArgWith(1, null, {}),
+          getStatus: sinon.stub().callsArgWith(1, null, {})
         };
-        var TestExpressApp = proxyquire(xyExpressApp, {
-          './server': {
-            initialize: sinon.stub().callsArg(1),
-            getInstanceWithAuth: sinon.stub().callsArgWith(1, null, server),
-          }
-        });
+
+        sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+        var TestExpressApp = require(xyExpressApp);
+
         start(TestExpressApp, function() {
+
           var requestOptions = {
             url: testHost + ':' + testPort + config.basePath + '/v2/wallets',
             headers: {
@@ -94,14 +82,13 @@ describe('ExpressApp', function() {
 
       it('/v1/addresses', function(done) {
         var server = {
-          getMainAddresses: sinon.stub().callsArgWith(1, null, {}),
+          getMainAddresses: sinon.stub().callsArgWith(1, null, {})
         };
-        var TestExpressApp = proxyquire(xyExpressApp, {
-          './server': {
-            initialize: sinon.stub().callsArg(1),
-            getInstanceWithAuth: sinon.stub().callsArgWith(1, null, server),
-          }
-        });
+
+        sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+        var TestExpressApp = proxyquire(xyExpressApp, {});
+
         start(TestExpressApp, function() {
           var requestOptions = {
             url: testHost + ':' + testPort + config.basePath + '/v1/addresses?limit=4&reverse=1',
@@ -127,12 +114,11 @@ describe('ExpressApp', function() {
             amount: 123
           }),
         };
-        var TestExpressApp = proxyquire(xyExpressApp, {
-          './server': {
-            initialize: sinon.stub().callsArg(1),
-            getInstanceWithAuth: sinon.stub().callsArgWith(1, null, server),
-          }
-        });
+
+        sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+        var TestExpressApp = proxyquire(xyExpressApp, {});
+
         start(TestExpressApp, function() {
           var requestOptions = {
             url: testHost + ':' + testPort + config.basePath + '/v1/sendmaxinfo?feePerKb=10000&returnInputs=1',
@@ -158,12 +144,11 @@ describe('ExpressApp', function() {
           var server = {
             getBalance: sinon.stub().callsArgWith(1, null, {}),
           };
-          var TestExpressApp = proxyquire(xyExpressApp, {
-            './server': {
-              initialize: sinon.stub().callsArg(1),
-              getInstanceWithAuth: sinon.stub().callsArgWith(1, null, server),
-            }
-          });
+
+          sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
+          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+          var TestExpressApp = proxyquire(xyExpressApp, {});
+
           start(TestExpressApp, function() {
             var reqOpts = {
               url: testHost + ':' + testPort + config.basePath + '/v1/balance',
@@ -199,12 +184,10 @@ describe('ExpressApp', function() {
           server = {
             getNotifications: sinon.stub().callsArgWith(1, null, {})
           };
-          TestExpressApp = proxyquire(xyExpressApp, {
-            './server': {
-              initialize: sinon.stub().callsArg(1),
-              getInstanceWithAuth: sinon.stub().callsArgWith(1, null, server),
-            }
-          });
+
+          sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
+          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+          TestExpressApp = proxyquire(xyExpressApp, {});
         });
         afterEach(function() {
           clock.restore();

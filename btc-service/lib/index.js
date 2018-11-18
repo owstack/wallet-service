@@ -1,19 +1,15 @@
 'use strict';
 
-/**
- * The BTC wallet service.
- * @module BTC Service
- */
+var Lib = {};
 
-var BtcService = {};
+Lib.BlockchainExplorer = require('./blockchainexplorer');
+Lib.BlockchainExplorers = require('./blockchainexplorers');
+Lib.BlockchainMonitor = require('./blockchainmonitor');
+Lib.Common = require('./common');
+Lib.ExpressApp = require('./expressapp');
+Lib.FiatRateService = require('./fiatrateservice');
+Lib.Model = require('./model');
+Lib.Server = require('./server');
+Lib.Stats = require('./stats');
 
-BtcService.BlockchainExplorer = require('./baseblockchainexplorer');
-BtcService.BlockchainExplorers = require('./baseblockchainexplorers');
-BtcService.BlockchainMonitor = require('./blockchainmonitor');
-BtcService.ExpressApp = require('./expressapp');
-BtcService.FiatRateService = require('./fiatrateservice');
-BtcService.Model = require('./model');
-BtcService.Server = require('./server');
-BtcService.Stats = require('./stats');
-
-module.exports = BtcService;
+module.exports = Lib;

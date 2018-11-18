@@ -4,22 +4,21 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('../../');
-var Service = WalletService.BTC;
+var Service = require('../../');
+var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var keyLib = require('@owstack/key-lib');
 var async = require('async');
-var Common = require('../../lib/common');
-var Constants = Service.Constants;
-var Defaults = Service.Defaults;
+var Constants = WalletService.Constants;
+var Copayer = WalletService.Model.Copayer;
+var Defaults = WalletService.Defaults;
 var helpers = require('./helpers');
 var log = require('npmlog');
-var Model = Service.Model;
 var PrivateKey = keyLib.PrivateKey;
 var TestData = require('../testdata');
-var Utils = Common.Utils;
-var Server = Service.Server;
+var Utils = WalletService.Utils;
+var Server = WalletService.Server;
 
 var storage, blockchainExplorer, request;
 var lodash = owsCommon.deps.lodash;
@@ -1614,7 +1613,7 @@ describe('Wallet service', function() {
       var requestPubKeyStr = requestPubKey.toString();
       var sig = helpers.signRequestPubKey(requestPubKeyStr, xPrivKey);
 
-      var copayerId = Model.Copayer._xPubToCopayerId(TestData.copayers[0].xPubKey_44H_0H_0H);
+      var copayerId = Copayer._xPubToCopayerId(TestData.copayers[0].xPubKey_44H_0H_0H);
       opts = {
         copayerId: copayerId,
         requestPubKey: requestPubKeyStr,

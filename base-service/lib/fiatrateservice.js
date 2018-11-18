@@ -12,6 +12,11 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 
 function FiatRateService(context) {
+console.log('FiatRateService ctor');
+  if (!(this instanceof FiatRateService)){
+    return new FiatRateService(context);
+  }
+
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;

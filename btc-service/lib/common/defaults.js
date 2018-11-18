@@ -1,6 +1,9 @@
 'use strict';
 
-var Defaults = {};
+var baseService = require('../../../base-service');
+var baseWalletService = baseService.WalletService;
+
+var Defaults = baseWalletService.Defaults;
 
 Defaults.MIN_FEE_PER_KB = 0;
 Defaults.MAX_FEE_PER_KB = 1000000;

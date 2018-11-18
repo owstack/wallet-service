@@ -1,17 +1,23 @@
 'use strict';
 
-var baseService = require('../base-service');
-var FiatRateService = baseService.FiatRateService;
-var btcLib = require('@owstack/btc-lib');
-var Defaults = btcLib.Defaults;
+var baseService = require('../../base-service');
+var baseWalletService = baseService.WalletService;
+
+var FiatRateService = baseWalletService.FiatRateService;
+var Common = require('./common');
+var Defaults = Common.Defaults;
 var inherits = require('inherits');
 
 function BtcFiatRateService(opts) {
+  if (!(this instanceof BtcFiatRateService)){
+    return new BtcFiatRateService(opts);
+  }
+
 	var context = {
 		Defaults: Defaults
 	};
 
-  FiatRateService.apply(this, [context, opts]);
+  return FiatRateService.apply(this, [context, opts]);
 };
 inherits(BtcFiatRateService, FiatRateService);
 

@@ -5,9 +5,24 @@
  * @module BaseWalletService
  */
 
-var BaseWalletService = {};
+var BlockchainMonitor = require('./blockchainmonitor/blockchainmonitor');
+//var DB = require('./db');
+var EmailService = require('./emailservice/emailservice');
+var FiatRateService = require('./fiatrateservice/fiatrateservice');
+var Locker = require('./locker/locker');
+var MessageBroker = require('./messagebroker/messagebroker');
+var Node = require('./node/node');
+var PushNotificationsService = require('./pushnotificationsservice/pushnotificationsservice');
+var WalletService = require('./lib');
 
-BaseWalletService.ExpressApp = require('./lib/expressapp');
-BaseWalletService.Storage = require('./lib/storage');
-
-module.exports = BaseWalletService;
+module.exports = {
+  BlockchainMonitor: BlockchainMonitor,
+	//DB: DB,
+	EmailService: EmailService,
+	FiatRateService: FiatRateService,
+	Locker: Locker,
+	MessageBroker: MessageBroker,
+	Node: Node,
+	PushNotificationsService: PushNotificationsService,
+	WalletService: WalletService
+};

@@ -4,10 +4,10 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('../../');
-var Service = WalletService.BTC;
+var Service = require('../../');
+var WalletService = Service.BTC.WalletService;
 
-var AddressManager = Service.Model.AddressManager;
+var AddressManager = WalletService.Model.AddressManager;
 
 describe('AddressManager', function() {
   describe('#create', function() {

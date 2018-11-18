@@ -29,6 +29,7 @@ var collections = {
 };
 
 var Storage = function(opts) {
+console.log('Storage ctor '+JSON.stringify(opts));
   opts = opts || {};
   this.db = opts.db;
 };

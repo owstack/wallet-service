@@ -2,7 +2,7 @@
 
 var Errors = {};
 
-error.ClientError = require('./clienterror');
-error.ErrorDefintions = require('./errordefinitions');
+Errors.ClientError = require('./clienterror');
+Errors.ErrorDefintions = require('./errordefinitions');
 
 module.exports = Errors;

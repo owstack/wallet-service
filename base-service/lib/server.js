@@ -11,12 +11,12 @@ var config = require('../config');
 var EmailValidator = require('email-validator');
 var errors = owsCommon.errors;
 var Errors = require('./errors/errordefinitions');
-var FiatRateService = require('./fiatrateservice');
 var HDPublicKey = keyLib.HDPublicKey;
 var Lock = require('./lock');
 var log = require('npmlog');
 var MessageBroker = require('./messagebroker');
 var Model = require('./model');
+var pkg = require('../../package');
 var PublicKey = keyLib.PublicKey;
 var request = require('request');
 var Storage = require('./storage');
@@ -29,38 +29,43 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 log.disableColor();
 
-var initialized = false;
-var lock;
-var storage;
-var blockchainExplorer;
-var blockchainExplorerOpts;
-var messageBroker;
-var fiatRateService;
-var serviceVersion;
+var serviceVersion; 
 
 /**
  * Creates an instance of the Wallet Service.
  * @constructor
  */
-function WalletService(context) {
+function WalletService(context, config, cb) {
+  if (!(this instanceof WalletService)){
+    return new WalletService(context, config, cb);
+  }
+//console.log('WalletService ctor '+JSON.stringify(config));
+console.log('WalletService ctor '+Object.keys(config));
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
+console.log('Z');
+console.log('Z '+JSON.stringify(context));
+console.log('ZZ'+this);
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
+console.log('A');
   this.LIVENET = this.ctx.Networks.livenet.code;
+console.log('B');
+  cb = cb || function(){};
+  this.initialize(config, cb);
+console.log('C');
+};
 
-  if (!initialized) {
-    throw new Error('Server not initialized');
+WalletService.checkRequired = function(obj, args, cb) {
+  var missing = Utils.getMissingFields(obj, args);
+  if (lodash.isEmpty(missing)) {
+    return true;
   }
-
-  this.lock = lock;
-  this.storage = storage;
-  this.blockchainExplorer = blockchainExplorer;
-  this.blockchainExplorerOpts = blockchainExplorerOpts;
-  this.messageBroker = messageBroker;
-  this.fiatRateService = fiatRateService;
-  this.notifyTicker = 0;
+  if (lodash.isFunction(cb)) {
+    cb(new ClientError('Required argument ' + lodash.head(missing) + ' missing.'));
+  }
+  return false;
 };
 
 function checkRequired(obj, args, cb) {
@@ -79,74 +84,84 @@ function checkRequired(obj, args, cb) {
  */
 WalletService.getServiceVersion = function() {
   if (!serviceVersion) {
-    serviceVersion = 'ws-' + require('../package').version;
+    serviceVersion = 'ws-' + pkg.version;
   }
   return serviceVersion;
 };
 
 /**
- * Initializes global settings for all instances.
- * @param {Object} opts
- * @param {Storage} [opts.storage] - The storage provider.
- * @param {Storage} [opts.blockchainExplorer] - The blockchainExporer provider.
+ * Initializes global settings for this instance.
+ * @param {Object} config
+ * @param {Storage} [config.storage] - The storage provider.
+ * @param {Storage} [config.blockchainExplorer] - The blockchainExporer provider.
  * @param {Callback} cb
  */
-WalletService.prototype.initialize = function(opts, cb) {
+WalletService.prototype.initialize = function(config, cb) {
+//console.log('WalletService.prototype.initialize '+JSON.stringify(config));
+console.log('WalletService.prototype.initialize '+Object.keys(config));
+  var self = this;
   $.shouldBeFunction(cb);
 
-  opts = opts || {};
-  lock = opts.lock || new Lock(opts.lockOpts);
-  blockchainExplorer = opts.blockchainExplorer;
-  blockchainExplorerOpts = opts.blockchainExplorerOpts;
-  if (opts.request) {
-    request = opts.request;
+  this.notifyTicker = 0;
+
+  config = config || {};
+  this.lock = config.lock || new Lock(config.lockOpts);
+  this.blockchainExplorer = config.blockchainExplorer;
+  this.blockchainExplorerOpts = config.blockchainExplorerOpts;
+  if (config.request) {
+    request = config.request;
   }
+//console.log('WalletService.prototype.initialize 1 '+JSON.stringify(this));
+console.log('WalletService.prototype.initialize 1 '+Object.keys(this));
 
   function initStorage(cb) {
-    if (opts.storage) {
-      storage = opts.storage;
+console.log('WalletService.prototype.initialize - initStorage '+JSON.stringify(config.storageOpts));
+    if (config.storage) {
+      self.storage = config.storage;
       return cb();
     } else {
       var newStorage = new Storage();
-      newStorage.connect(opts.storageOpts, function(err) {
+      newStorage.connect(config.storageOpts, function(err) {
         if (err) {
           return cb(err);
         }
-        storage = newStorage;
+        self.storage = newStorage;
         return cb();
       });
     }
   };
 
   function initMessageBroker(cb) {
-    messageBroker = opts.messageBroker || new MessageBroker(opts.messageBrokerOpts);
-    if (messageBroker) {
-      messageBroker.onMessage(this.handleIncomingNotification);
+console.log('WalletService.prototype.initialize - initMessageBroker ' + config.messageBroker);
+console.log('WalletService.prototype.initialize - initMessageBroker opts ' + JSON.stringify(config.messageBrokerOpts));
+    self.messageBroker = config.messageBroker || new MessageBroker(config.messageBrokerOpts);
+    if (self.messageBroker) {
+      self.messageBroker.onMessage(self.handleIncomingNotification);
     }
 
     return cb();
   };
 
   function initFiatRateService(cb) {
-    if (opts.fiatRateService) {
-      fiatRateService = opts.fiatRateService;
+console.log('WalletService.prototype.initialize - initFiatRateService ');
+    if (config.fiatRateService) {
+      self.fiatRateService = config.fiatRateService;
       return cb();
     } else {
-      var newFiatRateService = new FiatRateService();
-      var opts2 = opts.fiatRateServiceOpts || {};
-      opts2.storage = storage;
-      newFiatRateService.init(opts2, function(err) {
+      var newFiatRateService = new self.ctx.FiatRateService();
+      var config2 = config.fiatRateServiceOpts || {};
+      config2.storage = self.storage;
+      newFiatRateService.init(config2, function(err) {
         if (err) {
           return cb(err);
         }
-        fiatRateService = newFiatRateService;
+        self.fiatRateService = newFiatRateService;
         return cb();
       });
     }
   };
 
   async.series([
-
     function(next) {
       initStorage(next);
     },
@@ -161,8 +176,9 @@ WalletService.prototype.initialize = function(opts, cb) {
       log.error('Could not initialize', err);
       throw err;
     }
-    initialized = true;
-    return cb();
+    self.initialized = true;
+console.log('WalletService.prototype.initialize - done ');
+    return cb(self);
   });
 };
 
@@ -178,15 +194,15 @@ WalletService.prototype.handleIncomingNotification = function(notification, cb) 
 };
 
 
-WalletService.shutDown = function(cb) {
-  if (!initialized) {
+WalletService.prototype.shutDown = function(cb) {
+  if (!this.initialized) {
     return cb();
   }
-  storage.disconnect(function(err) {
+  this.storage.disconnect(function(err) {
     if (err) {
       return cb(err);
     }
-    initialized = false;
+    this.initialized = false;
     return cb();
   });
 };
@@ -196,37 +212,37 @@ WalletService.shutDown = function(cb) {
  * @param {Object} opts
  * @param {string} opts.clientVersion - A string that identifies the client issuing the request
  */
+
 WalletService.getInstance = function(opts) {
+/*
   opts = opts || {};
   var server = new WalletService();
   server._setClientVersion(opts.clientVersion);
   return server;
+*/
+  throw 'Must override';
 };
 
 /**
- * Gets an instance of the server after authenticating the copayer.
- * @param {Object} opts
- * @param {string} opts.copayerId - The copayer id making the request.
- * @param {string} opts.message - (Optional) The contents of the request to be signed. Only needed if no session token is provided.
- * @param {string} opts.signature - (Optional) Signature of message to be verified using one of the copayer's requestPubKeys. Only needed if no session token is provided.
- * @param {string} opts.session - (Optional) A valid session token previously obtained using the #login method
- * @param {string} opts.clientVersion - A string that identifies the client issuing the request
- * @param {string} [opts.walletId] - The wallet id to use as current wallet for this request (only when copayer is support staff).
+ * Initialize an instance of the server after authenticating the copayer.
+ * @param {Object} auth
+ * @param {string} auth.copayerId - The copayer id making the request.
+ * @param {string} auth.message - (Optional) The contents of the request to be signed. Only needed if no session token is provided.
+ * @param {string} auth.signature - (Optional) Signature of message to be verified using one of the copayer's requestPubKeys. Only needed if no session token is provided.
+ * @param {string} auth.session - (Optional) A valid session token previously obtained using the #login method
+ * @param {string} auth.clientVersion - A string that identifies the client issuing the request
+ * @param {string} [auth.walletId] - The wallet id to use as current wallet for this request (only when copayer is support staff).
  */
-WalletService.getInstanceWithAuth = function(opts, cb) {
+WalletService.getInstanceWithAuth = function(auth, cb) {
+  throw 'Must override';
+};
+
+WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
+  var self = this;
+
   function withSignature(cb) {
-    if (!checkRequired(opts, ['copayerId', 'message', 'signature'], cb)) {
-      return;
-    }
-
-    var server;
-    try {
-      server = WalletService.getInstance(opts);
-    } catch (ex) {
-      return cb(ex);
-    }
-
-    server.storage.fetchCopayerLookup(opts.copayerId, function(err, copayer) {
+console.log('WalletService.getInstanceWithAuth '+JSON.stringify(auth));
+    self.storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
       if (err) {
         return cb(err);
       }
@@ -235,44 +251,34 @@ WalletService.getInstanceWithAuth = function(opts, cb) {
       }
 
       if (!copayer.isSupportStaff) {
-        var isValid = !!server._getSigningKey(opts.message, opts.signature, copayer.requestPubKeys);
+        var isValid = !!self._getSigningKey(auth.message, auth.signature, copayer.requestPubKeys);
         if (!isValid) {
           return cb(new ClientError(Errors.codes.NOT_AUTHORIZED, 'Invalid signature'));
         }
-        server.walletId = copayer.walletId;
+        self.walletId = copayer.walletId;
       } else {
-        server.walletId = opts.walletId || copayer.walletId;
-        server.copayerIsSupportStaff = true;
+        self.walletId = auth.walletId || copayer.walletId;
+        self.copayerIsSupportStaff = true;
       }
 
-      server.copayerId = opts.copayerId;
-      return cb(null, server);
+      self.copayerId = auth.copayerId;
+      return cb(null, self);
     });
   };
 
   function withSession(cb) {
-    if (!checkRequired(opts, ['copayerId', 'session'], cb)) {
-      return;
-    }
 
-    var server;
-    try {
-      server = WalletService.getInstance(opts);
-    } catch (ex) {
-      return cb(ex);
-    }
-
-    server.storage.getSession(opts.copayerId, function(err, s) {
+    self.storage.getSession(auth.copayerId, function(err, s) {
       if (err) {
         return cb(err);
       }
 
-      var isValid = s && s.id == opts.session && s.isValid();
+      var isValid = s && s.id == auth.session && s.isValid();
       if (!isValid) {
         return cb(new ClientError(Errors.codes.NOT_AUTHORIZED, 'Session expired'));
       }
 
-      server.storage.fetchCopayerLookup(opts.copayerId, function(err, copayer) {
+      self.storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
         if (err) {
           return cb(err);
         }
@@ -280,14 +286,14 @@ WalletService.getInstanceWithAuth = function(opts, cb) {
          return cb(new ClientError(Errors.codes.NOT_AUTHORIZED, 'Copayer not found'));
         }
 
-        server.copayerId = opts.copayerId;
-        server.walletId = copayer.walletId;
-        return cb(null, server);
+        self.copayerId = auth.copayerId;
+        self.walletId = copayer.walletId;
+        return cb(null, self);
       });
     });
   };
 
-  var authFn = opts.session ? withSession : withSignature;
+  var authFn = auth.session ? withSession : withSignature;
   return authFn(cb);
 };
 
@@ -356,6 +362,7 @@ WalletService.prototype.logout = function(opts, cb) {
  * @param {string} opts.supportBIP44AndP2PKH[=true] - Client supports BIP44 & P2PKH for new wallets.
  */
 WalletService.prototype.createWallet = function(opts, cb) {
+console.log('WalletService.prototype.createWallet '+opts);
   var self = this,
     pubKey;
 
@@ -388,8 +395,8 @@ WalletService.prototype.createWallet = function(opts, cb) {
 
   var newWallet;
   async.series([
-
     function(acb) {
+console.log('WalletService.prototype.createWallet series 1');
       if (!opts.id) {
         return acb();
       }
@@ -402,6 +409,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
       });
     },
     function(acb) {
+console.log('WalletService.prototype.createWallet series 2');
       var wallet = Wallet.create({
         id: opts.id,
         name: opts.name,
@@ -413,13 +421,18 @@ WalletService.prototype.createWallet = function(opts, cb) {
         derivationStrategy: derivationStrategy,
         addressType: addressType,
       });
+console.log('WalletService.prototype.createWallet series 3');
+console.log(wallet);
+
       self.storage.storeWallet(wallet, function(err) {
+console.log('WalletService.prototype.createWallet series 4 ', wallet.id, opts.network, err);
         log.debug('Wallet created', wallet.id, opts.network);
         newWallet = wallet;
         return acb(err);
       });
     }
   ], function(err) {
+console.log('WalletService.prototype.createWallet series ERR '+ err);
     return cb(err, newWallet ? newWallet.id : null);
   });
 };

@@ -2,7 +2,7 @@
 
 var BlockChainExplorers = {};
 
-BlockChainExplorers.explorer = require('./explorer');
-BlockChainExplorers.requestList = require('./request-list');
+BlockChainExplorers.Explorer = require('./explorer');
+BlockChainExplorers.RequestList = require('./request-list');
 
 module.exports = BlockChainExplorers;

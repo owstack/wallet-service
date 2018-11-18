@@ -4,14 +4,15 @@ var owsCommon = require('@owstack/ows-common');
 var BufferReader = owsCommon.encoding.BufferReader;
 var Hash = owsCommon.Hash;
 var secp256k1 = require('secp256k1');
+var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 var Utils = {};
 
 Utils.getMissingFields = function(obj, args) {
   args = [].concat(args);
-  if (!_.isObject(obj)) return args;
-  var missing = _.filter(args, function(arg) {
+  if (!lodash.isObject(obj)) return args;
+  var missing = lodash.filter(args, function(arg) {
     return !obj.hasOwnProperty(arg);
   });
   return missing;
@@ -109,7 +110,7 @@ Utils.formatAmount = function(satoshis, unit, opts) {
   };
 
   $.shouldBeNumber(satoshis);
-  $.checkArgument(_.includes(_.keys(UNITS), unit));
+  $.checkArgument(lodash.includes(lodash.keys(UNITS), unit));
 
   function addSeparators(nStr, thousands, decimal, minDecimals) {
     nStr = nStr.replace('.', decimal);
@@ -117,7 +118,7 @@ Utils.formatAmount = function(satoshis, unit, opts) {
     var x0 = x[0];
     var x1 = x[1];
 
-    x1 = _.dropRightWhile(x1, function(n, i) {
+    x1 = lodash.dropRightWhile(x1, function(n, i) {
       return n == '0' && i >= minDecimals;
     }).join('');
     var x2 = x.length > 1 ? decimal + x1 : '';
@@ -128,7 +129,7 @@ Utils.formatAmount = function(satoshis, unit, opts) {
 
   opts = opts || {};
 
-  var u = _.assign(UNITS[unit], opts);
+  var u = lodash.assign(UNITS[unit], opts);
   var amount = (satoshis / u.toSatoshis).toFixed(u.maxDecimals);
   return addSeparators(amount, opts.thousandsSeparator || ',', opts.decimalSeparator || '.', u.minDecimals);
 };
@@ -141,8 +142,8 @@ Utils.formatAmountInBtc = function(amount) {
 };
 
 Utils.formatUtxos = function(utxos) {
-  if (_.isEmpty(utxos)) return 'none';
-  return _.map([].concat(utxos), function(i) {
+  if (lodash.isEmpty(utxos)) return 'none';
+  return lodash.map([].concat(utxos), function(i) {
     var amount = Utils.formatAmountInBtc(i.satoshis);
     var confirmations = i.confirmations ? i.confirmations + 'c' : 'u';
     return amount + '/' + confirmations;
@@ -167,7 +168,7 @@ Utils.parseVersion = function(version) {
     v.agent = version;
     return v;
   }
-  v.agent = _.includes(['wc', 'ws'], x[0]) ? 'wc' : x[0];
+  v.agent = lodash.includes(['wc', 'ws'], x[0]) ? 'wc' : x[0];
   x = x[1].split('.');
   v.major = parseInt(x[0]);
   v.minor = parseInt(x[1]);

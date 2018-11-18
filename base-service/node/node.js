@@ -1,11 +1,10 @@
 'use strict';
 
 var async = require('async');
-var baseConfig = require('../config');
-var BlockchainMonitor = require('../lib/blockchainmonitor');
+
 var EmailService = require('../lib/emailservice');
-var ExpressApp = require('../lib/expressapp');
 var EventEmitter = require('events').EventEmitter;
+
 var fs = require('fs');
 var https = require('https');
 var http = require('http');
@@ -16,14 +15,18 @@ var util = require('util');
  * A Node Service module
  * @param {Object} options
  * @param {Node} options.node - A reference to the Node instance
--* @param {Boolean} options.https - Enable https for this module, defaults to node settings.
+ * @param {Boolean} options.https - Enable https for this module, defaults to node settings.
  * @param {Number} options.wsPort - Port for wallet-service API
  * @param {Number} options.messageBrokerPort - Port for wallet-service message broker
  * @param {Number} options.lockerPort - Port for wallet-service locker port
  */
-var Service = function(options) {
+var Service = function(context, options) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
+
   EventEmitter.call(this);
-  this.config = options.config || baseConfig;
+  this.config = options.config || this.ctx.baseConfig;
   this.node = options.node;
   this.https = options.https || this.node.https;
   this.httpsOptions = options.httpsOptions || this.node.httpsOptions;
@@ -78,7 +81,7 @@ Service.prototype._getConfiguration = function() {
  */
 Service.prototype._startWalletService = function(config, next) {
   var self = this;
-  var expressApp = new ExpressApp();
+  var expressApp = new this.ctx.ExpressApp();
 
   if (self.https) {
     var serverOpts = self._readHttpsOptions();
@@ -117,7 +120,7 @@ Service.prototype.start = function(done) {
   async.series([
     function(next) {
       // Blockchain Monitor
-      var blockchainMonitor = new BlockchainMonitor();
+      var blockchainMonitor = new this.ctx.BlockchainMonitor();
       blockchainMonitor.start(config, next);
     },
     function(next) {

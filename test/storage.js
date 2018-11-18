@@ -4,14 +4,16 @@ var chai = require('chai');
 var sinon = require('sinon');
 var should = chai.should();
 
-var WalletService = require('..');
-var Service = WalletService.BTC;
+var Service = require('../');
+var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
-var Model = Service.Model;
-var Storage = Service.Storage;
+var Copayer = WalletService.Model.Copayer;
+var Storage = WalletService.Storage;
 var tingodb = require('tingodb')({memStore: true});
+var TxProposal = WalletService.Model.TxProposal;
+var Wallet = WalletService.Model.Wallet;
 var lodash = owsCommon.deps.lodash;
 
 var db;
@@ -81,14 +83,14 @@ describe('Storage', function() {
 
   describe('Copayer lookup', function() {
     it('should correctly store and fetch copayer lookup', function(done) {
-      var wallet = Model.Wallet.create({
+      var wallet = Wallet.create({
         id: '123',
         name: 'my wallet',
         m: 2,
         n: 3,
       });
       lodash.each(lodash.range(3), function(i) {
-        var copayer = Model.Copayer.create({
+        var copayer = Copayer.create({
           name: 'copayer ' + i,
           xPubKey: 'xPubKey ' + i,
           requestPubKey: 'requestPubKey ' + i,
@@ -123,14 +125,14 @@ describe('Storage', function() {
     var wallet, proposals;
 
     beforeEach(function(done) {
-      wallet = Model.Wallet.create({
+      wallet = Wallet.create({
         id: '123',
         name: 'my wallet',
         m: 2,
         n: 3,
       });
       lodash.each(lodash.range(3), function(i) {
-        var copayer = Model.Copayer.create({
+        var copayer = Copayer.create({
           name: 'copayer ' + i,
           xPubKey: 'xPubKey ' + i,
           requestPubKey: 'requestPubKey ' + i,
@@ -143,7 +145,7 @@ describe('Storage', function() {
         should.not.exist(err);
 
         proposals = lodash.map(lodash.range(4), function(i) {
-          var tx = new Model.TxProposal({
+          var tx = new TxProposal({
             walletId: '123',
             outputs: [{
               toAddress: '18PzpUFkFZE8zKWUPvfykkTxmB9oMR8qP7',

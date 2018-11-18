@@ -20,23 +20,28 @@ function BlockchainMonitor(context) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
-  this.TESTNET = this.ctx.Networks.testnet.code;
+  this.LIVENET = this.ctx.Networks.livenet.alias;
+  this.TESTNET = this.ctx.Networks.testnet.alias;
 };
 
 BlockchainMonitor.prototype.start = function(opts, cb) {
+console.log('BlockchainMonitor.prototype.start');
   opts = opts || {};
-
   var self = this;
 
   async.parallel([
 
     function(done) {
       self.explorers = {};
-      lodash.map([this.LIVENET, this.TESTNET], function(network) {
+      lodash.map([self.LIVENET, self.TESTNET], function(network) {
         var explorer;
         if (opts.blockchainExplorers) {
           explorer = opts.blockchainExplorers[network];
+console.log('CREATE BC EXPL 1');
+//console.log(opts.blockchainExplorers);
+console.log(network);
+//console.log(explorer);
+
         } else {
           var config = {};
           var provider = opts.blockchainExplorerOpts.defaultProvider;
@@ -44,6 +49,12 @@ BlockchainMonitor.prototype.start = function(opts, cb) {
           if (opts.blockchainExplorerOpts && opts.blockchainExplorerOpts[provider][network]) {
             config = opts.blockchainExplorerOpts[provider][network];
           }
+console.log('CREATE BC EXPL 2');
+console.log(provider);
+console.log(network);
+console.log(config.url);
+console.log( WalletService.getServiceVersion());
+console.log( config.apiPrefix);
           var explorer = new BlockchainExplorer({
             provider: provider,
             network: network,

@@ -11,21 +11,17 @@ var Service = function(context) {
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
 
-	this.emailService = new this.ctx.EmailService();
+	this.blockchainmonitor = new this.ctx.BlockchainMonitor();
 };
 
 Service.prototype.start = function() {
-	if (config.emailOpts) {
-		this.ctx.emailService.start(this.ctx.config, function(err) {
-		  if (err) {
-		  	throw err;
-		  }
+	this.bblockchainmonitor.start(this.ctx.config, function(err) {
+	  if (err) {
+	  	throw err;
+	  }
 
-		  console.log('Email service started');
-		});
-	} else {
-	  console.log('Email service not configured');	
-	}
-};
+	  console.log('Blockchain monitor started');
+	});
+}
 
 module.exports = Service;

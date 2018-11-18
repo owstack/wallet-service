@@ -1,17 +1,21 @@
 'use strict';
 
-var baseService = require('../base-service');
-var ExpressApp = baseService.ExpressApp;
-var btcLib = require('@owstack/btc-lib');
-var Defaults = btcLib.Defaults;
+var baseService = require('../../base-service');
+var baseWalletService = baseService.WalletService;
+
+var ExpressApp = baseWalletService.ExpressApp;
+var Common = require('./common');
+var Defaults = Common.Defaults;
+var Server = require('./server');
 var inherits = require('inherits');
 
 function BtcExpressApp(opts) {
 	var context = {
-		Defaults: Defaults
+		Defaults: Defaults,
+		Server: Server
 	};
 
-  ExpressApp.apply(this, [context, opts]);
+  return ExpressApp.apply(this, [context, opts]);
 };
 inherits(BtcExpressApp, ExpressApp);
 
