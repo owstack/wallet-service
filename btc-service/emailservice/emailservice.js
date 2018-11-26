@@ -1,17 +1,19 @@
+#!/usr/bin/env node
+
 'use strict';
 
 var baseService = require('../../base-service');
 var BaseEmailService = baseService.EmailService;
 
-var config = require('../config');
+var EmailService = require('../lib/emailservice');
 var inherits = require('inherits');
 
-function BtcEmailService(opts) {
+function BtcEmailService(config) {
 	var context = {
-		config: config
+		EmailService: EmailService
 	};
 
-  BaseEmailService.apply(this, [context, opts]);
+  BaseEmailService.apply(this, [context, config]);
 };
 inherits(BtcEmailService, BaseEmailService);
 
@@ -20,4 +22,6 @@ Object.keys(BaseEmailService).forEach(function(key) {
   BtcEmailService[key] = BaseEmailService[key];
 });
 
-module.exports = BtcEmailService;
+// Start the service with base configuration (default).
+var service = new BtcEmailService();
+service.start();

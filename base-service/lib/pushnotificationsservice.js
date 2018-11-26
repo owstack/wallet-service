@@ -3,10 +3,10 @@
 var owsCommon = require('@owstack/ows-common');
 
 var async = require('async');
+var baseConfig = require('../config');
 var defaultRequest = require('request');
 var fs = require('fs');
 var log = require('npmlog');
-var MessageBroker = require('./messagebroker');
 var Model = require('./model');
 var Mustache = require('mustache');
 var path = require('path');
@@ -42,12 +42,21 @@ var PUSHNOTIFICATIONS_TYPES = {
   },
 };
 
-function PushNotificationsService() {};
+function PushNotificationsService(context, config) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
 
-PushNotificationsService.prototype.start = function(opts, cb) {
+  // Set some frequently used contant values based on context.
+  this.COIN = this.ctx.Networks.coin;
+
+  this.config = config || baseConfig;
+};
+
+PushNotificationsService.prototype.start = function(cb) {
   var self = this;
-  opts = opts || {};
-  self.request = opts.request || defaultRequest;
+
+  self.request = self.config.request || defaultRequest;
 
   function _readDirectories(basePath, cb) {
     fs.readdir(basePath, function(err, files) {
@@ -64,12 +73,12 @@ PushNotificationsService.prototype.start = function(opts, cb) {
     });
   };
 
-  self.templatePath = path.normalize((opts.pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
-  self.defaultLanguage = opts.pushNotificationsOpts.defaultLanguage || 'en';
-  self.defaultUnit = opts.pushNotificationsOpts.defaultUnit || 'btc';
-  self.subjectPrefix = opts.pushNotificationsOpts.subjectPrefix || '';
-  self.pushServerUrl = opts.pushNotificationsOpts.pushServerUrl;
-  self.authorizationKey = opts.pushNotificationsOpts.authorizationKey;
+  self.templatePath = path.normalize((self.config.pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
+  self.defaultLanguage = self.config.pushNotificationsOpts.defaultLanguage || 'en';
+  self.defaultUnit = self.config.pushNotificationsOpts.defaultUnit || 'btc';
+  self.subjectPrefix = self.config.pushNotificationsOpts.subjectPrefix || '';
+  self.pushServerUrl = self.config.pushNotificationsOpts.pushServerUrl;
+  self.authorizationKey = self.config.pushNotificationsOpts.authorizationKey;
 
   if (!self.authorizationKey) {
     return cb(new Error('Missing authorizationKey attribute in configuration.'))
@@ -83,16 +92,16 @@ PushNotificationsService.prototype.start = function(opts, cb) {
       });
     },
     function(done) {
-      if (opts.storage) {
-        self.storage = opts.storage;
+      if (self.config.storage) {
+        self.storage = self.config.storage;
         done();
       } else {
         self.storage = new Storage();
-        self.storage.connect(opts.storageOpts, done);
+        self.storage.connect(self.config.storageOpts, done);
       }
     },
     function(done) {
-      self.messageBroker = opts.messageBroker || new MessageBroker(opts.messageBrokerOpts);
+      self.messageBroker = self.config.messageBroker || new MessageBroker(config[self.COIN].messageBrokerOpts);
       self.messageBroker.onMessage(lodash.bind(self._sendPushNotifications, self));
       done();
     },

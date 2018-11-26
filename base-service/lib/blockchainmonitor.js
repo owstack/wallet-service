@@ -2,7 +2,8 @@
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
-var BlockchainExplorer = require('./blockchainexplorer');
+var baseConfig = require('../config');
+var Constants = owsCommon.Constants;
 var Lock = require('./lock');
 var log = require('npmlog');
 var MessageBroker = require('./messagebroker');
@@ -14,54 +15,41 @@ var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
-function BlockchainMonitor(context) {
+function BlockchainMonitor(context, config) {
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.alias;
-  this.TESTNET = this.ctx.Networks.testnet.alias;
+  this.LIVENET = this.ctx.Networks.livenet.code;
+  this.TESTNET = this.ctx.Networks.testnet.code;
+  this.COIN = this.ctx.Networks.coin;
+
+  this.config = config || baseConfig;
 };
 
-BlockchainMonitor.prototype.start = function(opts, cb) {
-console.log('BlockchainMonitor.prototype.start');
-  opts = opts || {};
+BlockchainMonitor.prototype.start = function(cb) {
   var self = this;
 
   async.parallel([
-
     function(done) {
       self.explorers = {};
-      lodash.map([self.LIVENET, self.TESTNET], function(network) {
+      lodash.map([Constants.LIVENET, Constants.TESTNET], function(network) {
         var explorer;
-        if (opts.blockchainExplorers) {
-          explorer = opts.blockchainExplorers[network];
-console.log('CREATE BC EXPL 1');
-//console.log(opts.blockchainExplorers);
-console.log(network);
-//console.log(explorer);
-
+        if (self.config[self.COIN].blockchainExplorers) {
+          explorer = self.config[self.COIN].blockchainExplorers[network];
         } else {
-          var config = {};
-          var provider = opts.blockchainExplorerOpts.defaultProvider;
+          var localConfig = {};
+          var provider = self.config[self.COIN].blockchainExplorerOpts.defaultProvider;
 
-          if (opts.blockchainExplorerOpts && opts.blockchainExplorerOpts[provider][network]) {
-            config = opts.blockchainExplorerOpts[provider][network];
+          if (self.config[self.COIN].blockchainExplorerOpts && self.config[self.COIN].blockchainExplorerOpts[provider][network]) {
+            localConfig = self.config[self.COIN].blockchainExplorerOpts[provider][network];
           }
-console.log('CREATE BC EXPL 2');
-console.log(provider);
-console.log(network);
-console.log(config.url);
-console.log( WalletService.getServiceVersion());
-console.log( config.apiPrefix);
-          var explorer = new BlockchainExplorer({
+
+          var explorer = new self.ctx.BlockchainExplorer({
             provider: provider,
-            network: network,
-            url: config.url,
-            userAgent: WalletService.getServiceVersion(),
-            apiPrefix: config.apiPrefix
-          });
+            network: network
+          }, self.config);
         }
         $.checkState(explorer);
         self._initExplorer(network, explorer);
@@ -70,20 +58,20 @@ console.log( config.apiPrefix);
       done();
     },
     function(done) {
-      if (opts.storage) {
-        self.storage = opts.storage;
+      if (self.config.storage) {
+        self.storage = self.config.storage;
         done();
       } else {
         self.storage = new Storage();
-        self.storage.connect(opts.storageOpts, done);
+        self.storage.connect(self.config.storageOpts, done);
       }
     },
     function(done) {
-      self.messageBroker = opts.messageBroker || new MessageBroker(opts.messageBrokerOpts);
+      self.messageBroker = self.config[self.COIN].messageBroker || new MessageBroker(self.config[self.COIN].messageBrokerOpts);
       done();
     },
     function(done) {
-      self.lock = opts.lock || new Lock(opts.lockOpts);
+      self.lock = self.config.lock || new Lock(self.config.lockOpts);
       done();
     },
   ], function(err) {

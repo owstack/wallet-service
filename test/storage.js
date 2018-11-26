@@ -52,7 +52,7 @@ describe('Storage', function() {
 
   describe('Store & fetch wallet', function() {
     it('should correctly store and fetch wallet', function(done) {
-      var wallet = Model.Wallet.create({
+      var wallet = Wallet.create({
         id: '123',
         name: 'my wallet',
         m: 2,

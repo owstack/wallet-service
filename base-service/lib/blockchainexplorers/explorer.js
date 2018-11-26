@@ -3,7 +3,7 @@
 var owsCommon = require('@owstack/ows-common');
 var log = require('npmlog');
 var io = require('socket.io-client');
-var requestList = require('./request-list');
+var RequestList = require('./request-list');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
@@ -44,7 +44,7 @@ Explorer.prototype._doRequest = function(args, cb) {
       'User-Agent': this.userAgent,
     }
   };
-  requestList(lodash.defaults(args, opts), cb);
+  RequestList(lodash.defaults(args, opts), cb);
 };
 
 Explorer.prototype.getConnectionInfo = function() {

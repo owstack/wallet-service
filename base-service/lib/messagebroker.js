@@ -1,5 +1,6 @@
 'use strict';
 
+var baseConfig = require('../config');
 var events = require('events');
 var inherits = require('inherits');
 var log = require('npmlog');
@@ -9,13 +10,14 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 log.disableColor();
 
-function MessageBroker(opts) {
+function MessageBroker(config) {
   var self = this;
+  config = config || baseConfig;
 
-  opts = opts || {};
-  if (opts.messageBrokerServer) {
-    var url = opts.messageBrokerServer.url;
+  this.targetNetworks = config.targetNetworks;
 
+  if (config.messageBrokerServer) {
+    var url = config.messageBrokerServer.url;
     this.remote = true;
     this.mq = require('socket.io-client').connect(url);
     this.mq.on('connect', function() {});
@@ -42,7 +44,10 @@ MessageBroker.prototype.send = function(data) {
 };
 
 MessageBroker.prototype.onMessage = function(handler) {
-  this.on('msg', handler);
+  this.on('msg', function(notification) {
+    notification.targetNetworks = this.targetNetworks;
+    handler(notification);
+  });
 };
 
 module.exports = MessageBroker;

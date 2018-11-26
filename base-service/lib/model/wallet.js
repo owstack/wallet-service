@@ -1,7 +1,6 @@
 'use strict';
 
 var owsCommon = require('@owstack/ows-common');
-var Address = require('./address');
 var AddressManager = require('./addressmanager');
 var Constants = owsCommon.Constants;
 var Copayer = require('./copayer');
@@ -10,12 +9,14 @@ var Uuid = require('uuid');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
-function Wallet() {};
+function Wallet(context) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
+};
 
-Wallet.create = function(opts) {
-  opts = opts || {};
-
-  var x = new Wallet();
+Wallet.create = function(context, opts) {
+  var x = new Wallet(context);
 
   $.shouldBeNumber(opts.m);
   $.shouldBeNumber(opts.n);
@@ -44,8 +45,8 @@ Wallet.create = function(opts) {
   return x;
 };
 
-Wallet.fromObj = function(obj) {
-  var x = new Wallet();
+Wallet.fromObj = function(context, obj) {
+  var x = new Wallet(context);
 
   $.shouldBeNumber(obj.m);
   $.shouldBeNumber(obj.n);
@@ -149,9 +150,11 @@ Wallet.prototype.createAddress = function(isChange) {
   $.checkState(this.isComplete());
 
   var self = this;
-
+console.log('Wallet.prototype.createAddress');
   var path = this.addressManager.getNewAddressPath(isChange);
-  var address = new Address().derive(self.id, this.addressType, this.publicKeyRing, path, this.m, this.network, isChange);
+console.log('Wallet.prototype.createAddress path', path);
+  var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.network, isChange);
+console.log('Wallet.prototype.createAddress address', address);
   return address;
 };
 

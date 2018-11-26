@@ -1,11 +1,10 @@
 'use strict';
 
 var baseService = require('../../../base-service');
-var baseWalletService = baseService.WalletService;
+var BaseWalletService = baseService.WalletService;
 
-var BaseSession = baseWalletService.Model.Session;
-var Common = require('../common');
-var Defaults = Common.Defaults;
+var BaseSession = BaseWalletService.Model.Session;
+var Defaults = require('../common/defaults');
 var inherits = require('inherits');
 
 function BtcSession(opts) {

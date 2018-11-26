@@ -9,10 +9,7 @@ stop_program ()
   rm $pidfile  
 }
 
-stop_program pids/ws.pid
+echo "Stopping network specific services, to stop base services run \`../base-service/stop\`"
+
+stop_program pids/blockchainmonitor.pid
 stop_program pids/fiatrateservice.pid
-stop_program pids/emailservice.pid
-stop_program pids/bcmonitor.pid
-stop_program pids/pushnotificationsservice.pid
-stop_program pids/messagebroker.pid
-stop_program pids/locker.pid

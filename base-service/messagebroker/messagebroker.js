@@ -1,23 +1,24 @@
-#!/usr/bin/env node
-
 'use strict';
 
-var $ = require('preconditions').singleton();
+var baseConfig = require('../config');
 var io = require('socket.io');
 var log = require('npmlog');
 
 log.debug = log.verbose;
 
-var DEFAULT_PORT = 3380;
+var Service = function(context, config) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
 
-var Service = function() {};
+  // Set some frequently used contant values based on context.
+  this.COIN = this.ctx.Networks.coin;
+
+  this.config = config || baseConfig;
+};
 
 Service.prototype.start = function() {
-	var opts = {
-	  port: parseInt(process.argv[2]) || DEFAULT_PORT,
-	};
-
-	var server = io(opts.port);
+	var server = io(this.config[this.COIN].messageBrokerOpts.port);
 
 	server.on('connection', function(socket) {
 	  socket.on('msg', function(data) {
@@ -25,7 +26,11 @@ Service.prototype.start = function() {
 	  });
 	});
 
-	console.log('Message broker server listening on port ' + opts.port);
+	console.log('Message broker server listening on port ' + this.config[this.COIN].messageBrokerOpts.port);
 };
+
+if (require.main === module) {
+	throw 'The base message broker cannot be started from the command line';
+}
 
 module.exports = Service;

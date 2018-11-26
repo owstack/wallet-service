@@ -4,6 +4,7 @@ var config = {
   basePath: '/ws/api',
   disableLogs: false,
   port: 3232,
+  ignoreRateLimiter: false,
 
   // Uncomment to make wallet-service a forking server
   // cluster: true,
@@ -23,49 +24,32 @@ var config = {
 
   storageOpts: {
     mongoDb: {
-      uri: 'mongodb://localhost:27017/ws',
-    },
+      uri: 'mongodb://localhost:27017/btcws'
+    }
   },
+
   lockOpts: {
     //  To use locker-server, uncomment this:
     lockerServer: {
       host: 'localhost',
-      port: 3231,
-    },
+      port: 3231
+    }
   },
-  messageBrokerOpts: {
-    //  To use message broker server, uncomment this:
-    messageBrokerServer: {
-      url: 'http://localhost:3380',
-    },
-  },
-  blockchainExplorerOpts: {
-    defaultProvider: 'explorer',
-    explorer: {
-      // Multiple servers (in priority order)
-      // url: ['http://a.b.c', 'https://test-explorer.openwalletstack.com:443'],
-      livenet: {
-        url: 'http://btc.owstack.org:3001',
-        apiPrefix: '/explorer-api'
-      },
-      testnet: {
-        url: 'https://test-insight.bitpay.com',
-        apiPrefix: '/api'
-      },
-    },
-  },
+
   pushNotificationsOpts: {
     templatePath: './lib/templates',
     defaultLanguage: 'en',
     defaultUnit: 'btc',
     subjectPrefix: '',
     pushServerUrl: 'https://fcm.googleapis.com/fcm',
-    authorizationKey: '',
+    authorizationKey: ''
   },
+
   fiatRateServiceOpts: {
     defaultProvider: 'BitPay',
-    fetchInterval: 60, // in minutes
+    fetchInterval: 60 // in minutes
   },
+
   // To use email notifications uncomment this:
   // emailOpts: {
   //  host: 'localhost',
@@ -88,6 +72,45 @@ var config = {
   //  api_user: xxx,
   //  api_key: xxx,
   // });
+
+  // Each server (by coin network) has it's own configuration. Where the same services
+  // run for each coin network the url's must be unique across all coin networks.
+
+  BTC: {
+    // Each server requires it's own message broker to marshal communication between
+    // the wallet service and the blockchain explorer. Use a different port for each
+    // server.
+    messageBrokerOpts: {
+      messageBrokerServer: {
+        url: 'http://localhost:3380'
+      }
+    },
+
+    blockchainExplorerOpts: {
+      defaultProvider: 'explorer',
+      explorer: {
+        // Multiple servers (in priority order)
+        // url: ['http://a.b.c', 'https://test-explorer.openwalletstack.com:443'],
+        livenet: {
+          url: 'http://btc.owstack.org:3001',
+          apiPrefix: '/explorer-api'
+        },
+        testnet: {
+          url: 'https://test-insight.bitpay.com',
+          apiPrefix: '/api'
+        }
+      }
+    }
+  },
+
+  BCH: {
+    // todo
+  },
+
+  LTC: {
+    // todo
+  }
+
 };
 
 module.exports = config;

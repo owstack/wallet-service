@@ -3,16 +3,14 @@
 var baseService = require('../../base-service');
 var BaseNode = baseService.Node;
 
-var config = require('../config');
+var config = require('../../base-service/config');
 var BlockchainMonitor = require('../lib/blockchainmonitor');
-var ExpressApp = require('../lib/expressapp');
 var inherits = require('inherits');
 
 function BtcNode(opts) {
 	var context = {
 		config: config,
-		BlockchainMonitor: BlockchainMonitor,
-		ExpressApp: ExpressApp
+		BlockchainMonitor: BlockchainMonitor
 	};
 
   return BaseNode.apply(this, [context, opts]);

@@ -2,31 +2,27 @@
 
 'use strict';
 
+var baseConfig = require('../config');
+var FiatRateService = require('../lib/fiatrateservice');
 var log = require('npmlog');
 
 log.debug = log.verbose;
 
-var Service = function(context) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
-
-	this.fiatRateService = new this.ctx.FiatRateService();
+var Service = function(config) {
+  this.config = config || baseConfig;
+	this.fiatRateService = new FiatRateService(this.config);
 };
 
 Service.prototype.start = function() {
-	this.fiatRateService.init(this.ctx.config, function(err) {
+	this.fiatRateService.start(function(err) {
 	  if (err) {
 	  	throw err;
 	  }
-	  this.fiatRateService.startCron(this.ctx.config, function(err) {
-	    if (err) {
-	    	throw err;
-	    }
 
-	    console.log('Fiat rate service started');
-	  });
+    console.log('Fiat rate service started');
 	});
 }
 
-module.exports = Service;
+// Start the service with base configuration (default).
+var service = new Service();
+service.start();

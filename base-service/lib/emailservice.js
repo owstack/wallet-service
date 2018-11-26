@@ -2,6 +2,7 @@
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
+var baseConfig = require('../config');
 var fs = require('fs');
 var log = require('npmlog');
 var Lock = require('./lock');
@@ -55,10 +56,19 @@ var EMAIL_TYPES = {
   },
 };
 
-function EmailService() {};
+function EmailService(context, config) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
 
-EmailService.prototype.start = function(opts, cb) {
-  opts = opts || {};
+  // Set some frequently used contant values based on context.
+  this.COIN = this.ctx.Networks.coin;
+
+  this.config = config || baseConfig;
+};
+
+EmailService.prototype.start = function(cb) {
+  var self = this;
 
   function _readDirectories(basePath, cb) {
     fs.readdir(basePath, function(err, files) {
@@ -73,14 +83,12 @@ EmailService.prototype.start = function(opts, cb) {
     });
   };
 
-  var self = this;
-
-  self.defaultLanguage = opts.emailOpts.defaultLanguage || 'en';
-  self.defaultUnit = opts.emailOpts.defaultUnit || 'btc';
-  self.templatePath = path.normalize((opts.emailOpts.templatePath || (__dirname + '/templates')) + '/');
-  self.publicTxUrlTemplate = opts.emailOpts.publicTxUrlTemplate || {};
-  self.subjectPrefix = opts.emailOpts.subjectPrefix || '[Wallet service]';
-  self.from = opts.emailOpts.from;
+  self.defaultLanguage = self.config.emailOpts.defaultLanguage || 'en';
+  self.defaultUnit = self.config.emailOpts.defaultUnit || 'btc';
+  self.templatePath = path.normalize((self.config.emailOpts.templatePath || (__dirname + '/templates')) + '/');
+  self.publicTxUrlTemplate = self.config.emailOpts.publicTxUrlTemplate || {};
+  self.subjectPrefix = self.config.emailOpts.subjectPrefix || '[Wallet service]';
+  self.from = self.config.emailOpts.from;
 
   async.parallel([
 
@@ -91,25 +99,25 @@ EmailService.prototype.start = function(opts, cb) {
       });
     },
     function(done) {
-      if (opts.storage) {
-        self.storage = opts.storage;
+      if (self.config.storage) {
+        self.storage = self.config.storage;
         done();
       } else {
         self.storage = new Storage();
-        self.storage.connect(opts.storageOpts, done);
+        self.storage.connect(self.config.storageOpts, done);
       }
     },
     function(done) {
-      self.messageBroker = opts.messageBroker || new MessageBroker(opts.messageBrokerOpts);
+      self.messageBroker = self.config.messageBroker || new MessageBroker(self.config[self.COIN].messageBrokerOpts);
       self.messageBroker.onMessage(lodash.bind(self.sendEmail, self));
       done();
     },
     function(done) {
-      self.lock = opts.lock || new Lock(opts.lockOpts);
+      self.lock = self.config.lock || new Lock(self.config.lockOpts);
       done();
     },
     function(done) {
-      self.mailer = opts.mailer || nodemailer.createTransport(opts.emailOpts);
+      self.mailer = self.config.mailer || nodemailer.createTransport(self.config.emailOpts);
       done();
     },
   ], function(err) {

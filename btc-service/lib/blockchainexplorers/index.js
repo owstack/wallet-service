@@ -1,6 +1,7 @@
 'use strict';
 
-var BlockchainExplorers = {};
+var baseService = require('../../../base-service');
+var BlockchainExplorers = baseService.WalletService.BlockchainExplorers;
 
 BlockchainExplorers.Explorer = require('./explorer');
 

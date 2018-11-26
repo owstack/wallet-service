@@ -1,17 +1,19 @@
+#!/usr/bin/env node
+
 'use strict';
 
 var baseService = require('../../base-service');
 var BasePushNotificationsService = baseService.PushNotificationsService;
 
-var config = require('../config');
+var PushNotificationsService = require('../lib/pushnotificationsservice');
 var inherits = require('inherits');
 
-function BtcPushNotificationsService(opts) {
+function BtcPushNotificationsService(config) {
 	var context = {
-		config: config
+		PushNotificationsService: PushNotificationsService
 	};
 
-  return BasePushNotificationsService.apply(this, [context, opts]);
+  return BasePushNotificationsService.apply(this, [context, config]);
 };
 inherits(BtcPushNotificationsService, BasePushNotificationsService);
 
@@ -20,4 +22,6 @@ Object.keys(BasePushNotificationsService).forEach(function(key) {
   BtcPushNotificationsService[key] = BasePushNotificationsService[key];
 });
 
-module.exports = BtcPushNotificationsService;
+// Start the service with base configuration (default).
+var service = new BtcPushNotificationsService();
+service.start();

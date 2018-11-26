@@ -7,7 +7,7 @@ var provider = {
   name: 'BitPay',
   url: 'https://bitpay.com/api/rates/',
   parseFn: function(raw) {
-    var rates = lodash.compact(_.map(raw, function(d) {
+    var rates = lodash.compact(lodash.map(raw, function(d) {
       if (!d.code || !d.rate) {
         return null;
       }

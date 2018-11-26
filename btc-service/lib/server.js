@@ -1,33 +1,36 @@
 'use strict';
 
 var baseService = require('../../base-service');
-var baseWalletService = baseService.WalletService;
+var BaseWalletService = baseService.WalletService;
 
+var owsCommon = require('@owstack/ows-common');
 var btcLib = require('@owstack/btc-lib');
 var Address = btcLib.Address;
+var BlockchainExplorer = require('./blockchainexplorer');
 var Common = require('./common');
-var config = require('../config');
 var Defaults = Common.Defaults;
-var FiatRateService = require('./fiatrateservice');
 var Networks = btcLib.Networks;
-var Server = baseWalletService.Server;
+var Server = BaseWalletService.Server;
 var Transaction = btcLib.Transaction;
+var TxProposal = require('./model/txproposal');
 var Units = btcLib.Units;
+var Wallet = require('./model/wallet');
 var inherits = require('inherits');
+var lodash = owsCommon.deps.lodash;
 
-function BtcServer(callerConfig, cb) {
+function BtcServer(config, cb) {
   if (!(this instanceof BtcServer)){
-    return new BtcServer(callerConfig, cb);
+    return new BtcServer(config, cb);
   }
-  var config = callerConfig || config;
-
-console.log('BtcServer ctor '+JSON.stringify(config));
+	
 	var context = {
 		Address: Address,
+		BlockchainExplorer: BlockchainExplorer,
 		Defaults: Defaults,
-		FiatRateService: FiatRateService,
 		Networks: Networks,
-		Transaction: Transaction
+		Transaction: Transaction,
+		TxProposal: TxProposal,
+		Wallet: Wallet
 	};
 
   return Server.apply(this, [context, config, cb]);
@@ -42,19 +45,14 @@ Object.keys(Server).forEach(function(key) {
 /**
  *
  */
-BtcServer.getInstance = function(callerConfig, cb) {
-  var config = callerConfig || config;
-//TODO remove?  new BtcServer(config, function(server) {
-  BtcServer(config, function(server) {
-	  server._setClientVersion(config.clientVersion);
-	  cb(server);
-  });
+BtcServer.getInstance = function(config, cb) {
+  BtcServer(config, cb);
 };
 
 /**
  *
  */
-BtcServer.getInstanceWithAuth = function(auth, cb) {
+BtcServer.getInstanceWithAuth = function(config, auth, cb) {
 	if (auth.session) {
 		if (!Server.checkRequired(auth, ['copayerId', 'session'], cb)) {
 	    return;
@@ -66,8 +64,7 @@ BtcServer.getInstanceWithAuth = function(auth, cb) {
 	}
 
   try {
-//    BtcServer.getInstance(config, function(server) {
-    BtcServer.getInstance({}, function(server) {
+    BtcServer.getInstance(config, function(server) {
 		  server.initInstanceWithAuth(auth, cb);
     });
   } catch (ex) {

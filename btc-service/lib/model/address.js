@@ -1,18 +1,16 @@
 'use strict';
 
 var baseService = require('../../../base-service');
-var baseWalletService = baseService.WalletService;
+var BaseWalletService = baseService.WalletService;
 
-var BaseAddress = baseWalletService.Model.Address;
+var BaseAddress = BaseWalletService.Model.Address;
 var btcLib = require('@owstack/btc-lib');
 var Address = btcLib.Address;
-var Transaction = btcLib.Transaction;
 var inherits = require('inherits');
 
 function BtcAddress() {
 	var context = {
-		Address: Address,
-		Transaction: Transaction
+		Address: Address
 	};
 
   return BaseAddress.apply(this, [context]);
@@ -27,10 +25,20 @@ Object.keys(BaseAddress).forEach(function(key) {
 /**
  *
  */
+BtcAddress.create = function(opts) {
+	var context = {
+		Address: Address
+	};
+
+	return BaseAddress.create(context, opts);
+};
+
+/**
+ *
+ */
 BtcAddress.fromObj = function(obj) {
 	var context = {
-		Address: Address,
-		Transaction: Transaction
+		Address: Address
 	};
 
 	return BaseAddress.fromObj(context, obj);

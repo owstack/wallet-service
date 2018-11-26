@@ -29,10 +29,11 @@ run_program ()
   fi
 }
 
-run_program locker/locker.js pids/locker.pid logs/locker.log
-run_program messagebroker/messagebroker.js pids/messagebroker.pid logs/messagebroker.log
-run_program bcmonitor/bcmonitor.js pids/bcmonitor.pid logs/bcmonitor.log
+# start coin network specific services
+run_program blockchainmonitor/blockchainmonitor.js pids/blockchainmonitor.pid logs/blockchainmonitor.log
 run_program emailservice/emailservice.js pids/emailservice.pid logs/emailservice.log
+run_program messagebroker/messagebroker.js pids/messagebroker.pid logs/messagebroker.log
 run_program pushnotificationsservice/pushnotificationsservice.js pids/pushnotificationsservice.pid logs/pushnotificationsservice.log
-run_program fiatrateservice/fiatrateservice.js pids/fiatrateservice.pid logs/fiatrateservice.log
-run_program ws.js pids/ws.pid logs/ws.log
+
+# start base services
+../base-service/start.sh

@@ -1,48 +1,72 @@
 'use strict';
 
+var BchWalletService;
+var BtcWalletService;
+var LtcWalletService;
+
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
 var bodyParser = require('body-parser');
 var compression = require('compression');
+var ClientError = require('./errors/clienterror');
+var Constants = require('./common/constants');
+var Defaults = require('./common/defaults');
 var express = require('express');
 var log = require('npmlog');
 var RateLimit = require('express-rate-limit');
 var Stats = require('./stats');
 var lodash = owsCommon.deps.lodash;
+var $ = require('preconditions').singleton();
 
 log.disableColor();
 log.debug = log.verbose;
 log.level = 'info';
 
-var ExpressApp = function(context) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+var DEFAULT_BASE_PATH = '/ws/api';
 
+/**
+ * Constructor
+ *
+ * @param config
+ * @param config.basePath - base path for the server API.
+ * @param config.disableLogs - disables logging if true.
+ * @param config.ignoreRateLimiter - ignores rate rate limiter if true.
+ * @param config.BCH (optional*) - Bitcoin Cash service configuration.
+ * @param config.BTC (optional*) - Bitcoin service configuration.
+ * @param config.LTC (optional*) - Litecoin service configuration.
+ * @param {Callback} cb
+ *
+ * Note - at least one coin network configuration must be provided.
+ *
+ * For each service the following configuration parameters may be set. If the service
+ * configuration is not specified then default values are used. For example, see
+ * `../../btc-service/config.js` for default bitcoin service configuration.
+ *
+ * @param config.{service}.blockchainExplorerOpts
+ * @param config.{service}.fiatRateServiceOpts
+ */
+var ExpressApp = function(config) {
+  $.checkArgument(config, 'No configuration provided for Express app');
+
+  this.config = config;
   this.app = express();
 };
 
 /**
- * start
- *
- * @param opts.Server options for Server class
- * @param opts.basePath
- * @param opts.disableLogs
- * @param {Callback} cb
+ * Start the express server.
  */
-ExpressApp.prototype.start = function(opts, cb) {
+ExpressApp.prototype.start = function(cb) {
   var self = this;
-  opts = opts || {};
 
   this.app.use(compression());
 
   this.app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'x-signature,x-identity,x-session,x-client-version,x-wallet-id,X-Requested-With,Content-Type,Authorization');
-    res.setHeader('x-service-version', self.ctx.Server.getServiceVersion());
+    res.setHeader('Access-Control-Allow-Headers', 'x-signature,x-identity,x-session,x-client-version,x-service,x-wallet-id,X-Requested-With,Content-Type,Authorization');
     next();
   });
+
   var allowCORS = function(req, res, next) {
     if ('OPTIONS' == req.method) {
       res.sendStatus(200);
@@ -50,11 +74,12 @@ ExpressApp.prototype.start = function(opts, cb) {
       return;
     }
     next();
-  }
+  };
+
   this.app.use(allowCORS);
   this.app.enable('trust proxy');
 
-  // handle `abort` https://nodejs.org/api/http.html#http_event_abort
+  // Handle `abort`, see https://nodejs.org/api/http.html#http_event_abort
   this.app.use(function(req, res, next) {
     req.on('abort', function() {
       log.warn('Request aborted by the client');
@@ -68,7 +93,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     limit: POST_LIMIT
   }));
 
-  if (opts.disableLogs) {
+  if (this.config.disableLogs) {
     log.level = 'silent';
   } else {
     var morgan = require('morgan');
@@ -83,7 +108,9 @@ ExpressApp.prototype.start = function(opts, cb) {
     var logFormat = ':remote-addr :date[iso] ":method :url" :status :res[content-length] :response-time ":user-agent" :walletId :copayerId';
     var logOpts = {
       skip: function(req, res) {
-        if (res.statusCode != 200) return false;
+        if (res.statusCode != 200) {
+          return false;
+        }
         return req.path.indexOf('/notifications/') >= 0;
       }
     };
@@ -93,19 +120,21 @@ ExpressApp.prototype.start = function(opts, cb) {
   var router = express.Router();
 
   function returnError(err, res, req) {
-    if (err instanceof self.ctx.Server.ClientError) {
+    if (err instanceof ClientError) {
 
       var status = (err.code == 'NOT_AUTHORIZED') ? 401 : 400;
-      if (!opts.disableLogs)
+      if (!self.config.disableLogs) {
         log.info('Client Err: ' + status + ' ' + req.url + ' ' + JSON.stringify(err));
+      }
 
       res.status(status).json({
         code: err.code,
-        message: err.message,
+        message: err.message
       }).end();
     } else {
-      var code = 500,
-        message;
+
+      var code = 500;
+      var message;
       if (lodash.isObject(err)) {
         code = err.code || err.statusCode;
         message = err.message || err.body;
@@ -113,11 +142,12 @@ ExpressApp.prototype.start = function(opts, cb) {
 
       var m = message || err.toString();
 
-      if (!opts.disableLogs)
+      if (!self.config.disableLogs) {
         log.error(req.url + ' :' + code + ':' + m);
+      }
 
       res.status(code || 500).json({
-        error: m,
+        error: m
       }).end();
     }
   };
@@ -128,7 +158,9 @@ ExpressApp.prototype.start = function(opts, cb) {
 
   function getCredentials(req) {
     var identity = req.header('x-identity');
-    if (!identity) return;
+    if (!identity) {
+      return;
+    }
 
     return {
       copayerId: identity,
@@ -137,23 +169,148 @@ ExpressApp.prototype.start = function(opts, cb) {
     };
   };
 
-  function getServer(req, res) {
-    var config = {
-      clientVersion: req.header('x-client-version'),
+  /**
+   * Service resolvers return a constucted server instance for the specified network service.
+   */
+
+  /**
+   * Bitcoin.
+   */
+  function resolveBtcServer(req, res, cb, auth, opts) {
+    if (!self.config.BTC) {
+      throw 'Cannot instance a BTC server, no configuration found';
     };
-    return self.ctx.Server.getInstance(config);
+    if (!BtcWalletService) {
+      BtcWalletService = require('../../btc-service').WalletService;
+    }
+
+    var config = lodash.cloneDeep(self.config);
+    opts.addlConfig = opts.addlConfig || {};
+    lodash.forEach(Object.keys(opts.addlConfig), function(k) {
+      config[k] = opts.addlConfig[k];
+    });
+
+    res.setHeader('x-service', req.headers['x-service']);
+    res.setHeader('x-service-version', BtcWalletService.Server.getServiceVersion());
+
+    if (opts.serviceClassOnly) {
+      return cb(BtcWalletService);
+    }
+
+    if (auth) {
+      BtcWalletService.Server.getInstanceWithAuth(config, auth, cb);
+    } else {
+      BtcWalletService.Server.getInstance(config, cb);
+    }
   };
 
-  function getServerWithAuth(req, res, auth, cb) {
-    if (lodash.isFunction(auth)) {
-      cb = auth;
-      auth = {};
+  /**
+   * Bitcoin Cash.
+   */
+  function resolveBchServer(req, res, cb, auth, opts) {
+    if (!self.config.BCH) {
+      throw 'Cannot instance a BCH server, no configuration found';
+    };
+    if (!BchWalletService) {
+      BchWalletService = require('../../bch-service').WalletService;
     }
-    auth = auth || {};
+
+    var config = lodash.cloneDeep(self.config);
+    opts.addlConfig = opts.addlConfig || {};
+    lodash.forEach(Object.keys(opts.addlConfig), function(k) {
+      config[k] = opts.addlConfig[k];
+    });
+
+    res.setHeader('x-service', req.headers['x-service']);
+    res.setHeader('x-service-version', BchWalletService.Server.getServiceVersion());
+
+    if (opts.serviceClassOnly) {
+      return cb(BchWalletService);
+    }
+
+    if (auth) {
+      BchWalletService.Server.getInstanceWithAuth(config, auth, cb);
+    } else {
+      BchWalletService.Server.getInstance(config, cb);
+    }
+  };
+
+  /**
+   * Litecoin.
+   */
+  function resolveLtcServer(req, res, cb, auth, opts) {
+    if (!self.config.LTC) {
+      throw 'Cannot instance an LTC server, no configuration found';
+    };
+    if (!LtcWalletService) {
+      LtcWalletService = require('../../ltc-service').WalletService;
+    }
+
+    var config = lodash.cloneDeep(self.config);
+    opts.addlConfig = opts.addlConfig || {};
+    lodash.forEach(Object.keys(opts.addlConfig), function(k) {
+      config[k] = opts.addlConfig[k];
+    });
+
+    res.setHeader('x-service', req.headers['x-service']);
+    res.setHeader('x-service-version', LtcWalletService.Server.getServiceVersion());
+
+    if (opts.serviceClassOnly) {
+      return cb(LtcWalletService);
+    }
+
+    if (auth) {
+      LtcWalletService.Server.getInstanceWithAuth(config, auth, cb);
+    } else {
+      LtcWalletService.Server.getInstance(config, cb);
+    }
+  };
+
+  /**
+   * Return only the service class for the given request.
+   */
+  function resolveService(req, res, cb) {
+    var opts = {
+      serviceClassOnly: true
+    };
+    resolveServer(req, res, cb, null, opts);
+  };
+
+  /**
+   * Inspect the request header for the requested service and return
+   * a reference to the service object.
+   */
+  function resolveServer(req, res, cb, auth, opts) {
+    $.checkArgument(req && res && cb);
+
+    opts = opts || {};
+    opts.addlConfig = {
+      clientVersion: req.header('x-client-version')
+    };
+
+    var service = req.header('x-service');
+    switch (service) {
+      case Constants.SERVICE_BITCOIN:      return resolveBtcServer(req, res, cb, auth, opts);
+      case Constants.SERVICE_BITCOIN_CASH: return resolveBchServer(req, res, cb, auth, opts);
+      case Constants.SERVICE_LITECOIN:     return resolveLtcServer(req, res, cb, auth, opts);
+
+      default:
+        throw new ClientError({
+          code: 'UNKNOWN_SERVICE'
+        });
+    }
+  };
+
+  function getServer(req, res, cb) {
+    resolveServer(req, res, cb);
+  };
+
+  function getServerWithAuth(req, res, cb, opts) {
+    opts = opts || {};
 
     var credentials = getCredentials(req);
     if (!credentials) {
-      return returnError(new self.ctx.Server.ClientError({
+      return returnError(new ClientError({
         code: 'NOT_AUTHORIZED'
       }), res, req);
     }
@@ -162,20 +319,20 @@ ExpressApp.prototype.start = function(opts, cb) {
       copayerId: credentials.copayerId,
       message: req.method.toLowerCase() + '|' + req.url + '|' + JSON.stringify(req.body),
       signature: credentials.signature,
-      clientVersion: req.header('x-client-version'),
-      walletId: req.header('x-wallet-id'),
+      walletId: req.header('x-wallet-id')
     };
-    if (auth.allowSession) {
+
+    if (opts.allowSession) {
       auth.session = credentials.session;
     }
 
-    self.ctx.Server.getInstanceWithAuth(auth, function(err, server) {
+    resolveServer(req, res, function(err, server) {
       if (err) {
         return returnError(err, res, req);
       }
 
-      if (auth.onlySupportStaff && !server.copayerIsSupportStaff) {
-        return returnError(new this.ctx.Server.ClientError({
+      if (opts.onlySupportStaff && !server.copayerIsSupportStaff) {
+        return returnError(new ClientError({
           code: 'NOT_AUTHORIZED'
         }), res, req);
       }
@@ -185,14 +342,14 @@ ExpressApp.prototype.start = function(opts, cb) {
       req.copayerId = server.copayerId;
 
       return cb(server);
-    });
+    }, auth);
   };
 
   var createWalletLimiter;
 
-  if (this.ctx.Defaults.RateLimit.createWallet && !opts.ignoreRateLimiter) {
-    log.info('', 'Limiting wallet creation per IP: %d req/h', (this.ctx.Defaults.RateLimit.createWallet.max / this.ctx.Defaults.RateLimit.createWallet.windowMs * 60 * 60 * 1000).toFixed(2))
-    createWalletLimiter = new RateLimit(this.ctx.Defaults.RateLimit.createWallet);
+  if (Defaults.RateLimit.createWallet && !this.config.ignoreRateLimiter) {
+    log.info('', 'Limiting wallet creation per IP: %d req/h', (Defaults.RateLimit.createWallet.max / Defaults.RateLimit.createWallet.windowMs * 60 * 60 * 1000).toFixed(2))
+    createWalletLimiter = new RateLimit(Defaults.RateLimit.createWallet);
     // router.use(/\/v\d+\/wallets\/$/, createWalletLimiter)
   } else {
     createWalletLimiter = function(req, res, next) {
@@ -200,98 +357,49 @@ ExpressApp.prototype.start = function(opts, cb) {
     };
   }
 
-  // DEPRECATED
-
-  router.post('/v1/wallets/', createWalletLimiter, function(req, res) {
-    logDeprecated(req);
-    var server;
-    try {
-      server = getServer(req, res);
-    } catch (ex) {
-      return returnError(ex, res, req);
-    }
-    req.body.supportBIP44AndP2PKH = false;
-    server.createWallet(req.body, function(err, walletId) {
-      if (err) return returnError(err, res, req);
-      res.json({
-        walletId: walletId,
-      });
-    });
-  });
-
   router.post('/v2/wallets/', createWalletLimiter, function(req, res) {
-    var server;
     try {
-      server = getServer(req, res);
+      getServer(req, res, function(server) {
+console.log('HERE '+server);
+        server.createWallet(req.body, function(err, walletId) {
+          if (err) return returnError(err, res, req);
+          res.json({
+            walletId: walletId,
+          });
+        });
+      });
     } catch (ex) {
       return returnError(ex, res, req);
     }
-    server.createWallet(req.body, function(err, walletId) {
-      if (err) return returnError(err, res, req);
-      res.json({
-        walletId: walletId,
-      });
-    });
   });
 
   router.put('/v1/copayers/:id/', function(req, res) {
     req.body.copayerId = req.params['id'];
-    var server;
     try {
-      server = getServer(req, res);
+      getServer(req, res, function(server) {
+        server.addAccess(req.body, function(err, result) {
+          if (err) return returnError(err, res, req);
+          res.json(result);
+        });
+      });
     } catch (ex) {
       return returnError(ex, res, req);
     }
-    server.addAccess(req.body, function(err, result) {
-      if (err) return returnError(err, res, req);
-      res.json(result);
-    });
-  });
-
-  // DEPRECATED
-  router.post('/v1/wallets/:id/copayers/', function(req, res) {
-    logDeprecated(req);
-    req.body.walletId = req.params['id'];
-    req.body.supportBIP44AndP2PKH = false;
-    var server;
-    try {
-      server = getServer(req, res);
-    } catch (ex) {
-      return returnError(ex, res, req);
-    }
-    server.joinWallet(req.body, function(err, result) {
-      if (err) return returnError(err, res, req);
-
-      res.json(result);
-    });
   });
 
   router.post('/v2/wallets/:id/copayers/', function(req, res) {
     req.body.walletId = req.params['id'];
-    var server;
     try {
-      server = getServer(req, res);
+      getServer(req, res, function(server) {
+        server.joinWallet(req.body, function(err, result) {
+          if (err) return returnError(err, res, req);
+
+          res.json(result);
+        });
+      });
     } catch (ex) {
       return returnError(ex, res, req);
     }
-    server.joinWallet(req.body, function(err, result) {
-      if (err) return returnError(err, res, req);
-
-      res.json(result);
-    });
-  });
-
-  // DEPRECATED
-  router.get('/v1/wallets/', function(req, res) {
-    logDeprecated(req);
-    getServerWithAuth(req, res, function(server) {
-      server.getStatus({
-        includeExtendedInfo: true
-      }, function(err, status) {
-        if (err) return returnError(err, res, req);
-        res.json(status);
-      });
-    });
   });
 
   router.get('/v2/wallets/', function(req, res) {
@@ -308,9 +416,7 @@ ExpressApp.prototype.start = function(opts, cb) {
   });
 
   router.get('/v1/wallets/:identifier/', function(req, res) {
-    getServerWithAuth(req, res, {
-      onlySupportStaff: true
-    }, function(server) {
+    getServerWithAuth(req, res, function(server) {
       var opts = {
         identifier: req.params['identifier'],
       };
@@ -327,6 +433,8 @@ ExpressApp.prototype.start = function(opts, cb) {
           res.json(status);
         });
       });
+    }, {
+      onlySupportStaff: true
     });
   });
 
@@ -372,32 +480,6 @@ ExpressApp.prototype.start = function(opts, cb) {
     });
   });
 
-  // DEPRECATED
-  router.post('/v1/addresses/', function(req, res) {
-    logDeprecated(req);
-    getServerWithAuth(req, res, function(server) {
-      server.createAddress({
-        ignoreMaxGap: true
-      }, function(err, address) {
-        if (err) return returnError(err, res, req);
-        res.json(address);
-      });
-    });
-  });
-
-  // DEPRECATED
-  router.post('/v2/addresses/', function(req, res) {
-    logDeprecated(req);
-    getServerWithAuth(req, res, function(server) {
-      server.createAddress({
-        ignoreMaxGap: true
-      }, function(err, address) {
-        if (err) return returnError(err, res, req);
-        res.json(address);
-      });
-    });
-  });
-
   router.post('/v3/addresses/', function(req, res) {
     getServerWithAuth(req, res, function(server) {
       server.createAddress(req.body, function(err, address) {
@@ -431,56 +513,21 @@ ExpressApp.prototype.start = function(opts, cb) {
     });
   });
 
-  // DEPRECATED
-  router.get('/v1/feelevels/', function(req, res) {
-    logDeprecated(req);
-    var opts = {};
-    if (req.query.network) opts.network = req.query.network;
-    var server;
-    try {
-      server = getServer(req, res);
-    } catch (ex) {
-      return returnError(ex, res, req);
-    }
-    server.getFeeLevels(opts, function(err, feeLevels) {
-      if (err) return returnError(err, res, req);
-      lodash.each(feeLevels, function(feeLevel) {
-        feeLevel.feePerKB = feeLevel.feePerKb;
-        delete feeLevel.feePerKb;
-      });
-      res.json(feeLevels);
-    });
-  });
-
-  // DEPRECATED
-  router.get('/v2/feelevels/', function(req, res) {
-    var opts = {};
-    if (req.query.network) opts.network = req.query.network;
-    var server;
-    try {
-      server = getServer(req, res);
-    } catch (ex) {
-      return returnError(ex, res, req);
-    }
-    server.getFeeLevels(opts, function(err, feeLevels) {
-      if (err) return returnError(err, res, req);
-      res.json(feeLevels);
-    });
-  });
-
   router.get('/v3/feelevels/:network', function(req, res) {
     var opts = {};
-    if (req.params['network']) opts.network = req.params['network'];
-    var server;
+    if (req.params['network']) {
+      opts.network = req.params['network'];
+    }
     try {
-      server = getServer(req, res);
+      getServer(req, res, function(server) {
+        server.getFeeLevels(opts, function(err, feeLevels) {
+          if (err) return returnError(err, res, req);
+          res.json(feeLevels);
+        });
+      });
     } catch (ex) {
       return returnError(ex, res, req);
     }
-    server.getFeeLevels(opts, function(err, feeLevels) {
-      if (err) return returnError(err, res, req);
-      res.json(feeLevels);
-    });
   });
 
   router.get('/v1/sendmaxinfo/', function(req, res) {
@@ -629,10 +676,16 @@ ExpressApp.prototype.start = function(opts, cb) {
   });
 
   router.get('/v1/version/', function(req, res) {
-    res.json({
-      serviceVersion: self.ctx.Server.getServiceVersion(),
-    });
-    res.end();
+    try {
+      resolveService(req, res, function(Service) {
+        res.json({
+          serviceVersion: Service.Server.getServiceVersion()
+        });
+        res.end();        
+      });
+    } catch (ex) {
+      return returnError(ex, res, req);
+    }
   });
 
   router.post('/v1/login/', function(req, res) {
@@ -654,10 +707,8 @@ ExpressApp.prototype.start = function(opts, cb) {
   });
 
   router.get('/v1/notifications/', function(req, res) {
-    getServerWithAuth(req, res, {
-      allowSession: true,
-    }, function(server) {
-      var timeSpan = req.query.timeSpan ? Math.min(+req.query.timeSpan || 0, self.ctx.Defaults.MAX_NOTIFICATIONS_TIMESPAN) : self.ctx.Defaults.NOTIFICATIONS_TIMESPAN;
+    getServerWithAuth(req, res, function(server) {
+      var timeSpan = req.query.timeSpan ? Math.min(+req.query.timeSpan || 0, Defaults.MAX_NOTIFICATIONS_TIMESPAN) : Defaults.NOTIFICATIONS_TIMESPAN;
       var opts = {
         minTs: +Date.now() - (timeSpan * 1000),
         notificationId: req.query.notificationId,
@@ -667,6 +718,8 @@ ExpressApp.prototype.start = function(opts, cb) {
         if (err) return returnError(err, res, req);
         res.json(notifications);
       });
+    }, {
+      allowSession: true
     });
   });
 
@@ -706,39 +759,26 @@ ExpressApp.prototype.start = function(opts, cb) {
   });
 
   router.get('/v1/fiatrates/:code/', function(req, res) {
-    var server;
     var opts = {
       code: req.params['code'],
       provider: req.query.provider,
       ts: +req.query.ts,
     };
     try {
-      server = getServer(req, res);
+      getServer(req, res, function(server) {
+        server.getFiatRate(opts, function(err, rates) {
+          if (err) return returnError(err, res, req);
+          res.json(rates);
+        });
+      });
     } catch (ex) {
       return returnError(ex, res, req);
     }
-    server.getFiatRate(opts, function(err, rates) {
-      if (err) return returnError(err, res, req);
-      res.json(rates);
-    });
   });
 
   router.post('/v1/pushnotifications/subscriptions/', function(req, res) {
     getServerWithAuth(req, res, function(server) {
       server.pushNotificationsSubscribe(req.body, function(err, response) {
-        if (err) return returnError(err, res, req);
-        res.json(response);
-      });
-    });
-  });
-
-  // DEPRECATED
-  router.delete('/v1/pushnotifications/subscriptions/', function(req, res) {
-    logDeprecated(req);
-    getServerWithAuth(req, res, function(server) {
-      server.pushNotificationsUnsubscribe({
-        token: 'dummy'
-      }, function(err, response) {
         if (err) return returnError(err, res, req);
         res.json(response);
       });
@@ -779,8 +819,8 @@ ExpressApp.prototype.start = function(opts, cb) {
     });
   });
 
-  this.app.use(opts.basePath || '/ws/api', router);
-  cb();
+  this.app.use(this.config.basePath || DEFAULT_BASE_PATH, router);
+  return cb();
 };
 
 module.exports = ExpressApp;

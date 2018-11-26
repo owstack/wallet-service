@@ -1,19 +1,21 @@
 'use strict';
 
 var baseService = require('../../base-service');
-var baseWalletService = baseService.WalletService;
+var BaseWalletService = baseService.WalletService;
 
-var BlockchainMonitor = baseWalletService.BlockchainMonitor;
+var BlockchainExplorer = require('./blockchainexplorer');
+var BlockchainMonitor = BaseWalletService.BlockchainMonitor;
 var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcBlockchainMonitor(opts) {
+function BtcBlockchainMonitor(config) {
 	var context = {
+		BlockchainExplorer: BlockchainExplorer,
 		Networks: Networks
 	};
 
-  return BlockchainMonitor.apply(this, [context, opts]);
+  return BlockchainMonitor.apply(this, [context, config]);
 };
 inherits(BtcBlockchainMonitor, BlockchainMonitor);
 

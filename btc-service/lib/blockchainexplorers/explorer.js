@@ -1,9 +1,9 @@
 'use strict';
 
 var baseService = require('../../../base-service');
-var baseWalletService = baseService.WalletService;
+var BaseWalletService = baseService.WalletService;
 
-var Explorer = baseWalletService.BlockchainExplorers.Explorer;
+var Explorer = BaseWalletService.BlockchainExplorers.Explorer;
 var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');

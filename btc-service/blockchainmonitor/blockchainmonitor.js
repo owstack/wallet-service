@@ -1,19 +1,19 @@
+#!/usr/bin/env node
+
 'use strict';
 
 var baseService = require('../../base-service');
 var BaseBlockchainMonitor = baseService.BlockchainMonitor;
 
 var BlockchainMonitor = require('../lib/blockchainmonitor');
-var config = require('../config');
 var inherits = require('inherits');
 
-function BtcBlockchainMonitor(opts) {
+function BtcBlockchainMonitor(config) {
 	var context = {
-		BlockchainMonitor: BlockchainMonitor,
-		config: config
+		BlockchainMonitor: BlockchainMonitor
 	};
 
-  BaseBlockchainMonitor.apply(this, [context, opts]);
+  BaseBlockchainMonitor.apply(this, [context, config]);
 };
 inherits(BtcBlockchainMonitor, BaseBlockchainMonitor);
 
@@ -22,4 +22,6 @@ Object.keys(BaseBlockchainMonitor).forEach(function(key) {
   BtcBlockchainMonitor[key] = BaseBlockchainMonitor[key];
 });
 
-module.exports = BtcBlockchainMonitor;
+// Start the service with base configuration (default).
+var service = new BtcBlockchainMonitor();
+service.start();

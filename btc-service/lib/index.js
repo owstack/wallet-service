@@ -1,15 +1,16 @@
 'use strict';
 
-var Lib = {};
+var baseService = require('../../base-service');
+var WalletService = baseService.WalletService;
 
-Lib.BlockchainExplorer = require('./blockchainexplorer');
-Lib.BlockchainExplorers = require('./blockchainexplorers');
-Lib.BlockchainMonitor = require('./blockchainmonitor');
-Lib.Common = require('./common');
-Lib.ExpressApp = require('./expressapp');
-Lib.FiatRateService = require('./fiatrateservice');
-Lib.Model = require('./model');
-Lib.Server = require('./server');
-Lib.Stats = require('./stats');
+WalletService.BlockchainExplorer = require('./blockchainexplorer');
+WalletService.BlockchainExplorers = require('./blockchainexplorers');
+WalletService.BlockchainMonitor = require('./blockchainmonitor');
+WalletService.Common = require('./common');
+WalletService.EmailService = require('./emailservice');
+WalletService.Model = require('./model');
+WalletService.Server = require('./server');
+WalletService.Stats = require('./stats');
+WalletService.Storage = require('./storage');
 
-module.exports = Lib;
+module.exports = WalletService;

@@ -1,9 +1,9 @@
 'use strict';
 
 var baseService = require('../../../base-service');
-var baseWalletService = baseService.WalletService;
+var BaseWalletService = baseService.WalletService;
 
-var Defaults = baseWalletService.Defaults;
+var Defaults = BaseWalletService.Common.Defaults;
 
 Defaults.MIN_FEE_PER_KB = 0;
 Defaults.MAX_FEE_PER_KB = 1000000;
@@ -58,10 +58,6 @@ Defaults.FEE_LEVELS_FALLBACK = 2;
 // Minimum nb of addresses a wallet must have to start using 2-step balance optimization
 Defaults.TWO_STEP_BALANCE_THRESHOLD = 100;
 
-Defaults.FIAT_RATE_PROVIDER = 'BitPay';
-Defaults.FIAT_RATE_FETCH_INTERVAL = 10; // In minutes
-Defaults.FIAT_RATE_MAX_LOOK_BACK_TIME = 120; // In minutes
-
 Defaults.HISTORY_LIMIT = 50;
 
 // The maximum amount of an UTXO to be considered too big to be used in the tx before exploring smaller
@@ -90,11 +86,6 @@ Defaults.HISTORY_CACHE_ADDRESS_THRESOLD = 100;
 
 // Cache time for blockchain height (in seconds)
 Defaults.BLOCKHEIGHT_CACHE_TIME = 10 * 60;
-
-
-// Max allowed timespan for notification queries in seconds
-Defaults.MAX_NOTIFICATIONS_TIMESPAN = 60 * 60 * 24 * 14; // ~ 2 weeks
-Defaults.NOTIFICATIONS_TIMESPAN = 60;
 
 Defaults.SESSION_EXPIRATION = 1 * 60 * 60; // 1 hour to session expiration
 

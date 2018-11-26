@@ -2,26 +2,32 @@
 
 'use strict';
 
+var baseConfig = require('../config');
 var log = require('npmlog');
 
 log.debug = log.verbose;
 
-var Service = function(context) {
+var Service = function(context, config) {
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
 
-	this.blockchainmonitor = new this.ctx.BlockchainMonitor();
+  this.config = config || baseConfig;
+	this.blockchainmonitor = new this.ctx.BlockchainMonitor(this.config);
 };
 
 Service.prototype.start = function() {
-	this.bblockchainmonitor.start(this.ctx.config, function(err) {
+	this.blockchainmonitor.start(function(err) {
 	  if (err) {
 	  	throw err;
 	  }
 
 	  console.log('Blockchain monitor started');
 	});
+}
+
+if (require.main === module) {
+	throw 'The base blockchain monitor cannot be started from the command line';
 }
 
 module.exports = Service;

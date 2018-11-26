@@ -31,6 +31,7 @@ var errors = {
   TX_NOT_PENDING: 'The transaction proposal is not pending',
   UNAVAILABLE_UTXOS: 'Unavailable unspent outputs',
   UPGRADE_NEEDED: 'Client app needs to be upgraded',
+  UNKNOWN_SERVICE: 'Request service name is missing or unknown',
   WALLET_ALREADY_EXISTS: 'Wallet already exists',
   WALLET_FULL: 'Wallet full',
   WALLET_LOCKED: 'Wallet is locked',

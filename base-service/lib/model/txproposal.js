@@ -42,14 +42,14 @@ function TxProposal(context, opts) {
   this.outputs = lodash.map(opts.outputs, function(output) {
     return lodash.pick(output, ['amount', 'toAddress', 'message', 'script']);
   });
-  this.outputOrder = lodash.range(x.outputs.length + 1);
+  this.outputOrder = lodash.range(this.outputs.length + 1);
   if (!opts.noShuffleOutputs) {
-    this.outputOrder = lodash.shuffle(x.outputOrder);
+    this.outputOrder = lodash.shuffle(this.outputOrder);
   }
   this.walletM = opts.walletM;
   this.walletN = opts.walletN;
-  this.requiredSignatures = x.walletM;
-  this.requiredRejections = Math.min(x.walletM, x.walletN - x.walletM + 1),
+  this.requiredSignatures = this.walletM;
+  this.requiredRejections = Math.min(this.walletM, this.walletN - this.walletM + 1),
   this.status = 'temporary';
   this.actions = [];
   this.feeLevel = opts.feeLevel;
@@ -61,11 +61,12 @@ function TxProposal(context, opts) {
 
   this.customData = opts.customData;
 
-  this.amount = x.getTotalAmount();
+  this.amount = this.getTotalAmount();
   try {
-    this.network = opts.network || this.ctx.Address(x.outputs[0].toAddress).toObject().network;
+    this.network = opts.network || this.ctx.Address(this.outputs[0].toAddress).toObject().network;
   } catch (ex) {}
-  $.checkState(lodash.includes(lodash.values([this.LIVENET, this.TESTNET]), x.network));
+
+  $.checkState(lodash.includes(lodash.values([this.LIVENET, this.TESTNET]), this.network));
 
   this.setInputs(opts.inputs);
   this.fee = opts.fee;
@@ -218,7 +219,7 @@ TxProposal.prototype.getTx = function() {
 
   var sigs = this._getCurrentSignatures();
   lodash.each(sigs, function(x) {
-    self._addSignaturesToBtcTx(t, x.signatures, x.xpub);
+    self._addSignaturesToTx(t, x.signatures, x.xpub);
   });
 
   return t;
@@ -324,14 +325,14 @@ TxProposal.prototype.addAction = function(copayerId, type, comment, signatures, 
   this._updateStatus();
 };
 
-TxProposal.prototype._addSignaturesToBtcTx = function(tx, signatures, xpub) {
+TxProposal.prototype._addSignaturesToTx = function(tx, signatures, xpub) {
   var self = this;
 
   if (signatures.length != this.inputs.length)
     throw new Error('Number of signatures does not match number of inputs');
 
-  var i = 0,
-    x = new HDPublicKey(xpub);
+  var i = 0;
+  var x = new HDPublicKey(xpub);
 
   lodash.each(signatures, function(signatureHex) {
     var input = self.inputs[i];
@@ -358,7 +359,7 @@ TxProposal.prototype.sign = function(copayerId, signatures, xpub) {
   try {
     // Tests signatures are OK
     var tx = this.getTx();
-    this._addSignaturesToBtcTx(tx, signatures, xpub);
+    this._addSignaturesToTx(tx, signatures, xpub);
 
     this.addAction(copayerId, 'accept', null, signatures, xpub);
 

@@ -2,17 +2,20 @@
 
 'use strict';
 
+var baseConfig = require('../config');
 var Locker = require('locker-server');
 
-var PORT = 3231;
-
-var Service = function() {
+var Service = function(config) {
 	this.lockerService = new Locker();	
+
+  this.config = config || baseConfig;
 };
 
 Service.prototype.start = function() {
-	this.lockerService.listen(PORT);
-	console.log('Locker service started at port ' + PORT);
+	this.lockerService.listen(this.config.lockOpts.lockerServer.port);
+	console.log('Locker service started at port ' + this.config.lockOpts.lockerServer.port);
 };
 
-module.exports = Service;
+// Start the service with base configuration (default).
+var service = new Service();
+service.start();

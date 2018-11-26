@@ -2,8 +2,9 @@
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
+var baseConfig = require('../config');
+var Defaults = require('./common/defaults');
 var log = require('npmlog');
-var Model = require('./model');
 var request = require('request');
 var Storage = require('./storage');
 var lodash = owsCommon.deps.lodash;
@@ -11,34 +12,43 @@ var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
-function FiatRateService(context) {
-console.log('FiatRateService ctor');
+function FiatRateService(config) {
   if (!(this instanceof FiatRateService)){
     return new FiatRateService(context);
   }
 
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+  this.config = config || baseConfig;
 };
 
-FiatRateService.prototype.init = function(opts, cb) {
+FiatRateService.prototype.start = function(cb) {
   var self = this;
 
-  opts = opts || {};
+  self.init(function(err) {
+    if (err) {
+      cb(err);
+    }
+    self.startCron(function(err) {
+      if (err) {
+        cb(err);
+      }
+      cb();
+    });
+  });
+};
 
-  self.request = opts.request || request;
-  self.defaultProvider = opts.defaultProvider || this.ctx.Defaults.FIAT_RATE_PROVIDER;
+FiatRateService.prototype.init = function(cb) {
+  var self = this;
+
+  self.request = self.config.request || request;
 
   async.parallel([
-
     function(done) {
-      if (opts.storage) {
-        self.storage = opts.storage;
+      if (self.config.storage) {
+        self.storage = self.config.storage;
         done();
       } else {
         self.storage = new Storage();
-        self.storage.connect(opts.storageOpts, done);
+        self.storage.connect(self.config.storageOpts, done);
       }
     },
   ], function(err) {
@@ -49,14 +59,12 @@ FiatRateService.prototype.init = function(opts, cb) {
   });
 };
 
-FiatRateService.prototype.startCron = function(opts, cb) {
+FiatRateService.prototype.startCron = function(cb) {
   var self = this;
-
-  opts = opts || {};
 
   self.providers = lodash.values(require('./fiatrateproviders'));
 
-  var interval = opts.fetchInterval || this.ctx.Defaults.FIAT_RATE_FETCH_INTERVAL;
+  var interval = self.config.fiatRateServiceOpts.fetchInterval || Defaults.FIAT_RATE_FETCH_INTERVAL;
   if (interval) {
     self._fetch();
     setInterval(function() {
@@ -111,7 +119,6 @@ FiatRateService.prototype._retrieve = function(provider, cb) {
   });
 };
 
-
 FiatRateService.prototype.getRate = function(opts, cb) {
   var self = this;
 
@@ -120,13 +127,13 @@ FiatRateService.prototype.getRate = function(opts, cb) {
   opts = opts || {};
 
   var now = Date.now();
-  var provider = opts.provider || self.defaultProvider;
+  var provider = opts.provider;
   var ts = (lodash.isNumber(opts.ts) || lodash.isArray(opts.ts)) ? opts.ts : now;
 
   async.map([].concat(ts), function(ts, cb) {
     self.storage.fetchFiatRate(provider, opts.code, ts, function(err, rate) {
       if (err) return cb(err);
-      if (rate && (ts - rate.ts) > this.ctx.Defaults.FIAT_RATE_MAX_LOOK_BACK_TIME * 60 * 1000) rate = null;
+      if (rate && (ts - rate.ts) > Defaults.FIAT_RATE_MAX_LOOK_BACK_TIME * 60 * 1000) rate = null;
 
       return cb(null, {
         ts: +ts,
@@ -140,6 +147,5 @@ FiatRateService.prototype.getRate = function(opts, cb) {
     return cb(null, res);
   });
 };
-
 
 module.exports = FiatRateService;

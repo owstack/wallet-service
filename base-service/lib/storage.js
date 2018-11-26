@@ -28,8 +28,11 @@ var collections = {
   TX_CONFIRMATION_SUBS: 'tx_confirmation_subs',
 };
 
-var Storage = function(opts) {
-console.log('Storage ctor '+JSON.stringify(opts));
+var Storage = function(context, opts) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
+
   opts = opts || {};
   this.db = opts.db;
 };
@@ -123,6 +126,7 @@ Storage.prototype.disconnect = function(cb) {
 };
 
 Storage.prototype.fetchWallet = function(id, cb) {
+  var self = this;
   this.db.collection(collections.WALLETS).findOne({
     id: id
   }, function(err, result) {
@@ -132,7 +136,7 @@ Storage.prototype.fetchWallet = function(id, cb) {
     if (!result) {
       return cb();
     }
-    return cb(null, Model.Wallet.fromObj(result));
+    return cb(null, self.ctx.Wallet.fromObj(result));
   });
 };
 
@@ -237,7 +241,7 @@ Storage.prototype.fetchTx = function(walletId, txProposalId, cb) {
     if (!result) {
       return cb();
     }
-    return self._completeTxData(walletId, Model.TxProposal.fromObj(result), cb);
+    return self._completeTxData(walletId, self.ctx.TxProposal.fromObj(result), cb);
   });
 };
 
@@ -254,7 +258,7 @@ Storage.prototype.fetchTxByHash = function(hash, cb) {
       return cb();
     }
 
-    return self._completeTxData(result.walletId, Model.TxProposal.fromObj(result), cb);
+    return self._completeTxData(result.walletId, self.ctx.TxProposal.fromObj(result), cb);
   });
 };
 
@@ -276,7 +280,7 @@ Storage.prototype.fetchLastTxs = function(walletId, creatorId, limit, cb) {
       return cb();
     }
     var txs = lodash.map(result, function(tx) {
-      return Model.TxProposal.fromObj(tx);
+      return self.ctx.TxProposal.fromObj(tx);
     });
     return cb(null, txs);
   });
@@ -298,7 +302,7 @@ Storage.prototype.fetchPendingTxs = function(walletId, cb) {
       return cb();
     }
     var txs = lodash.map(result, function(tx) {
-      return Model.TxProposal.fromObj(tx);
+      return self.ctx.TxProposal.fromObj(tx);
     });
     return self._completeTxData(walletId, txs, cb);
   });
@@ -354,7 +358,7 @@ Storage.prototype.fetchTxs = function(walletId, opts, cb) {
       return cb();
     }
     var txs = lodash.map(result, function(tx) {
-      return Model.TxProposal.fromObj(tx);
+      return self.ctx.TxProposal.fromObj(tx);
     });
     return self._completeTxData(walletId, txs, cb);
   });
@@ -404,7 +408,7 @@ Storage.prototype.fetchBroadcastedTxs = function(walletId, opts, cb) {
       return cb();
     }
     var txs = lodash.map(result, function(tx) {
-      return Model.TxProposal.fromObj(tx);
+      return self.ctx.TxProposal.fromObj(tx);
     });
     return self._completeTxData(walletId, txs, cb);
   });
@@ -516,7 +520,7 @@ Storage.prototype.fetchAddresses = function(walletId, cb) {
       return cb();
     }
     var addresses = lodash.map(result, function(address) {
-      return Model.Address.fromObj(address);
+      return self.ctx.Address.fromObj(address);
     });
     return cb(null, addresses);
   });
@@ -598,7 +602,7 @@ Storage.prototype.fetchAddress = function(address, cb) {
       return cb();
     }
 
-    return cb(null, Model.Address.fromObj(result));
+    return cb(null, self.ctx.Address.fromObj(result));
   });
 };
 
@@ -1019,7 +1023,7 @@ Storage.prototype.getSession = function(copayerId, cb) {
       if (err || !result) {
         return cb(err);
       }
-      return cb(null, Model.Session.fromObj(result));
+      return cb(null, self.ctx.Session.fromObj(result));
     });
 };
 

@@ -6,26 +6,28 @@ var sinon = require('sinon');
 
 var Service = require('../');
 var WalletService = Service.BTC.WalletService;
-var config = require('../btc-service/config');
+
+var config = require('../base-service/config');
 
 var proxyquire = require('proxyquire');
-var xyExpressApp = '../btc-service/lib/expressapp';
+var xyExpressApp = '../base-service/lib/expressapp';
 
-var Defaults = WalletService.Defaults;
-var ExpressApp = WalletService.ExpressApp;
+var Defaults = WalletService.Common.Defaults;
 var http = require('http');
 var request = require('request');
 
 describe('ExpressApp', function() {
+
   describe('#constructor', function() {
     it('will set an express app', function() {
       var TestExpressApp = proxyquire(xyExpressApp, {});
-      var express = new TestExpressApp();
+      var express = new TestExpressApp(config);
       should.exist(express.app);
       should.exist(express.app.use);
       should.exist(express.app.enable);
     });
   });
+
   describe('#start', function() {
     describe('Routes', function() {
       var testPort = 3239;
@@ -33,10 +35,10 @@ describe('ExpressApp', function() {
       var httpServer;
 
       function start(ExpressApp, done) {
-        var app = new ExpressApp();
+        var app = new ExpressApp(config);
         httpServer = http.Server(app.app);
 
-        app.start(config, function(err) {
+        app.start(function(err) {
           should.not.exist(err);
           httpServer.listen(testPort);
           done();
@@ -47,8 +49,53 @@ describe('ExpressApp', function() {
         httpServer.close();
 
         // Remove wrappers
-        WalletService.Server.prototype.initialize.restore();
-        WalletService.Server.getInstanceWithAuth.restore();
+        if (WalletService.Server.prototype.initialize.restore) {
+          WalletService.Server.prototype.initialize.restore();
+        }
+        if (WalletService.Server.getInstanceWithAuth.restore) {
+          WalletService.Server.getInstanceWithAuth.restore();
+        }
+      });
+
+      it('should handle request with valid x-service header', function(done) {
+        var TestExpressApp = require(xyExpressApp);
+
+        start(TestExpressApp, function() {
+          var requestOptions = {
+            url: testHost + ':' + testPort + config.basePath + '/v1/version',
+            headers: {
+              'x-service': 'bitcoin'
+            }
+          };
+
+          request(requestOptions, function(err, res, body) {
+            res.statusCode.should.equal(200);
+            res.headers['x-service-version'].should.equal('ws-' + require('../package').version);
+            body.should.contain('serviceVersion');
+            done();
+          });
+        });
+      });
+
+      it('should not handle request with invalid x-service header', function(done) {
+        var TestExpressApp = require(xyExpressApp);
+
+        start(TestExpressApp, function() {
+          var requestOptions = {
+            url: testHost + ':' + testPort + config.basePath + '/v1/version',
+            headers: {
+              'x-service': 'invalid'
+            }
+          };
+
+          request(requestOptions, function(err, res, body) {
+            res.statusCode.should.equal(400);
+            body.should.contain('UNKNOWN_SERVICE');
+            should.not.exist(res.headers['x-service-version']);
+            body.should.not.contain('serviceVersion');
+            done();
+          });
+        });
       });
 
       it('/v2/wallets', function(done) {
@@ -57,22 +104,22 @@ describe('ExpressApp', function() {
         };
 
         sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+
         var TestExpressApp = require(xyExpressApp);
 
         start(TestExpressApp, function() {
-
           var requestOptions = {
             url: testHost + ':' + testPort + config.basePath + '/v2/wallets',
             headers: {
               'x-identity': 'identity',
-              'x-signature': 'signature'
+              'x-signature': 'signature',
+              'x-service': 'bitcoin'
             }
           };
+
           request(requestOptions, function(err, res, body) {
             should.not.exist(err);
-            should.exist(res.headers['x-service-version']);
-            res.headers['x-service-version'].should.equal('ws-' + require('../package').version);
             res.statusCode.should.equal(200);
             body.should.equal('{}');
             done();
@@ -86,7 +133,8 @@ describe('ExpressApp', function() {
         };
 
         sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+
         var TestExpressApp = proxyquire(xyExpressApp, {});
 
         start(TestExpressApp, function() {
@@ -94,9 +142,11 @@ describe('ExpressApp', function() {
             url: testHost + ':' + testPort + config.basePath + '/v1/addresses?limit=4&reverse=1',
             headers: {
               'x-identity': 'identity',
-              'x-signature': 'signature'
+              'x-signature': 'signature',
+              'x-service': 'bitcoin'
             }
           };
+
           request(requestOptions, function(err, res, body) {
             should.not.exist(err);
             res.statusCode.should.equal(200);
@@ -116,7 +166,8 @@ describe('ExpressApp', function() {
         };
 
         sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+
         var TestExpressApp = proxyquire(xyExpressApp, {});
 
         start(TestExpressApp, function() {
@@ -124,9 +175,11 @@ describe('ExpressApp', function() {
             url: testHost + ':' + testPort + config.basePath + '/v1/sendmaxinfo?feePerKb=10000&returnInputs=1',
             headers: {
               'x-identity': 'identity',
-              'x-signature': 'signature'
+              'x-signature': 'signature',
+              'x-service': 'bitcoin'
             }
           };
+
           request(requestOptions, function(err, res, body) {
             should.not.exist(err);
             res.statusCode.should.equal(200);
@@ -146,7 +199,8 @@ describe('ExpressApp', function() {
           };
 
           sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+
           var TestExpressApp = proxyquire(xyExpressApp, {});
 
           start(TestExpressApp, function() {
@@ -154,9 +208,11 @@ describe('ExpressApp', function() {
               url: testHost + ':' + testPort + config.basePath + '/v1/balance',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature'
+                'x-signature': 'signature',
+                'x-service': 'bitcoin'
               }
             };
+
             request(reqOpts, function(err, res, body) {
               should.not.exist(err);
               res.statusCode.should.equal(200);
@@ -164,6 +220,7 @@ describe('ExpressApp', function() {
               should.not.exist(args.twoStep);
 
               reqOpts.url += '?twoStep=1';
+
               request(reqOpts, function(err, res, body) {
                 should.not.exist(err);
                 res.statusCode.should.equal(200);
@@ -178,6 +235,7 @@ describe('ExpressApp', function() {
 
       describe('/v1/notifications', function(done) {
         var server, TestExpressApp, clock;
+
         beforeEach(function() {
           clock = sinon.useFakeTimers(2000000000, 'Date');
 
@@ -186,9 +244,11 @@ describe('ExpressApp', function() {
           };
 
           sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(1, null, server);
+          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+
           TestExpressApp = proxyquire(xyExpressApp, {});
         });
+
         afterEach(function() {
           clock.restore();
         });
@@ -199,9 +259,11 @@ describe('ExpressApp', function() {
               url: testHost + ':' + testPort + config.basePath + '/v1/notifications' + '?notificationId=123',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature'
+                'x-signature': 'signature',
+                'x-service': 'bitcoin'
               }
             };
+
             request(requestOptions, function(err, res, body) {
               should.not.exist(err);
               res.statusCode.should.equal(200);
@@ -214,15 +276,18 @@ describe('ExpressApp', function() {
             });
           });
         });
+
         it('should allow custom minTs within limits', function(done) {
           start(TestExpressApp, function() {
             var requestOptions = {
               url: testHost + ':' + testPort + config.basePath + '/v1/notifications' + '?timeSpan=30',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature'
+                'x-signature': 'signature',
+                'x-service': 'bitcoin'
               }
             };
+
             request(requestOptions, function(err, res, body) {
               should.not.exist(err);
               res.statusCode.should.equal(200);
@@ -234,6 +299,7 @@ describe('ExpressApp', function() {
             });
           });
         });
+
         it('should limit minTs to Defaults.MAX_NOTIFICATIONS_TIMESPAN', function(done) {
           start(TestExpressApp, function() {
             var overLimit  = Defaults.MAX_NOTIFICATIONS_TIMESPAN * 2;
@@ -241,7 +307,8 @@ describe('ExpressApp', function() {
               url: testHost + ':' + testPort + config.basePath + '/v1/notifications' + '?timeSpan=' + overLimit ,
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature'
+                'x-signature': 'signature',
+                'x-service': 'bitcoin'
               }
             };
             request(requestOptions, function(err, res, body) {

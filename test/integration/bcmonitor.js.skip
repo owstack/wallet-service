@@ -35,26 +35,18 @@ describe('Blockchain monitor', function() {
   before(function(done) {
     helpers.before(done);
   });
-  after(function(done) {
-    helpers.after(done);
-  });
-  beforeEach(function(done) {
-//    helpers.beforeEach(function(res, server) {
-    helpers.beforeEach(function(newServer) {
-console.log('TEST 0');
-//console.log('TEST '+JSON.stringify(res));
-//console.log('TEST '+Object.keys(res));
-console.log('TEST 1');
-//      storage = res.storage;
-      storage = newServer.storage;
-console.log('TEST 2');
-//      blockchainExplorer = res.blockchainExplorer;
-      blockchainExplorer = newServer.blockchainExplorer;
-console.log('TEST 3');
-      blockchainExplorer.initSocket = sinon.stub().returns(socket);
-console.log('TEST 4');
 
-      helpers.createAndJoinWallet(newServer, 2, 3, function(s, w) {
+  after(function(done) {
+    helpers.after(server, done);
+  });
+
+  beforeEach(function(done) {
+    helpers.beforeEach(function(config) {
+      storage = config.storage;
+      blockchainExplorer = config.blockchainExplorer;
+      blockchainExplorer.initSocket = sinon.stub().returns(socket);
+
+      helpers.createAndJoinWallet(2, 3, function(s, w) {
         server = s;
         wallet = w;
 
