@@ -8,10 +8,10 @@ var defaultRequest = require('request');
 var fs = require('fs');
 var log = require('npmlog');
 var Model = require('./model');
+var MessageBroker = require('./messagebroker');
 var Mustache = require('mustache');
 var path = require('path');
 var sjcl = require('sjcl');
-var Storage = require('./storage');
 var Utils = require('./common/utils');
 var lodash = owsCommon.deps.lodash;
 
@@ -48,15 +48,17 @@ function PushNotificationsService(context, config) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
+  this.LIVENET = this.ctx.Networks.livenet.code;
+  this.TESTNET = this.ctx.Networks.testnet.code;
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
 };
 
-PushNotificationsService.prototype.start = function(cb) {
+PushNotificationsService.prototype.start = function(opts, cb) {
   var self = this;
 
-  self.request = self.config.request || defaultRequest;
+  self.request = opts.request || defaultRequest;
 
   function _readDirectories(basePath, cb) {
     fs.readdir(basePath, function(err, files) {
@@ -92,16 +94,16 @@ PushNotificationsService.prototype.start = function(cb) {
       });
     },
     function(done) {
-      if (self.config.storage) {
-        self.storage = self.config.storage;
+      if (opts.storage) {
+        self.storage = opts.storage;
         done();
       } else {
-        self.storage = new Storage();
+        self.storage = new self.ctx.Storage();
         self.storage.connect(self.config.storageOpts, done);
       }
     },
     function(done) {
-      self.messageBroker = self.config.messageBroker || new MessageBroker(config[self.COIN].messageBrokerOpts);
+      self.messageBroker = opts.messageBroker || new MessageBroker(self.config.messageBrokerOpts);
       self.messageBroker.onMessage(lodash.bind(self._sendPushNotifications, self));
       done();
     },

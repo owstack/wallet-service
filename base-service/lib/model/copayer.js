@@ -1,7 +1,6 @@
 'use strict';
 
 var owsCommon = require('@owstack/ows-common');
-var Address = require('./address');
 var AddressManager = require('./addressmanager');
 var Constants = owsCommon.Constants;
 var sjcl = require('sjcl');
@@ -9,14 +8,13 @@ var util = require('util');
 var Uuid = require('uuid');
 var $ = require('preconditions').singleton();
 
-function Copayer() {};
-
-Copayer._xPubToCopayerId = function(xpub) {
-  var hash = sjcl.hash.sha256.hash(xpub);
-  return sjcl.codec.hex.fromBits(hash);
+function Copayer(context) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
 };
 
-Copayer.create = function(opts) {
+Copayer.create = function(context, opts) {
   opts = opts || {};
   $.checkArgument(opts.xPubKey, 'Missing copayer extended public key')
     .checkArgument(opts.requestPubKey, 'Missing copayer request public key')
@@ -24,7 +22,7 @@ Copayer.create = function(opts) {
 
   opts.copayerIndex = opts.copayerIndex || 0;
 
-  var x = new Copayer();
+  var x = new Copayer(context);
 
   x.version = 2;
   x.createdOn = Math.floor(Date.now() / 1000);
@@ -51,8 +49,8 @@ Copayer.create = function(opts) {
   return x;
 };
 
-Copayer.fromObj = function(obj) {
-  var x = new Copayer();
+Copayer.fromObj = function(context, obj) {
+  var x = new Copayer(context);
 
   x.version = obj.version;
   x.createdOn = obj.createdOn;
@@ -80,11 +78,16 @@ Copayer.fromObj = function(obj) {
   return x;
 };
 
+Copayer._xPubToCopayerId = function(xpub) {
+  var hash = sjcl.hash.sha256.hash(xpub);
+  return sjcl.codec.hex.fromBits(hash);
+};
+
 Copayer.prototype.createAddress = function(wallet, isChange) {
   $.checkState(wallet.isComplete());
 
   var path = this.addressManager.getNewAddressPath(isChange);
-  var address = new Address().derive(wallet.id, wallet.addressType, wallet.publicKeyRing, path, wallet.m, wallet.network, isChange);
+  var address = new this.ctx.Address().derive(wallet.id, wallet.addressType, wallet.publicKeyRing, path, wallet.m, wallet.network, isChange);
   return address;
 };
 

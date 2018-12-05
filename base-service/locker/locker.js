@@ -5,7 +5,7 @@
 var baseConfig = require('../config');
 var Locker = require('locker-server');
 
-var Service = function(config) {
+function Service(config) {
 	this.lockerService = new Locker();	
 
   this.config = config || baseConfig;

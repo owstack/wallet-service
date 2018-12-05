@@ -19,7 +19,7 @@ var DEFAULT_TIMEOUT= 60000; // 60 s
  */
 var RequestList = function(args, cb) {
   $.checkArgument(args.hosts);
-  request = args.request || require('request');
+  var request = args.request || require('request');
 
   if (!lodash.isArray(args.hosts)) {
     args.hosts = [args.hosts];

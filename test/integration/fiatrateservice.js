@@ -11,6 +11,7 @@ var async = require('async');
 var FiatRateService = WalletService.FiatRateService;
 var helpers = require('./helpers');
 var log = require('npmlog');
+var testConfig = require('../testconfig');
 
 log.debug = log.verbose;
 log.level = 'info';
@@ -21,23 +22,26 @@ describe('Fiat rate service', function() {
   before(function(done) {
     helpers.before(done);
   });
+
   after(function(done) {
-    helpers.after(done);
+    done();
   });
+
   beforeEach(function(done) {
     helpers.beforeEach(function() {
-      service = new FiatRateService();
+      service = new FiatRateService(testConfig);
       request = sinon.stub();
       request.get = sinon.stub();
       service.init({
         storage: helpers.getStorage(),
-        request: request,
+        request: request
       }, function(err) {
         should.not.exist(err);
-        service.startCron({}, done);
+        service.startCron(done);
       });
     });
   });
+
   describe('#getRate', function() {
     it('should get current rate', function(done) {
       service.storage.storeFiatRate('BitPay', [{
@@ -54,6 +58,7 @@ describe('Fiat rate service', function() {
         });
       });
     });
+
     it('should get current rate for different currency', function(done) {
       service.storage.storeFiatRate('BitPay', [{
         code: 'USD',

@@ -13,6 +13,7 @@ var helpers = require('./helpers');
 var log = require('npmlog');
 var PushNotificationsService = WalletService.PushNotificationsService;
 var sjcl = require('sjcl');
+var testConfig = require('../testconfig');
 var TestData = require('../testdata');
 var Server = WalletService.Server;
 var lodash = owsCommon.deps.lodash;
@@ -23,11 +24,12 @@ log.level = 'info';
 describe('Push notifications', function() {
   var server, wallet, requestStub, pushNotificationsService, walletId;
 
-  before(function(done) {
+  beforeEach(function(done) {
     helpers.before(done);
   });
-  after(function(done) {
-    helpers.after(done);
+
+  afterEach(function(done) {
+    helpers.after(server, done);
   });
 
   describe('Single wallet', function() {
@@ -41,7 +43,6 @@ describe('Push notifications', function() {
           async.eachSeries(w.copayers, function(copayer, next) {
             helpers.getAuthServer(copayer.id, function(server) {
               async.parallel([
-
                 function(done) {
                   server.savePreferences({
                     email: 'copayer' + (++i) + '@domain.com',
@@ -65,20 +66,22 @@ describe('Push notifications', function() {
             requestStub = sinon.stub();
             requestStub.yields();
 
-            pushNotificationsService = new PushNotificationsService();
-            pushNotificationsService.start({
+            pushNotificationsService = new PushNotificationsService({
+              BTC: {},
               lockOpts: {},
-              messageBroker: server.messageBroker,
-              storage: helpers.getStorage(),
-              request: requestStub,
               pushNotificationsOpts: {
-                templatePath: './lib/templates',
+                templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
                 defaultUnit: 'btc',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
-                authorizationKey: 'secret',
-              },
+                authorizationKey: 'secret'
+              }
+            });
+            pushNotificationsService.start({
+              messageBroker: server.getMessageBroker(),
+              storage: helpers.getStorage(),
+              request: requestStub
             }, function(err) {
               should.not.exist(err);
               done();
@@ -219,20 +222,22 @@ describe('Push notifications', function() {
             requestStub = sinon.stub();
             requestStub.yields();
 
-            pushNotificationsService = new PushNotificationsService();
-            pushNotificationsService.start({
+            pushNotificationsService = new PushNotificationsService({
+              BTC: {},
               lockOpts: {},
-              messageBroker: server.messageBroker,
-              storage: helpers.getStorage(),
-              request: requestStub,
               pushNotificationsOpts: {
-                templatePath: './lib/templates',
+                templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
                 defaultUnit: 'btc',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
-                authorizationKey: 'secret',
-              },
+                authorizationKey: 'secret'
+              }
+            });
+            pushNotificationsService.start({
+              messageBroker: server.getMessageBroker(),
+              storage: helpers.getStorage(),
+              request: requestStub
             }, function(err) {
               should.not.exist(err);
               done();
@@ -360,7 +365,6 @@ describe('Push notifications', function() {
 
         var txpId;
         async.waterfall([
-
           function(next) {
             helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function(tx) {
               next(null, tx);
@@ -405,7 +409,6 @@ describe('Push notifications', function() {
 
         var txp;
         async.waterfall([
-
           function(next) {
             helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function(tx) {
               next(null, tx);
@@ -458,37 +461,45 @@ describe('Push notifications', function() {
   describe('joinWallet', function() {
     beforeEach(function(done) {
       helpers.beforeEach(function(res) {
-        server = new Server();
-        var walletOpts = {
-          name: 'my wallet',
-          m: 1,
-          n: 3,
-          pubKey: TestData.keyPair.pub,
-        };
-        server.createWallet(walletOpts, function(err, wId) {
-          should.not.exist(err);
-          walletId = wId;
-          should.exist(walletId);
-          requestStub = sinon.stub();
-          requestStub.yields();
+        Server({
+          storage: helpers.getStorage()
+          }, testConfig, function(s) {
+          server = s;
 
-          pushNotificationsService = new PushNotificationsService();
-          pushNotificationsService.start({
-            lockOpts: {},
-            messageBroker: server.messageBroker,
-            storage: helpers.getStorage(),
-            request: requestStub,
-            pushNotificationsOpts: {
-              templatePath: './lib/templates',
-              defaultLanguage: 'en',
-              defaultUnit: 'btc',
-              subjectPrefix: '',
-              pushServerUrl: 'http://localhost:8000',
-              authorizationKey: 'secret',
-            },
-          }, function(err) {
+          var walletOpts = {
+            name: 'my wallet',
+            m: 1,
+            n: 3,
+            pubKey: TestData.keyPair.pub,
+          };
+
+          server.createWallet(walletOpts, function(err, wId) {
             should.not.exist(err);
-            done();
+            walletId = wId;
+            should.exist(walletId);
+            requestStub = sinon.stub();
+            requestStub.yields();
+
+            pushNotificationsService = new PushNotificationsService({
+              lockOpts: {},
+              pushNotificationsOpts: {
+                templatePath: './base-service/lib/templates',
+                defaultLanguage: 'en',
+                defaultUnit: 'btc',
+                subjectPrefix: '',
+                pushServerUrl: 'http://localhost:8000',
+                authorizationKey: 'secret'
+              }
+            });
+
+            pushNotificationsService.start({
+              messageBroker: server.getMessageBroker(),
+              storage: server.getStorage(),
+              request: requestStub
+            }, function(err) {
+              should.not.exist(err);
+              done();
+            });
           });
         });
       });
@@ -514,6 +525,7 @@ describe('Push notifications', function() {
               platform: 'Android',
             }, next);
           });
+
         });
       }, function(err) {
         should.not.exist(err);

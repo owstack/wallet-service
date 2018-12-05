@@ -43,11 +43,13 @@ describe('Wallet', function() {
         });
       }).should.throw('Variable should be a Number.');
     });
+
     it('read a wallet', function() {
       var w = Wallet.fromObj(testWallet);
       w.isComplete().should.be.true;
     });
   });
+
   describe('#createAddress', function() {
     it('create an address', function() {
       var w = Wallet.fromObj(testWallet);
@@ -58,7 +60,6 @@ describe('Wallet', function() {
     });
   });
 });
-
 
 var testWallet = {
   addressManager: {

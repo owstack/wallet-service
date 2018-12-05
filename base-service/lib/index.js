@@ -5,25 +5,25 @@
  * @module Base Service
  */
 
-var Lib = {};
+var WalletService = {};
 
-Lib.BlockchainExplorer = require('./blockchainexplorer');
-Lib.BlockchainExplorers = require('./blockchainexplorers');
-Lib.BlockchainMonitor = require('./blockchainmonitor');
-Lib.Common = require('./common');
-Lib.EmailService = require('./emailservice');
-Lib.Errors = require('./errors');
-Lib.ExpressApp = require('./expressapp');
-Lib.FiatRateProviders = require('./fiatrateproviders');
-Lib.FiatRateService = require('./fiatrateservice');
-Lib.LocalLock = require('./locallock');
-Lib.Lock = require('./lock');
-Lib.MessageBroker = require('./messagebroker');
-Lib.Model = require('./model');
-Lib.NotificationBroadcaster = require('./notificationbroadcaster');
-Lib.PushNotificationsService = require('./pushnotificationsservice');
-Lib.Server = require('./server');
-Lib.Stats = require('./stats');
-Lib.Storage = require('./storage');
+WalletService.BlockchainExplorer = require('./blockchainexplorer');
+WalletService.BlockchainExplorers = require('./blockchainexplorers');
+WalletService.BlockchainMonitor = require('./blockchainmonitor');
+WalletService.Common = require('./common');
+WalletService.EmailService = require('./emailservice');
+WalletService.Errors = require('./errors');
+WalletService.ExpressApp = require('./expressapp');
+WalletService.FiatRateProviders = require('./fiatrateproviders');
+WalletService.FiatRateService = require('./fiatrateservice');
+WalletService.LocalLock = require('./locallock');
+WalletService.Lock = require('./lock');
+WalletService.MessageBroker = require('./messagebroker');
+WalletService.Model = require('./model');
+WalletService.NotificationBroadcaster = require('./notificationbroadcaster');
+WalletService.PushNotificationsService = require('./pushnotificationsservice');
+WalletService.Server = require('./server');
+WalletService.Stats = require('./stats');
+WalletService.Storage = require('./storage');
 
-module.exports = Lib;
+module.exports = WalletService;

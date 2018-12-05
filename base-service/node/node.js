@@ -1,45 +1,56 @@
 'use strict';
 
 var async = require('async');
-
-var EmailService = require('../lib/emailservice');
+var baseConfig = require('../config');
 var EventEmitter = require('events').EventEmitter;
-
+var ExpressApp = require('../lib/expressapp');
 var fs = require('fs');
 var https = require('https');
 var http = require('http');
+var io = require('socket.io');
 var Locker = require('locker-server');
-var util = require('util');
+var inherits = require('inherits');
 
 /**
  * A Node Service module
- * @param {Object} options
- * @param {Node} options.node - A reference to the Node instance
- * @param {Boolean} options.https - Enable https for this module, defaults to node settings.
- * @param {Number} options.wsPort - Port for wallet-service API
- * @param {Number} options.messageBrokerPort - Port for wallet-service message broker
- * @param {Number} options.lockerPort - Port for wallet-service locker port
+ * @param {Object} config - wallet-service configuration.
+ * @param {Object} opts - Overriding options for this node.
+ * @param {Boolean} opts.https - Enable https for this module, defaults to node settings.
+ * @param {Number} opts.lockerPort - Port for locker service.
+ * @param {Number} opts.wsPort - Port for wallet-service API.
+ * @param {Object} opts.httpsOptions
+ * @param {String} opts.httpsOptions.cert - HTTPS certificate file.
+ * @param {String} opts.httpsOptions.CAinter1 - An HTTPS intermediate certificate file.
+ * @param {String} opts.httpsOptions.CAinter2 - An HTTPS intermediate certificate file.
+ * @param {String} opts.httpsOptions.CAroot - A HTTPS root certificate file.
+ * @param {String} opts.httpsOptions.key - HTTPS key file.
  */
-var Service = function(context, options) {
+function Service(context, config, opts) {
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
 
-  EventEmitter.call(this);
-  this.config = options.config || this.ctx.baseConfig;
-  this.node = options.node;
-  this.https = options.https || this.node.https;
-  this.httpsOptions = options.httpsOptions || this.node.httpsOptions;
-  this.wsPort = options.wsPort || this.config.port;
+  // Set some frequently used contant values based on context.
+  this.COIN = this.ctx.Networks.coin;
 
-  this.messageBrokerPort = options.messageBrokerPort || 3380;
+  EventEmitter.call(this);
+
+  this.config = config || baseConfig;
+  this.https = opts.https || this.config.https;
+  this.httpsOptions = opts.httpsOptions || this.config.httpsOptions;
+  this.wsPort = opts.wsPort || this.config.port;
+
+  if (this.config.messageBrokerOpts) {
+    this.messageBrokerPort = this.config.messageBrokerOpts.port;
+  }
+  this.messageBrokerPort = opts.messageBrokerPort || this.messageBrokerPort || 3380;
+
   if (this.config.lockOpts) {
     this.lockerPort = this.config.lockOpts.lockerServer.port;
   }
-  this.lockerPort = options.lockerPort || this.lockerPort;
+  this.lockerPort = opts.lockerPort || this.lockerPort || 3231;
 };
-
-util.inherits(Service, EventEmitter);
+inherits(Service, EventEmitter);
 
 Service.dependencies = ['@owstack/explorer-api'];
 
@@ -69,19 +80,11 @@ Service.prototype._readHttpsOptions = function() {
 };
 
 /**
- * Will get the configuration settings.
- * @returns {Object}
- */
-Service.prototype._getConfiguration = function() {
-  return this.config;
-};
-
-/**
  * Will start the HTTP web server and socket.io for the wallet service.
  */
 Service.prototype._startWalletService = function(config, next) {
   var self = this;
-  var expressApp = new this.ctx.ExpressApp();
+  var expressApp = new ExpressApp(config);
 
   if (self.https) {
     var serverOpts = self._readHttpsOptions();
@@ -90,7 +93,7 @@ Service.prototype._startWalletService = function(config, next) {
     self.server = http.Server(expressApp.app);
   }
 
-  expressApp.start(config, function(err){
+  expressApp.start(function(err) {
     if (err) {
       return next(err);
     }
@@ -103,7 +106,6 @@ Service.prototype._startWalletService = function(config, next) {
  */
 Service.prototype.start = function(done) {
   var self = this;
-  var config = this._getConfiguration();
 
   // Locker Server
   var locker = new Locker();
@@ -120,20 +122,20 @@ Service.prototype.start = function(done) {
   async.series([
     function(next) {
       // Blockchain Monitor
-      var blockchainMonitor = new this.ctx.BlockchainMonitor();
-      blockchainMonitor.start(config, next);
+      var blockchainMonitor = new self.ctx.BlockchainMonitor(self.config);
+      blockchainMonitor.start(null, next);
     },
     function(next) {
       // Email Service
-      if (config.emailOpts) {
-        var emailService = new EmailService();
-        emailService.start(config, next);
+      if (self.config[self.COIN].emailOpts) {
+        var emailService = new self.ctx.EmailService(self.config);
+        emailService.start(null, next);
       } else {
         setImmediate(next);
       }
     },
     function(next) {
-      self._startWalletService(config, next);
+      self._startWalletService(self.config, next);
     }
   ], done);
 

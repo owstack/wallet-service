@@ -8,7 +8,7 @@ var btcLib = require('@owstack/btc-lib');
 var Address = btcLib.Address;
 var Defaults = require('../common/defaults');
 var Networks = btcLib.Networks;
-var Transaction = btcLib.Transction;
+var Transaction = btcLib.Transaction;
 var inherits = require('inherits');
 
 function BtcTxProposal(opts) {
@@ -34,6 +34,8 @@ Object.keys(BaseTxProposal).forEach(function(key) {
 BtcTxProposal.fromObj = function(obj) {
 	var context = {
 		Address: Address,
+		Defaults: Defaults,
+		Networks: Networks,
 		Transaction: Transaction
 	};
 

@@ -6,16 +6,19 @@ var baseConfig = require('../config');
 var Defaults = require('./common/defaults');
 var log = require('npmlog');
 var request = require('request');
-var Storage = require('./storage');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
-function FiatRateService(config) {
+function FiatRateService(context, config) {
   if (!(this instanceof FiatRateService)){
     return new FiatRateService(context);
   }
+
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
+  this.ctx = context;
 
   this.config = config || baseConfig;
 };
@@ -36,18 +39,18 @@ FiatRateService.prototype.start = function(cb) {
   });
 };
 
-FiatRateService.prototype.init = function(cb) {
+FiatRateService.prototype.init = function(opts, cb) {
   var self = this;
 
-  self.request = self.config.request || request;
+  self.request = opts.request || request;
 
   async.parallel([
     function(done) {
-      if (self.config.storage) {
-        self.storage = self.config.storage;
+      if (opts.storage) {
+        self.storage = opts.storage;
         done();
       } else {
-        self.storage = new Storage();
+        self.storage = new self.ctx.Storage();      
         self.storage.connect(self.config.storageOpts, done);
       }
     },
@@ -127,7 +130,7 @@ FiatRateService.prototype.getRate = function(opts, cb) {
   opts = opts || {};
 
   var now = Date.now();
-  var provider = opts.provider;
+  var provider = opts.provider || Defaults.FIAT_RATE_PROVIDER;
   var ts = (lodash.isNumber(opts.ts) || lodash.isArray(opts.ts)) ? opts.ts : now;
 
   async.map([].concat(ts), function(ts, cb) {

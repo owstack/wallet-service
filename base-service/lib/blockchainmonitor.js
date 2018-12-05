@@ -28,8 +28,9 @@ function BlockchainMonitor(context, config) {
   this.config = config || baseConfig;
 };
 
-BlockchainMonitor.prototype.start = function(cb) {
+BlockchainMonitor.prototype.start = function(opts, cb) {
   var self = this;
+  opts = opts || {};
 
   async.parallel([
     function(done) {
@@ -58,8 +59,8 @@ BlockchainMonitor.prototype.start = function(cb) {
       done();
     },
     function(done) {
-      if (self.config.storage) {
-        self.storage = self.config.storage;
+      if (opts.storage) {
+        self.storage = opts.storage;
         done();
       } else {
         self.storage = new Storage();
@@ -67,7 +68,7 @@ BlockchainMonitor.prototype.start = function(cb) {
       }
     },
     function(done) {
-      self.messageBroker = self.config[self.COIN].messageBroker || new MessageBroker(self.config[self.COIN].messageBrokerOpts);
+      self.messageBroker = opts.messageBroker || new MessageBroker(self.config.messageBrokerOpts);
       done();
     },
     function(done) {
@@ -135,6 +136,10 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
           type: 'NewOutgoingTxByThirdParty',
           data: args,
           walletId: walletId,
+          targetNetworks: {
+            livenet: self.LIVENET,
+            testnet: self.TESTNET
+          }
         });
         self._storeAndBroadcastNotification(notification);
       });
@@ -187,6 +192,10 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
             amount: out.amount,
           },
           walletId: walletId,
+          targetNetworks: {
+            livenet: self.LIVENET,
+            testnet: self.TESTNET
+          }
         });
         self.storage.softResetTxHistoryCache(walletId, function() {
           self._updateActiveAddresses(address, function() {
@@ -227,6 +236,10 @@ BlockchainMonitor.prototype._notifyNewBlock = function(network, hash) {
       hash: hash,
       network: network,
     },
+    targetNetworks: {
+      livenet: self.LIVENET,
+      testnet: self.TESTNET
+    }
   });
 
   self.storage.softResetAllTxHistoryCache(function() {
@@ -255,6 +268,10 @@ BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
             network: network,
             // TODO: amount
           },
+          targetNetworks: {
+            livenet: self.LIVENET,
+            testnet: self.TESTNET
+          }
         });
         self._storeAndBroadcastNotification(notification, cb);
       });

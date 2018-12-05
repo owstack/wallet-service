@@ -72,6 +72,7 @@ describe('Storage', function() {
         })
       });
     });
+
     it('should not return error if wallet not found', function(done) {
       storage.fetchWallet('123', function(err, w) {
         should.not.exist(err);
@@ -112,6 +113,7 @@ describe('Storage', function() {
         })
       });
     });
+
     it('should not return error if copayer not found', function(done) {
       storage.fetchCopayerLookup('2', function(err, lookup) {
         should.not.exist(err);
@@ -172,6 +174,7 @@ describe('Storage', function() {
         });
       });
     });
+
     it('should fetch tx', function(done) {
       storage.fetchTx('123', proposals[0].id, function(err, tx) {
         should.not.exist(err);
@@ -182,6 +185,7 @@ describe('Storage', function() {
         done();
       });
     });
+
     it('should fetch tx by hash', function(done) {
       storage.fetchTxByHash('txid0', function(err, tx) {
         should.not.exist(err);
@@ -204,6 +208,7 @@ describe('Storage', function() {
         done();
       });
     });
+    
     it('should remove tx', function(done) {
       storage.removeTx('123', proposals[0].id, function(err) {
         should.not.exist(err);

@@ -8,10 +8,11 @@ var Service = require('../');
 var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
-var Utils = WalletService.Utils;
+var Utils = WalletService.Common.Utils;
 var lodash = owsCommon.deps.lodash;
 
 describe('Utils', function() {
+
   describe('#getMissingFields', function() {
     it('should check required fields', function() {
       var obj = {
@@ -48,6 +49,7 @@ describe('Utils', function() {
         Utils.getMissingFields(obj, f.args).should.deep.equal(f.check);
       });
     });
+
     it('should fail to check required fields on non-object', function() {
       var obj = 'dummy';
       Utils.getMissingFields(obj, 'name').should.deep.equal(['name']);
@@ -67,16 +69,19 @@ describe('Utils', function() {
       should.exist(res);
       res.should.equal(false);
     });
+
     it('should fail to verify a null signature', function() {
       var res = Utils.verifyMessage('hola', null, '02555a2d45e309c00cc8c5090b6ec533c6880ab2d3bc970b3943def989b3373f16');
       should.exist(res);
       res.should.equal(false);
     });
+
     it('should fail to verify with wrong pubkey', function() {
       var res = Utils.verifyMessage('hola', '3045022100d6186930e4cd9984e3168e15535e2297988555838ad10126d6c20d4ac0e74eb502201095a6319ea0a0de1f1e5fb50f7bf10b8069de10e0083e23dbbf8de9b8e02785', '02555a2d45e309c00cc8c5090b6ec533c6880ab2d3bc970b3943def989b3373f16');
       should.exist(res);
       res.should.equal(false);
     });
+
     it('should verify', function() {
       var res = Utils.verifyMessage('hola', '3045022100d6186930e4cd9984e3168e15535e2297988555838ad10126d6c20d4ac0e74eb502201095a6319ea0a0de1f1e5fb50f7bf10b8069de10e0083e23dbbf8de9b8e02785', '03bec86ad4a8a91fe7c11ec06af27246ec55094db3d86098b7d8b2f12afe47627f');
       should.exist(res);

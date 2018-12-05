@@ -14,8 +14,6 @@ function MessageBroker(config) {
   var self = this;
   config = config || baseConfig;
 
-  this.targetNetworks = config.targetNetworks;
-
   if (config.messageBrokerServer) {
     var url = config.messageBrokerServer.url;
     this.remote = true;
@@ -44,10 +42,7 @@ MessageBroker.prototype.send = function(data) {
 };
 
 MessageBroker.prototype.onMessage = function(handler) {
-  this.on('msg', function(notification) {
-    notification.targetNetworks = this.targetNetworks;
-    handler(notification);
-  });
+  this.on('msg', handler);
 };
 
 module.exports = MessageBroker;

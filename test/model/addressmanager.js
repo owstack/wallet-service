@@ -10,12 +10,14 @@ var WalletService = Service.BTC.WalletService;
 var AddressManager = WalletService.Model.AddressManager;
 
 describe('AddressManager', function() {
+
   describe('#create', function() {
     it('should create BIP45 address manager by default', function() {
       var am = AddressManager.create();
       am.derivationStrategy.should.equal('BIP45');
     });
   });
+
   describe('#fromObj', function() {
     it('should assume legacy address manager uses BIP45', function() {
       var obj = {
@@ -29,12 +31,14 @@ describe('AddressManager', function() {
       am.getCurrentAddressPath(false).should.equal('m/4/0/2');
     });
   });
+
   describe('#supportsCopayerBranches', function() {
     it('should return true for BIP45 & false for BIP44', function() {
       AddressManager.supportsCopayerBranches('BIP45').should.be.true;
       AddressManager.supportsCopayerBranches('BIP44').should.be.false;
     });
   });
+
   describe('BIP45', function() {
     describe('#getCurrentAddressPath', function() {
       it('should return a valid BIP32 path for given index', function() {
@@ -45,11 +49,13 @@ describe('AddressManager', function() {
         am.getCurrentAddressPath(true).should.equal('m/4/1/0');
       });
     });
+
     it('should return a valid BIP32 path for defaut Index', function() {
       var am = AddressManager.create({});
       am.getCurrentAddressPath(false).should.equal('m/2147483647/0/0');
       am.getCurrentAddressPath(true).should.equal('m/2147483647/1/0');
     });
+
     describe('#getNewAddressPath', function() {
       it('should return a new valid BIP32 path for given index', function() {
         var am = AddressManager.create({
@@ -61,6 +67,7 @@ describe('AddressManager', function() {
         am.getNewAddressPath(true).should.equal('m/2/1/1');
       });
     });
+
     describe('#rewindIndex', function() {
       it('should rewind main index', function() {
         var am = AddressManager.create({});
@@ -70,6 +77,7 @@ describe('AddressManager', function() {
         am.rewindIndex(false, 2);
         am.getNewAddressPath(false).should.equal('m/2147483647/0/1');
       });
+
       it('should rewind change index', function() {
         var am = AddressManager.create({});
         am.getNewAddressPath(true).should.equal('m/2147483647/1/0');
@@ -78,6 +86,7 @@ describe('AddressManager', function() {
         am.rewindIndex(true, 2);
         am.getNewAddressPath(true).should.equal('m/2147483647/1/0');
       });
+
       it('should stop at 0', function() {
         var am = AddressManager.create({});
         am.getNewAddressPath(false).should.equal('m/2147483647/0/0');
@@ -86,6 +95,7 @@ describe('AddressManager', function() {
       });
     });
   });
+
   describe('BIP44', function() {
     describe('#getCurrentAddressPath', function() {
       it('should return first address path', function() {
@@ -95,6 +105,7 @@ describe('AddressManager', function() {
         am.getCurrentAddressPath(false).should.equal('m/0/0');
         am.getCurrentAddressPath(true).should.equal('m/1/0');
       });
+
       it('should return address path independently of copayerIndex', function() {
         var am = AddressManager.create({
           derivationStrategy: 'BIP44',
@@ -104,6 +115,7 @@ describe('AddressManager', function() {
         am.getCurrentAddressPath(true).should.equal('m/1/0');
       });
     });
+
     describe('#getNewAddressPath', function() {
       it('should return a new path', function() {
         var am = AddressManager.create({
@@ -115,6 +127,7 @@ describe('AddressManager', function() {
         am.getNewAddressPath(true).should.equal('m/1/1');
       });
     });
+
     describe('#rewindIndex', function() {
       it('should rewind main index', function() {
         var am = AddressManager.create({
@@ -126,6 +139,7 @@ describe('AddressManager', function() {
         am.rewindIndex(false, 2);
         am.getNewAddressPath(false).should.equal('m/0/1');
       });
+
       it('should rewind change index', function() {
         var am = AddressManager.create({
           derivationStrategy: 'BIP44',
@@ -136,6 +150,7 @@ describe('AddressManager', function() {
         am.rewindIndex(true, 2);
         am.getNewAddressPath(true).should.equal('m/1/0');
       });
+
       it('should stop at 0', function() {
         var am = AddressManager.create({
           derivationStrategy: 'BIP44',

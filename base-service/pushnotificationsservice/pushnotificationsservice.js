@@ -8,7 +8,7 @@ var log = require('npmlog');
 log.debug = log.verbose;
 log.level = 'debug';
 
-var Service = function(context, config) {
+function Service(context, config) {
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;

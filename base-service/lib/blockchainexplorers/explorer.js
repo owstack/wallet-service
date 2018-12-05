@@ -55,7 +55,6 @@ Explorer.prototype.getConnectionInfo = function() {
  * Retrieve a list of unspent outputs associated with an address or set of addresses
  */
 Explorer.prototype.getUtxos = function(addresses, cb) {
-
   var args = {
     method: 'POST',
     path: this.apiPrefix + '/addrs/utxo',

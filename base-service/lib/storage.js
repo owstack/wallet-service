@@ -241,6 +241,7 @@ Storage.prototype.fetchTx = function(walletId, txProposalId, cb) {
     if (!result) {
       return cb();
     }
+
     return self._completeTxData(walletId, self.ctx.TxProposal.fromObj(result), cb);
   });
 };

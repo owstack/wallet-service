@@ -184,23 +184,19 @@ ExpressApp.prototype.start = function(cb) {
       BtcWalletService = require('../../btc-service').WalletService;
     }
 
-    var config = lodash.cloneDeep(self.config);
-    opts.addlConfig = opts.addlConfig || {};
-    lodash.forEach(Object.keys(opts.addlConfig), function(k) {
-      config[k] = opts.addlConfig[k];
-    });
-
     res.setHeader('x-service', req.headers['x-service']);
     res.setHeader('x-service-version', BtcWalletService.Server.getServiceVersion());
+
+    opts.serviceOpts = opts.serviceOpts || {};
 
     if (opts.serviceClassOnly) {
       return cb(BtcWalletService);
     }
 
     if (auth) {
-      BtcWalletService.Server.getInstanceWithAuth(config, auth, cb);
+      BtcWalletService.Server.getInstanceWithAuth(opts.serviceOpts, self.config, auth, cb);
     } else {
-      BtcWalletService.Server.getInstance(config, cb);
+      BtcWalletService.Server.getInstance(opts.serviceOpts, self.config, cb);
     }
   };
 
@@ -215,11 +211,7 @@ ExpressApp.prototype.start = function(cb) {
       BchWalletService = require('../../bch-service').WalletService;
     }
 
-    var config = lodash.cloneDeep(self.config);
-    opts.addlConfig = opts.addlConfig || {};
-    lodash.forEach(Object.keys(opts.addlConfig), function(k) {
-      config[k] = opts.addlConfig[k];
-    });
+    opts.serviceOpts = opts.serviceOpts || {};
 
     res.setHeader('x-service', req.headers['x-service']);
     res.setHeader('x-service-version', BchWalletService.Server.getServiceVersion());
@@ -229,9 +221,9 @@ ExpressApp.prototype.start = function(cb) {
     }
 
     if (auth) {
-      BchWalletService.Server.getInstanceWithAuth(config, auth, cb);
+      BchWalletService.Server.getInstanceWithAuth(opts.serviceOpts, config, auth, cb);
     } else {
-      BchWalletService.Server.getInstance(config, cb);
+      BchWalletService.Server.getInstance(opts.serviceOpts, config, cb);
     }
   };
 
@@ -246,23 +238,19 @@ ExpressApp.prototype.start = function(cb) {
       LtcWalletService = require('../../ltc-service').WalletService;
     }
 
-    var config = lodash.cloneDeep(self.config);
-    opts.addlConfig = opts.addlConfig || {};
-    lodash.forEach(Object.keys(opts.addlConfig), function(k) {
-      config[k] = opts.addlConfig[k];
-    });
-
     res.setHeader('x-service', req.headers['x-service']);
     res.setHeader('x-service-version', LtcWalletService.Server.getServiceVersion());
+
+    opts.serviceOpts = opts.serviceOpts || {};
 
     if (opts.serviceClassOnly) {
       return cb(LtcWalletService);
     }
 
     if (auth) {
-      LtcWalletService.Server.getInstanceWithAuth(config, auth, cb);
+      LtcWalletService.Server.getInstanceWithAuth(opts.serviceOpts, config, auth, cb);
     } else {
-      LtcWalletService.Server.getInstance(config, cb);
+      LtcWalletService.Server.getInstance(opts.serviceOpts, config, cb);
     }
   };
 
@@ -284,7 +272,7 @@ ExpressApp.prototype.start = function(cb) {
     $.checkArgument(req && res && cb);
 
     opts = opts || {};
-    opts.addlConfig = {
+    opts.serviceOpts = {
       clientVersion: req.header('x-client-version')
     };
 
@@ -360,7 +348,6 @@ ExpressApp.prototype.start = function(cb) {
   router.post('/v2/wallets/', createWalletLimiter, function(req, res) {
     try {
       getServer(req, res, function(server) {
-console.log('HERE '+server);
         server.createWallet(req.body, function(err, walletId) {
           if (err) return returnError(err, res, req);
           res.json({

@@ -3,6 +3,7 @@
 var Model = {};
 
 Model.Address = require('./address');
+Model.AddressManager = require('./addressmanager');
 Model.Copayer = require('./copayer');
 Model.Email = require('./email');
 Model.Notification = require('./notification');

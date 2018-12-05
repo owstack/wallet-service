@@ -8,7 +8,7 @@ var log = require('npmlog');
 
 log.debug = log.verbose;
 
-var Service = function(config) {
+function Service(config) {
   this.config = config || baseConfig;
 	this.fiatRateService = new FiatRateService(this.config);
 };
@@ -23,6 +23,8 @@ Service.prototype.start = function() {
 	});
 }
 
-// Start the service with base configuration (default).
-var service = new Service();
-service.start();
+if (require.main === module) {
+	throw 'The base fiat rate service cannot be started from the command line';
+}
+
+module.exports = Service;

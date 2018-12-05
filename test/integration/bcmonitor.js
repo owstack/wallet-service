@@ -41,26 +41,29 @@ describe('Blockchain monitor', function() {
   });
 
   beforeEach(function(done) {
-    helpers.beforeEach(function(config) {
-      storage = config.storage;
-      blockchainExplorer = config.blockchainExplorer;
+    helpers.beforeEach(function(err, res) {
+      storage = res.storage;
+      blockchainExplorer = res.blockchainExplorer;
       blockchainExplorer.initSocket = sinon.stub().returns(socket);
 
       helpers.createAndJoinWallet(2, 3, function(s, w) {
         server = s;
         wallet = w;
 
-        var bcmonitor = new BlockchainMonitor();
-
         var blockchainExplorers = {};
         blockchainExplorers['testnet'] = blockchainExplorer;
         blockchainExplorers['livenet'] = blockchainExplorer;
 
-        bcmonitor.start({
+        var bcmonitor = new BlockchainMonitor({
           lockOpts: {},
-          messageBroker: server.messageBroker,
-          storage: storage,
-          blockchainExplorers: blockchainExplorers,
+          BTC: {
+            messageBroker: server.getMessageBroker(),
+            blockchainExplorers: blockchainExplorers
+          }
+        });
+
+        bcmonitor.start({
+          storage: storage
         }, function(err) {
           should.not.exist(err);
           done();

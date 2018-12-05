@@ -11,7 +11,6 @@ var Model = require('./model');
 var Mustache = require('mustache');
 var nodemailer = require('nodemailer');
 var path = require('path');
-var Storage = require('./storage');
 var Utils = require('./common/utils');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
@@ -62,13 +61,16 @@ function EmailService(context, config) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
+  this.LIVENET = this.ctx.Networks.livenet.code;
+  this.TESTNET = this.ctx.Networks.testnet.code;
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
 };
 
-EmailService.prototype.start = function(cb) {
+EmailService.prototype.start = function(opts, cb) {
   var self = this;
+  opts = opts || {};
 
   function _readDirectories(basePath, cb) {
     fs.readdir(basePath, function(err, files) {
@@ -83,15 +85,15 @@ EmailService.prototype.start = function(cb) {
     });
   };
 
-  self.defaultLanguage = self.config.emailOpts.defaultLanguage || 'en';
-  self.defaultUnit = self.config.emailOpts.defaultUnit || 'btc';
-  self.templatePath = path.normalize((self.config.emailOpts.templatePath || (__dirname + '/templates')) + '/');
-  self.publicTxUrlTemplate = self.config.emailOpts.publicTxUrlTemplate || {};
-  self.subjectPrefix = self.config.emailOpts.subjectPrefix || '[Wallet service]';
-  self.from = self.config.emailOpts.from;
+  var emailOpts = self.config[self.COIN].emailOpts;
+  self.defaultLanguage = emailOpts.defaultLanguage || 'en';
+  self.defaultUnit = emailOpts.defaultUnit || 'btc';
+  self.templatePath = path.normalize((emailOpts.templatePath || (__dirname + '/templates')) + '/');
+  self.publicTxUrlTemplate = emailOpts.publicTxUrlTemplate || {};
+  self.subjectPrefix = emailOpts.subjectPrefix || '[Wallet service]';
+  self.from = emailOpts.from;
 
   async.parallel([
-
     function(done) {
       _readDirectories(self.templatePath, function(err, res) {
         self.availableLanguages = res;
@@ -99,25 +101,25 @@ EmailService.prototype.start = function(cb) {
       });
     },
     function(done) {
-      if (self.config.storage) {
-        self.storage = self.config.storage;
+      if (opts.storage) {
+        self.storage = opts.storage;
         done();
       } else {
-        self.storage = new Storage();
+        self.storage = new self.ctx.Storage();
         self.storage.connect(self.config.storageOpts, done);
       }
     },
     function(done) {
-      self.messageBroker = self.config.messageBroker || new MessageBroker(self.config[self.COIN].messageBrokerOpts);
+      self.messageBroker = opts.messageBroker || new MessageBroker(self.config.messageBrokerOpts);
       self.messageBroker.onMessage(lodash.bind(self.sendEmail, self));
       done();
     },
     function(done) {
-      self.lock = self.config.lock || new Lock(self.config.lockOpts);
+      self.lock = opts.lock || new Lock(self.config.lockOpts);
       done();
     },
     function(done) {
-      self.mailer = self.config.mailer || nodemailer.createTransport(self.config.emailOpts);
+      self.mailer = self.config.mailer || nodemailer.createTransport(self.config[self.COIN].emailOpts);
       done();
     },
   ], function(err) {
@@ -253,7 +255,8 @@ EmailService.prototype._getDataForTemplate = function(notification, recipient, c
     }
 
     if (lodash.includes(['NewIncomingTx', 'NewOutgoingTx'], notification.type) && data.txid) {
-      var urlTemplate = self.publicTxUrlTemplate[wallet.network];
+      var networkAlias = self.ctx.Networks.get(wallet.network).alias;
+      var urlTemplate = self.publicTxUrlTemplate[networkAlias];
       if (urlTemplate) {
         try {
           data.urlForTx = Mustache.render(urlTemplate, data);
@@ -333,7 +336,6 @@ EmailService.prototype._checkShouldSendEmail = function(notification, cb) {
 
 EmailService.prototype.sendEmail = function(notification, cb) {
   var self = this;
-
   cb = cb || function() {};
 
   var emailType = EMAIL_TYPES[notification.type];

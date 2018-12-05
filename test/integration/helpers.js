@@ -9,6 +9,7 @@ var WalletService = Service.BTC.WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var btcLib = require('@owstack/btc-lib');
+var Networks = btcLib.Networks;
 var keyLib = require('@owstack/key-lib');
 var async = require('async');
 var Constants = owsCommon.Constants;
@@ -19,6 +20,7 @@ var HDPublicKey = keyLib.HDPublicKey;
 var log = require('npmlog');
 var PrivateKey = keyLib.PrivateKey;
 var Storage = WalletService.Storage;
+var testConfig = require('../testconfig');
 var TestData = require('../testdata');
 var tingodb = require('tingodb')({memStore: true});
 var Utils = WalletService.Common.Utils;
@@ -35,7 +37,6 @@ log.debug = log.verbose;
 helpers.CLIENT_VERSION = 'bwc-2.0.0';
 
 helpers.before = function(cb) {
-console.log('HELPERS BEFORE STARTING ...');
   function getDb(cb) {
     if (useMongoDb) {
       var mongodb = require('mongodb');
@@ -57,30 +58,24 @@ console.log('HELPERS BEFORE STARTING ...');
 };
 
 helpers.beforeEach = function(cb) {
-console.log('HELPERS BEFORE EACH STARTING ...', !storage.db);
   if (!storage.db) {
-    return cb();
+    return cb('Error - no storage for test');
   }
   storage.db.dropDatabase(function(err) {
     if (err) {
       return cb(err);
     }
     blockchainExplorer = sinon.stub();
-    var config = {
-      storage: storage,
-      blockchainExplorer: blockchainExplorer,
-      request: sinon.stub()
-    };
 
-    Server.configure(config, function() {
-console.log('HELPERS BEFORE EACH configured server ...');
-      cb(config);
+    cb(null, {
+      blockchainExplorer: blockchainExplorer,
+      request: sinon.stub(),
+      storage: storage
     });
   });
 };
 
 helpers.after = function(server, cb) {
-console.log('HELPERS AFTER');
   server.shutDown(cb);
 };
 
@@ -107,20 +102,22 @@ helpers.getAuthServer = function(copayerId, cb) {
   var verifyStub = sinon.stub(Server.prototype, '_verifySignature');
   verifyStub.returns(true);
 
-  Server.getInstanceWithAuth({
-    clientVersion: helpers.CLIENT_VERSION
-  }, {
+  var opts = {
+    blockchainExplorer: blockchainExplorer,
+    request: sinon.stub(),
+    storage: storage
+  };
+
+  Server.getInstanceWithAuth(opts, testConfig, {
     copayerId: copayerId,
     message: 'dummy',
     signature: 'dummy'
   }, function(err, server) {
-console.log('CLIENT VERSION', server.clientVersion);
     verifyStub.restore();
     if (err || !server) {
       throw new Error('Could not login as copayerId ' + copayerId + ' err: ' + err);
     }
     return cb(server);
-
   });
 };
 
@@ -172,8 +169,13 @@ helpers.createAndJoinWallet = function(m, n, opts, cb) {
   }
   opts = opts || {};
 
-  Server(null, function(server) {
-console.log('CREATE AND JOIN - server created');
+  var serverOpts = {
+    blockchainExplorer: blockchainExplorer,
+    storage: storage,
+    request: sinon.stub()
+  };
+
+  Server(serverOpts, testConfig, function(server) {
     var copayerIds = [];
     var offset = opts.offset || 0;
 
@@ -189,15 +191,12 @@ console.log('CREATE AND JOIN - server created');
       walletOpts.supportBIP44AndP2PKH = opts.supportBIP44AndP2PKH;
     }
 
-console.log('CREATE AND JOIN - creating wallet ...');
     server.createWallet(walletOpts, function(err, walletId) {
-console.log('CREATE AND JOIN - wallet created ', walletId);
       if (err) {
         return cb(err);
       }
 
       async.each(lodash.range(n), function(i, cb) {
-console.log('CREATE AND JOIN - LOOP ', i);
         var copayerData = TestData.copayers[i + offset];
         var copayerOpts = helpers.getSignedCopayerOpts({
           walletId: walletId,
@@ -211,19 +210,14 @@ console.log('CREATE AND JOIN - LOOP ', i);
           copayerOpts.supportBIP44AndP2PKH = opts.supportBIP44AndP2PKH;
         }
 
-console.log('CREATE AND JOIN - joining wallet ... ');
         server.joinWallet(copayerOpts, function(err, result) {
-console.log('CREATE AND JOIN - done joining wallet ... ');
           should.not.exist(err);
           copayerIds.push(result.copayerId);
-console.trace();
           return cb(err);
         });
       }, function(err) {
-console.log('CREATE AND JOIN - AFTER ');
-
         if (err) {
-          return new Error('Could not generate wallet');
+          return cb('Could not generate wallet');
         }
 
         helpers.getAuthServer(copayerIds[0], function(s) {
@@ -231,7 +225,6 @@ console.log('CREATE AND JOIN - AFTER ');
             cb(s, w);
           });
         });
-
       });
 
     });
@@ -408,7 +401,6 @@ helpers.clientSign = function(txp, derivedXPrivKey) {
   var derived = {};
 
   var xpriv = new HDPrivateKey(derivedXPrivKey, txp.network);
-
   lodash.each(txp.inputs, function(i) {
     if (!derived[i.path]) {
       derived[i.path] = xpriv.deriveChild(i.path).privateKey;
@@ -416,7 +408,7 @@ helpers.clientSign = function(txp, derivedXPrivKey) {
     }
   });
 
-  var t = txp.getBtcTx();
+  var t = txp.getTx();
 
   var signatures = lodash.map(privs, function(priv, i) {
     return t.getSignatures(priv);
@@ -439,13 +431,12 @@ helpers.getProposalSignatureOpts = function(txp, signingKey) {
   }
 };
 
-
 helpers.createAddresses = function(server, wallet, main, change, cb) {
   // var clock = sinon.useFakeTimers('Date');
   async.mapSeries(lodash.range(main + change), function(i, next) {
     // clock.tick(1000);
     var address = wallet.createAddress(i >= main);
-    server.storage.storeAddressAndWallet(wallet, address, function(err) {
+    server.getStorage().storeAddressAndWallet(wallet, address, function(err) {
       next(err, address);
     });
   }, function(err, addresses) {
@@ -457,7 +448,6 @@ helpers.createAddresses = function(server, wallet, main, change, cb) {
 
 helpers.createAndPublishTx = function(server, txOpts, signingKey, cb) {
   server.createTx(txOpts, function(err, txp) {
-console.log(err);
     should.not.exist(err);
     var publishOpts = helpers.getProposalSignatureOpts(txp, signingKey);
     server.publishTx(publishOpts, function(err) {
@@ -466,7 +456,6 @@ console.log(err);
     });
   });
 };
-
 
 helpers.historyCacheTest = function(items) {
   var template = {

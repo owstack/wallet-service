@@ -141,7 +141,7 @@ TxProposal.prototype._updateStatus = function() {
 TxProposal.prototype._buildTx = function() {
   var self = this;
 
-  var t = new this.ctx.Transaction();
+  var t = new self.ctx.Transaction();
 
   $.checkState(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), self.addressType));
 
@@ -160,7 +160,7 @@ TxProposal.prototype._buildTx = function() {
   lodash.each(self.outputs, function(o) {
     $.checkState(o.script || o.toAddress, 'Output should have either toAddress or script specified');
     if (o.script) {
-      t.addOutput(new this.ctx.Transaction.Output({
+      t.addOutput(new self.ctx.Transaction.Output({
         script: o.script,
         satoshis: o.amount
       }));

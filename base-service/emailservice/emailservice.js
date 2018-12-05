@@ -5,18 +5,21 @@ var log = require('npmlog');
 
 log.debug = log.verbose;
 
-var Service = function(context, config) {
+function Service(context, config) {
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
+
+  // Set some frequently used contant values based on context.
+  this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
 	this.emailService = new this.ctx.EmailService(this.config);
 };
 
-Service.prototype.start = function() {
-	if (this.config.emailOpts) {
-		this.emailService.start(function(err) {
+Service.prototype.start = function(opts) {
+	if (this.config[this.COIN].emailOpts) {
+		this.emailService.start(opts, function(err) {
 		  if (err) {
 		  	throw err;
 		  }

@@ -6,11 +6,13 @@ var BaseWalletService = baseService.WalletService;
 var EmailService = BaseWalletService.EmailService;
 var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
+var Storage = require('./storage');
 var inherits = require('inherits');
 
 function BtcEmailService(config) {
 	var context = {
-		Networks: Networks
+		Networks: Networks,
+		Storage: Storage
 	};
 
   return EmailService.apply(this, [context, config]);

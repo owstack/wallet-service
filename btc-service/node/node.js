@@ -3,17 +3,20 @@
 var baseService = require('../../base-service');
 var BaseNode = baseService.Node;
 
-var config = require('../../base-service/config');
 var BlockchainMonitor = require('../lib/blockchainmonitor');
+var btcLib = require('@owstack/btc-lib');
+var EmailService = require('../lib/emailservice');
+var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcNode(opts) {
+function BtcNode(config, opts) {
 	var context = {
-		config: config,
-		BlockchainMonitor: BlockchainMonitor
+		BlockchainMonitor: BlockchainMonitor,
+		EmailService: EmailService,
+		Networks: Networks
 	};
 
-  return BaseNode.apply(this, [context, opts]);
+  BaseNode.apply(this, [context, config, opts]);
 };
 inherits(BtcNode, BaseNode);
 

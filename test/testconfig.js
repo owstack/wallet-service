@@ -27,7 +27,7 @@ var config = {
       uri: 'mongodb://localhost:27017/btcws'
     }
   },
-
+/*
   lockOpts: {
     //  To use locker-server, uncomment this:
     lockerServer: {
@@ -37,12 +37,11 @@ var config = {
   },
 
   messageBrokerOpts: {
-    port: 3380,
     messageBrokerServer: {
       url: 'http://localhost:3380'
     }
   },
-
+*/
   pushNotificationsOpts: {
     templatePath: './lib/templates',
     defaultLanguage: 'en',
@@ -59,7 +58,7 @@ var config = {
 
   // To use sendgrid for sending email notifications:
   // var sgTransport = require('nodemail-sendgrid-transport');
-  // mailer: sgTransport({
+  // mailer:sgTransport({
   //  api_user: xxx,
   //  api_key: xxx,
   // });

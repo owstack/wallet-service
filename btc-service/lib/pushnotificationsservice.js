@@ -6,14 +6,16 @@ var BaseWalletService = baseService.WalletService;
 var PushNotificationsService = BaseWalletService.PushNotificationsService;
 var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
+var Storage = require('./storage');
 var inherits = require('inherits');
 
-function BtcPushNotificationsService() {
+function BtcPushNotificationsService(config) {
 	var context = {
-		Networks: Networks
+		Networks: Networks,
+		Storage: Storage
 	};
 
-  return PushNotificationsService.apply(this, [context]);
+  return PushNotificationsService.apply(this, [context, config]);
 };
 inherits(BtcPushNotificationsService, PushNotificationsService);
 

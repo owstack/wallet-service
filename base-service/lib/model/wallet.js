@@ -3,7 +3,6 @@
 var owsCommon = require('@owstack/ows-common');
 var AddressManager = require('./addressmanager');
 var Constants = owsCommon.Constants;
-var Copayer = require('./copayer');
 var util = require('util');
 var Uuid = require('uuid');
 var lodash = owsCommon.deps.lodash;
@@ -46,7 +45,8 @@ Wallet.create = function(context, opts) {
 };
 
 Wallet.fromObj = function(context, obj) {
-  var x = new Wallet(context);
+  var ctx = context;
+  var x = new Wallet(ctx);
 
   $.shouldBeNumber(obj.m);
   $.shouldBeNumber(obj.n);
@@ -61,7 +61,7 @@ Wallet.fromObj = function(context, obj) {
   x.status = obj.status;
   x.publicKeyRing = obj.publicKeyRing;
   x.copayers = lodash.map(obj.copayers, function(copayer) {
-    return Copayer.fromObj(copayer);
+    return ctx.Copayer.fromObj(copayer);
   });
   x.pubKey = obj.pubKey;
   x.network = obj.network;
@@ -150,11 +150,8 @@ Wallet.prototype.createAddress = function(isChange) {
   $.checkState(this.isComplete());
 
   var self = this;
-console.log('Wallet.prototype.createAddress');
   var path = this.addressManager.getNewAddressPath(isChange);
-console.log('Wallet.prototype.createAddress path', path);
   var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.network, isChange);
-console.log('Wallet.prototype.createAddress address', address);
   return address;
 };
 

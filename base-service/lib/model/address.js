@@ -52,6 +52,7 @@ Address.fromObj = function(context, obj) {
 };
 
 Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, network) {
+  var self = this;
   $.checkArgument(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), scriptType));
 
   var publicKeys = lodash.map(publicKeyRing, function(item) {
@@ -59,28 +60,28 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
     return xpub.deriveChild(path).publicKey;
   });
 
-  var btcAddress;
+  var address;
   switch (scriptType) {
     case Constants.SCRIPT_TYPES.P2SH:
-      btcAddress = this.ctx.Address.createMultisig(publicKeys, m, network);
+      address = self.ctx.Address.createMultisig(publicKeys, m, network);
       break;
     case Constants.SCRIPT_TYPES.P2PKH:
       $.checkState(lodash.isArray(publicKeys) && publicKeys.length == 1);
-      btcAddress = this.ctx.Address.fromPublicKey(publicKeys[0], network);
+      address = self.ctx.Address.fromPublicKey(publicKeys[0], network);
       break;
   }
 
   return {
-    address: btcAddress.toString(),
+    address: address.toString(),
     path: path,
     publicKeys: lodash.invokeMap(publicKeys, 'toString'),
   };
 };
 
 Address.prototype.derive = function(walletId, scriptType, publicKeyRing, path, m, network, isChange) {
-  var raw = this._deriveAddress(scriptType, publicKeyRing, path, m, network);
-console.log('Address.prototype.derive ', raw);
-  return Address.create(this.ctx, lodash.extend(raw, {
+  var self = this;
+  var raw = self._deriveAddress(scriptType, publicKeyRing, path, m, network);
+  return Address.create(self.ctx, lodash.extend(raw, {
     walletId: walletId,
     type: scriptType,
     isChange: isChange,

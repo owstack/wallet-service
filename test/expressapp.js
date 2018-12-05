@@ -8,13 +8,12 @@ var Service = require('../');
 var WalletService = Service.BTC.WalletService;
 
 var config = require('../base-service/config');
-
-var proxyquire = require('proxyquire');
-var xyExpressApp = '../base-service/lib/expressapp';
-
 var Defaults = WalletService.Common.Defaults;
 var http = require('http');
 var request = require('request');
+
+var proxyquire = require('proxyquire');
+var xyExpressApp = '../base-service/lib/expressapp';
 
 describe('ExpressApp', function() {
 
@@ -64,7 +63,7 @@ describe('ExpressApp', function() {
           var requestOptions = {
             url: testHost + ':' + testPort + config.basePath + '/v1/version',
             headers: {
-              'x-service': 'bitcoin'
+              'x-service': 'BTC'
             }
           };
 
@@ -104,7 +103,7 @@ describe('ExpressApp', function() {
         };
 
         sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(3, null, server);
 
         var TestExpressApp = require(xyExpressApp);
 
@@ -114,7 +113,7 @@ describe('ExpressApp', function() {
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
-              'x-service': 'bitcoin'
+              'x-service': 'BTC'
             }
           };
 
@@ -133,7 +132,7 @@ describe('ExpressApp', function() {
         };
 
         sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(3, null, server);
 
         var TestExpressApp = proxyquire(xyExpressApp, {});
 
@@ -143,7 +142,7 @@ describe('ExpressApp', function() {
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
-              'x-service': 'bitcoin'
+              'x-service': 'BTC'
             }
           };
 
@@ -166,7 +165,7 @@ describe('ExpressApp', function() {
         };
 
         sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+        sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(3, null, server);
 
         var TestExpressApp = proxyquire(xyExpressApp, {});
 
@@ -176,7 +175,7 @@ describe('ExpressApp', function() {
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
-              'x-service': 'bitcoin'
+              'x-service': 'BTC'
             }
           };
 
@@ -199,7 +198,7 @@ describe('ExpressApp', function() {
           };
 
           sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(3, null, server);
 
           var TestExpressApp = proxyquire(xyExpressApp, {});
 
@@ -209,7 +208,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-service': 'BTC'
               }
             };
 
@@ -244,7 +243,7 @@ describe('ExpressApp', function() {
           };
 
           sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
-          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(2, null, server);
+          sinon.stub(WalletService.Server, 'getInstanceWithAuth').callsArgWith(3, null, server);
 
           TestExpressApp = proxyquire(xyExpressApp, {});
         });
@@ -260,7 +259,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-service': 'BTC'
               }
             };
 
@@ -284,7 +283,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-service': 'BTC'
               }
             };
 
@@ -308,7 +307,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-service': 'BTC'
               }
             };
             request(requestOptions, function(err, res, body) {

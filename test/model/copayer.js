@@ -18,6 +18,7 @@ describe('Copayer', function() {
       c.name.should.equal('copayer 1');
     });
   });
+
   describe('#createAddress', function() {
     it('create an address', function() {
       var w = Wallet.fromObj(testWallet);
