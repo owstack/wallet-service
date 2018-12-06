@@ -61,6 +61,8 @@ describe('Email notifications', function() {
               mailer: mailerStub,
               BTC: {
                 emailOpts: {
+                  defaultLanguage: 'en',
+                  defaultUnit: 'BTC',
                   from: 'ws@dummy.net',
                   subjectPrefix: '[test wallet]',
                   publicTxUrlTemplate: publicTxUrlTemplate
@@ -418,6 +420,8 @@ describe('Email notifications', function() {
       var emailService2 = new EmailService({
         BTC: {
           emailOpts: {
+            defaultLanguage: 'en',
+            defaultUnit: 'BTC',
             from: 'ws@dummy.net',
             subjectPrefix: '[test wallet 2]',
           }
@@ -480,6 +484,8 @@ describe('Email notifications', function() {
               mailer: mailerStub,
               BTC: {
                 emailOpts: {
+                  defaultLanguage: 'en',
+                  defaultUnit: 'BTC',
                   from: 'ws@dummy.net',
                   subjectPrefix: '[test wallet]',
                   publicTxUrlTemplate: publicTxUrlTemplate

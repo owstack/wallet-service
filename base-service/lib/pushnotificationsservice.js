@@ -13,6 +13,7 @@ var Mustache = require('mustache');
 var path = require('path');
 var sjcl = require('sjcl');
 var lodash = owsCommon.deps.lodash;
+var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
@@ -75,15 +76,15 @@ PushNotificationsService.prototype.start = function(opts, cb) {
   };
 
   self.templatePath = path.normalize((self.config.pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
-  self.defaultLanguage = self.config.pushNotificationsOpts.defaultLanguage || 'en';
-  self.defaultUnit = self.config.pushNotificationsOpts.defaultUnit || 'BTC';
+  self.defaultLanguage = self.config.pushNotificationsOpts.defaultLanguage;
+  self.defaultUnit = self.config.pushNotificationsOpts.defaultUnit;
   self.subjectPrefix = self.config.pushNotificationsOpts.subjectPrefix || '';
   self.pushServerUrl = self.config.pushNotificationsOpts.pushServerUrl;
   self.authorizationKey = self.config.pushNotificationsOpts.authorizationKey;
 
-  if (!self.authorizationKey) {
-    return cb(new Error('Missing authorizationKey attribute in configuration.'))
-  }
+  $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
+  $.checkArgument(self.defaultUnit, 'Missing defaultUnit attribute in configuration.');
+  $.checkArgument(self.authorizationKey, 'Missing authorizationKey attribute in configuration.');
 
   async.parallel([
     function(done) {

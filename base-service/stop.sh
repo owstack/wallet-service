@@ -9,7 +9,7 @@ stop_program ()
   rm $pidfile  
 }
 
-echo "Stopping base services, to stop network specific services run \`../<network>-service/stop\` where <network> is \`btc\`, for example"
+echo "Stopping base services, to stop network specific services run \`../<network>-service/stop\` where for the BTC network, <network> is \`btc\`, for example"
 
 stop_program pids/ws.pid
 stop_program pids/emailservice.pid
