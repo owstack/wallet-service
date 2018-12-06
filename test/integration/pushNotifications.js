@@ -72,7 +72,7 @@ describe('Push notifications', function() {
               pushNotificationsOpts: {
                 templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
-                defaultUnit: 'btc',
+                defaultUnit: 'BTC',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
                 authorizationKey: 'secret'
@@ -228,7 +228,7 @@ describe('Push notifications', function() {
               pushNotificationsOpts: {
                 templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
-                defaultUnit: 'btc',
+                defaultUnit: 'BTC',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
                 authorizationKey: 'secret'
@@ -251,7 +251,7 @@ describe('Push notifications', function() {
       server.savePreferences({
         email: 'copayer1@domain.com',
         language: 'es',
-        unit: 'btc',
+        unit: 'BTC',
       }, function(err) {
         server.createAddress({}, function(err, address) {
           should.not.exist(err);
@@ -485,7 +485,7 @@ describe('Push notifications', function() {
               pushNotificationsOpts: {
                 templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
-                defaultUnit: 'btc',
+                defaultUnit: 'BTC',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
                 authorizationKey: 'secret'

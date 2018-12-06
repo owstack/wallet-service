@@ -92,52 +92,142 @@ describe('Utils', function() {
   describe('#formatAmount', function() {
     it('should successfully format amount', function() {
       var cases = [{
-        args: [1, 'bit'],
-        expected: '0',
+        args: {
+          amount: 1,
+          code: 'bit',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0'
       }, {
-        args: [1, 'btc'],
-        expected: '0.00',
+        args: {
+          amount: 1,
+          code: 'BTC',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0.00'
       }, {
-        args: [0, 'bit'],
-        expected: '0',
+        args: {
+          amount: 0,
+          code: 'bit',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0'
       }, {
-        args: [12345678, 'bit'],
-        expected: '123,457',
+        args: {
+          amount: 12345678,
+          code: 'bit',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '123,457'
       }, {
-        args: [12345678, 'btc'],
-        expected: '0.123457',
+        args: {
+          amount: 12345678,
+          code: 'BTC',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0.123457'
       }, {
-        args: [12345611, 'btc'],
-        expected: '0.123456',
+        args: {
+          amount: 12345611,
+          code: 'BTC',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0.123456'
       }, {
-        args: [1234, 'btc'],
-        expected: '0.000012',
+        args: {
+          amount: 1234,
+          code: 'BTC',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0.000012'
       }, {
-        args: [1299, 'btc'],
-        expected: '0.000013',
+        args: {
+          amount: 1299,
+          code: 'BTC',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '0.000013'
       }, {
-        args: [1234567899999, 'btc'],
-        expected: '12,345.679',
+        args: {
+          amount: 1234567899999,
+          code: 'BTC',
+          opts: {
+            includeUnits: false
+          }
+        },
+        expected: '12,345.679'
       }, {
-        args: [12345678, 'bit', {
-          thousandsSeparator: '.'
-        }],
-        expected: '123.457',
+        args: {
+          amount: 12345678,
+          code: 'bit',
+          opts: {
+            includeUnits: false,
+            thousandsSeparator: '.'
+          }
+        },
+        expected: '123.457'
       }, {
-        args: [12345678, 'btc', {
-          decimalSeparator: ','
-        }],
-        expected: '0,123457',
+        args: {
+          amount: 12345678,
+          code: 'BTC',
+          opts: {
+            includeUnits: false,
+            decimalSeparator: ','
+          }
+        },
+        expected: '0,123457'
       }, {
-        args: [1234567899999, 'btc', {
-          thousandsSeparator: ' ',
-          decimalSeparator: ','
-        }],
-        expected: '12 345,679',
-      }, ];
+        args: {
+          amount: 1234567899999,
+          code: 'BTC',
+          opts: {
+            includeUnits: false,
+            thousandsSeparator: ' ',
+            decimalSeparator: ','
+          }
+        },
+        expected: '12 345,679'
+      }, {
+        args: {
+          amount: 12345678,
+          code: 'bit',
+          opts: {
+            includeUnits: true,
+            thousandsSeparator: '.'
+          }
+        },
+        expected: '123.457 bits'
+      }, {
+        args: {
+          amount: 12345678,
+          code: 'BTC',
+          opts: {
+            includeUnits: true,
+            decimalSeparator: ','
+          }
+        },
+        expected: '0,123457 BTC'
+      }];
 
       lodash.each(cases, function(testCase) {
-        Utils.formatAmount.apply(this, testCase.args).should.equal(testCase.expected);
+        var amount = Utils().formatAmount(testCase.args.amount, testCase.args.code, testCase.args.opts);
+        amount.should.equal(testCase.expected);
       });
     });
   });

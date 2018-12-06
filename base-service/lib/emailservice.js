@@ -11,7 +11,6 @@ var Model = require('./model');
 var Mustache = require('mustache');
 var nodemailer = require('nodemailer');
 var path = require('path');
-var Utils = require('./common/utils');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
@@ -87,7 +86,7 @@ EmailService.prototype.start = function(opts, cb) {
 
   var emailOpts = self.config[self.COIN].emailOpts;
   self.defaultLanguage = emailOpts.defaultLanguage || 'en';
-  self.defaultUnit = emailOpts.defaultUnit || 'btc';
+  self.defaultUnit = emailOpts.defaultUnit || 'BTC';
   self.templatePath = path.normalize((emailOpts.templatePath || (__dirname + '/templates')) + '/');
   self.publicTxUrlTemplate = emailOpts.publicTxUrlTemplate || {};
   self.subjectPrefix = emailOpts.subjectPrefix || '[Wallet service]';
@@ -215,18 +214,12 @@ EmailService.prototype._getRecipientsList = function(notification, emailType, cb
 EmailService.prototype._getDataForTemplate = function(notification, recipient, cb) {
   var self = this;
 
-  // TODO: Declare these in BWU
-  var UNIT_LABELS = {
-    btc: 'BTC',
-    bit: 'bits'
-  };
-
   var data = lodash.cloneDeep(notification.data);
   data.subjectPrefix = lodash.trim(self.subjectPrefix) + ' ';
   if (data.amount) {
     try {
-      var unit = recipient.unit.toLowerCase();
-      data.amount = Utils.formatAmount(+data.amount, unit) + ' ' + UNIT_LABELS[unit];
+      var unit = recipient.unit;
+      data.amount = self.ctx.Utils().formatAmount(+data.amount, unit);
     } catch (ex) {
       return cb(new Error('Could not format amount', ex));
     }

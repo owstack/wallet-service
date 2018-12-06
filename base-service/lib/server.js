@@ -19,7 +19,6 @@ var pkg = require('../../package');
 var PublicKey = keyLib.PublicKey;
 var request = require('request');
 var Stringify = require('json-stable-stringify');
-var Utils = Common.Utils;
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
@@ -56,19 +55,8 @@ function WalletService(context, opts, config, cb) {
   this.initialize(opts, config, cb);
 };
 
-WalletService.checkRequired = function(obj, args, cb) {
-  var missing = Utils.getMissingFields(obj, args);
-  if (lodash.isEmpty(missing)) {
-    return true;
-  }
-  if (lodash.isFunction(cb)) {
-    cb(new ClientError('Required argument ' + lodash.head(missing) + ' missing.'));
-  }
-  return false;
-};
-
-function checkRequired(obj, args, cb) {
-  var missing = Utils.getMissingFields(obj, args);
+WalletService.prototype.checkRequired = function(obj, args, cb) {
+  var missing = this.ctx.Utils.getMissingFields(obj, args);
   if (lodash.isEmpty(missing)) {
     return true;
   }
@@ -262,6 +250,16 @@ WalletService.getInstanceWithAuth = function(opts, config, auth, cb) {
 WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
   var self = this;
 
+  if (auth.session) {
+    if (!self.checkRequired(auth, ['copayerId', 'session'], cb)) {
+      return;
+    }
+  } else {
+    if (!self.checkRequired(auth, ['copayerId', 'message', 'signature'], cb)) {
+      return;
+    }
+  }
+
   function withSignature(cb) {
     self.storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
       if (err) {
@@ -288,7 +286,6 @@ WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
   };
 
   function withSession(cb) {
-
     self.storage.getSession(auth.copayerId, function(err, s) {
       if (err) {
         return cb(err);
@@ -393,14 +390,14 @@ WalletService.prototype.getMessageBroker = function() {
  * @param {number} opts.n - Total copayers.
  * @param {string} opts.pubKey - Public key to verify copayers joining have access to the wallet secret.
  * @param {string} opts.singleAddress[=false] - The wallet will only ever have one address.
- * @param {string} opts.network[=self.LIVENET] - The Bitcoin network for this wallet.
+ * @param {string} opts.network[=self.LIVENET] - The network for this wallet.
  * @param {string} opts.supportBIP44AndP2PKH[=true] - Client supports BIP44 & P2PKH for new wallets.
  */
 WalletService.prototype.createWallet = function(opts, cb) {
   var self = this;
   var pubKey;
 
-  if (!checkRequired(opts, ['name', 'm', 'n', 'pubKey'], cb)) {
+  if (!self.checkRequired(opts, ['name', 'm', 'n', 'pubKey'], cb)) {
     return;
   }
 
@@ -651,7 +648,7 @@ WalletService.prototype.getStatus = function(opts, cb) {
  * @param pubKeys
  */
 WalletService.prototype._verifySignature = function(text, signature, pubkey) {
-  return Utils.verifyMessage(text, signature, pubkey);
+  return this.ctx.Utils.verifyMessage(text, signature, pubkey);
 };
 
 /**
@@ -662,7 +659,7 @@ WalletService.prototype._verifySignature = function(text, signature, pubkey) {
  */
 WalletService.prototype._verifyRequestPubKey = function(requestPubKey, signature, xPubKey) {
   var pub = (new HDPublicKey(xPubKey)).deriveChild(Constants.PATHS.REQUEST_KEY_AUTH).publicKey;
-  return Utils.verifyMessage(requestPubKey, signature, pub.toString());
+  return this.ctx.Utils.verifyMessage(requestPubKey, signature, pub.toString());
 };
 
 /**
@@ -716,7 +713,7 @@ WalletService.prototype._notify = function(type, data, opts, cb) {
     }
   });
 
-  self.storage.storeNotification(walletId, notification, function() {
+  self.storage.storeNotification(walletId, notification, function(err) {
     messageBroker.send(notification);
     return cb();
   });
@@ -833,7 +830,7 @@ WalletService.prototype._addKeyToCopayer = function(wallet, copayer, opts, cb) {
 WalletService.prototype.addAccess = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['copayerId', 'requestPubKey', 'signature'], cb)) {
+  if (!self.checkRequired(opts, ['copayerId', 'requestPubKey', 'signature'], cb)) {
     return;
   }
 
@@ -880,7 +877,7 @@ WalletService.prototype._setClientVersion = function(version) {
 
 WalletService.prototype._parseClientVersion = function() {
   if (lodash.isUndefined(this.parsedClientVersion)) {
-    this.parsedClientVersion = Utils.parseVersion(this.clientVersion);
+    this.parsedClientVersion = this.ctx.Utils.parseVersion(this.clientVersion);
   }
   return this.parsedClientVersion;
 };
@@ -918,7 +915,7 @@ WalletService._getCopayerHash = function(name, xPubKey, requestPubKey) {
 WalletService.prototype.joinWallet = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['walletId', 'name', 'xPubKey', 'requestPubKey', 'copayerSignature'], cb)) {
+  if (!self.checkRequired(opts, ['walletId', 'name', 'xPubKey', 'requestPubKey', 'copayerSignature'], cb)) {
     return;
   }
 
@@ -981,11 +978,10 @@ WalletService.prototype.joinWallet = function(opts, cb) {
  * @param {Object} opts
  * @param {string} opts.email - Email address for notifications.
  * @param {string} opts.language - Language used for notifications.
- * @param {string} opts.unit - Bitcoin unit used to format amounts in notifications.
+ * @param {string} opts.unit - Currency unit used to format amounts in notifications.
  */
 WalletService.prototype.savePreferences = function(opts, cb) {
   var self = this;
-
   opts = opts || {};
 
   var preferences = [{
@@ -1001,7 +997,9 @@ WalletService.prototype.savePreferences = function(opts, cb) {
   }, {
     name: 'unit',
     isValid: function(value) {
-      return lodash.isString(value) && lodash.includes(['btc', 'bit'], value.toLowerCase());
+      return lodash.isString(value) && lodash.includes(self.ctx.Unit().getCodes(), value);
+
+//      return lodash.isString(value);
     },
   }];
 
@@ -1031,6 +1029,7 @@ WalletService.prototype.savePreferences = function(opts, cb) {
         walletId: self.walletId,
         copayerId: self.copayerId,
       });
+
       var preferences = Model.Preferences.fromObj(lodash.defaults(newPref, opts, oldPref));
 
       self.storage.storePreferences(preferences, function(err) {
@@ -1210,7 +1209,7 @@ WalletService.prototype.getMainAddresses = function(opts, cb) {
 WalletService.prototype.verifyMessageSignature = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['message', 'signature'], cb)) {
+  if (!self.checkRequired(opts, ['message', 'signature'], cb)) {
     return;
   }
 
@@ -1284,7 +1283,7 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
       var u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', 'satoshis', 'confirmations']);
       u.confirmations = u.confirmations || 0;
       u.locked = false;
-      u.satoshis = lodash.isNumber(u.satoshis) ? +u.satoshis : Utils.strip(u.amount * 1e8);
+      u.satoshis = lodash.isNumber(u.satoshis) ? +u.satoshis : self.ctx.Utils.strip(u.amount * 1e8);
       delete u.amount;
       return u;
     });
@@ -1721,7 +1720,7 @@ WalletService.prototype._sampleFeeLevels = function(network, points, cb) {
         failed.push(p);
       }
 
-      return [p, Utils.strip(feePerKb * 1e8)];
+      return [p, self.ctx.Utils.strip(feePerKb * 1e8)];
     }));
 
     if (failed.length) {
@@ -1736,8 +1735,8 @@ WalletService.prototype._sampleFeeLevels = function(network, points, cb) {
 /**
  * Returns fee levels for the current state of the network.
  * @param {Object} opts
- * @param {string} [opts.network = self.LIVENET] - The Bitcoin network to estimate fee levels from.
- * @returns {Object} feeLevels - A list of fee levels & associated amount per kB in satoshi.
+ * @param {string} [opts.network = self.LIVENET] - The network to estimate fee levels from.
+ * @returns {Object} feeLevels - A list of fee levels & associated amount per kB in atomic units.
  */
 WalletService.prototype.getFeeLevels = function(opts, cb) {
   var self = this;
@@ -1898,16 +1897,16 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     var netValueInUtxos = totalValueInUtxos - baseTxpFee - (utxos.length * feePerInput);
 
     if (totalValueInUtxos < txpAmount) {
-      log.debug('Total value in all utxos (' + Utils.formatAmountInBtc(totalValueInUtxos) + ') is insufficient to cover for txp amount (' + Utils.formatAmountInBtc(txpAmount) + ')');
+      log.debug('Total value in all utxos (' + self.ctx.Utils().formatAmountInStandard(totalValueInUtxos) + ') is insufficient to cover for txp amount (' + self.ctx.Utils().formatAmountInStandard(txpAmount) + ')');
       return cb(Errors.INSUFFICIENT_FUNDS);
     }
     if (netValueInUtxos < txpAmount) {
-      log.debug('Value after fees in all utxos (' + Utils.formatAmountInBtc(netValueInUtxos) + ') is insufficient to cover for txp amount (' + Utils.formatAmountInBtc(txpAmount) + ')');
+      log.debug('Value after fees in all utxos (' + self.ctx.Utils().formatAmountInStandard(netValueInUtxos) + ') is insufficient to cover for txp amount (' + self.ctx.Utils().formatAmountInStandard(txpAmount) + ')');
       return cb(Errors.INSUFFICIENT_FUNDS_FOR_FEE);
     }
 
     var bigInputThreshold = txpAmount * self.ctx.Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR + (baseTxpFee + feePerInput);
-    log.debug('Big input threshold ' + Utils.formatAmountInBtc(bigInputThreshold));
+    log.debug('Big input threshold ' + self.ctx.Utils().formatAmountInStandard(bigInputThreshold));
 
     var partitions = lodash.partition(utxos, function(utxo) {
       return utxo.satoshis > bigInputThreshold;
@@ -1918,8 +1917,8 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       return -utxo.satoshis;
     });
 
-    log.debug('Considering ' + bigInputs.length + ' big inputs (' + Utils.formatUtxos(bigInputs) + ')');
-    log.debug('Considering ' + smallInputs.length + ' small inputs (' + Utils.formatUtxos(smallInputs) + ')');
+    log.debug('Considering ' + bigInputs.length + ' big inputs (' + self.ctx.Utils().formatUtxos(bigInputs) + ')');
+    log.debug('Considering ' + smallInputs.length + ' small inputs (' + self.ctx.Utils().formatUtxos(smallInputs) + ')');
 
     var total = 0;
     var netTotal = -baseTxpFee;
@@ -1928,11 +1927,11 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     var error;
 
     lodash.each(smallInputs, function(input, i) {
-      log.debug('Input #' + i + ': ' + Utils.formatUtxos(input));
+      log.debug('Input #' + i + ': ' + self.ctx.Utils().formatUtxos(input));
 
       var netInputAmount = input.satoshis - feePerInput;
 
-      log.debug('The input contributes ' + Utils.formatAmountInBtc(netInputAmount));
+      log.debug('The input contributes ' + self.ctx.Utils().formatAmountInStandard(netInputAmount));
 
       selected.push(input);
 
@@ -1942,16 +1941,16 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       var txpSize = baseTxpSize + selected.length * sizePerInput;
       fee = Math.round(baseTxpFee + selected.length * feePerInput);
 
-      log.debug('Tx size: ' + Utils.formatSize(txpSize) + ', Tx fee: ' + Utils.formatAmountInBtc(fee));
+      log.debug('Tx size: ' + self.ctx.Utils.formatSize(txpSize) + ', Tx fee: ' + self.ctx.Utils().formatAmountInStandard(fee));
 
       var feeVsAmountRatio = fee / txpAmount;
       var amountVsUtxoRatio = netInputAmount / txpAmount;
 
-      log.debug('Fee/Tx amount: ' + Utils.formatRatio(feeVsAmountRatio) + ' (max: ' + Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) + ')');
-      log.debug('Tx amount/Input amount:' + Utils.formatRatio(amountVsUtxoRatio) + ' (min: ' + Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR) + ')');
+      log.debug('Fee/Tx amount: ' + self.ctx.Utils.formatRatio(feeVsAmountRatio) + ' (max: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) + ')');
+      log.debug('Tx amount/Input amount:' + self.ctx.Utils.formatRatio(amountVsUtxoRatio) + ' (min: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR) + ')');
 
       if (txpSize / 1000. > self.ctx.Defaults.MAX_TX_SIZE_IN_KB) {
-        log.debug('Breaking because tx size (' + Utils.formatSize(txpSize) + ') is too big (max: ' + Utils.formatSize(self.ctx.Defaults.MAX_TX_SIZE_IN_KB * 1000.) + ')');
+        log.debug('Breaking because tx size (' + self.ctx.Utils.formatSize(txpSize) + ') is too big (max: ' + self.ctx.Utils.formatSize(self.ctx.Defaults.MAX_TX_SIZE_IN_KB * 1000.) + ')');
         error = Errors.TX_MAX_SIZE_EXCEEDED;
         return false;
       }
@@ -1964,7 +1963,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
         if (feeVsAmountRatio > self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) {
           var feeVsSingleInputFeeRatio = fee / (baseTxpFee + feePerInput);
-          log.debug('Fee/Single-input fee: ' + Utils.formatRatio(feeVsSingleInputFeeRatio) + ' (max: ' + Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) + ')' + ' loses wrt single-input tx: ' + Utils.formatAmountInBtc((selected.length - 1) * feePerInput));
+          log.debug('Fee/Single-input fee: ' + self.ctx.Utils.formatRatio(feeVsSingleInputFeeRatio) + ' (max: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) + ')' + ' loses wrt single-input tx: ' + self.ctx.Utils().formatAmountInStandard((selected.length - 1) * feePerInput));
           if (feeVsSingleInputFeeRatio > self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) {
             log.debug('Breaking because fee is too significant compared to tx amount and it is too expensive compared to using single input');
             return false;
@@ -1972,15 +1971,14 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         }
       }
 
-      log.debug('Cumuled total so far: ' + Utils.formatAmountInBtc(total) + ', Net total so far: ' + Utils.formatAmountInBtc(netTotal));
-
+      log.debug('Cumuled total so far: ' + self.ctx.Utils().formatAmountInStandard(total) + ', Net total so far: ' + self.ctx.Utils().formatAmountInStandard(netTotal));
       if (netTotal >= txpAmount) {
         var changeAmount = Math.round(total - txpAmount - fee);
-        log.debug('Tx change: ', Utils.formatAmountInBtc(changeAmount));
+        log.debug('Tx change: ', self.ctx.Utils().formatAmountInStandard(changeAmount));
 
         var dustThreshold = Math.max(self.ctx.Defaults.MIN_OUTPUT_AMOUNT, self.ctx.Transaction.DUST_AMOUNT);
         if (changeAmount > 0 && changeAmount <= dustThreshold) {
-          log.debug('Change below dust threshold (' + Utils.formatAmountInBtc(dustThreshold) + '). Incrementing fee to remove change.');
+          log.debug('Change below dust threshold (' + self.ctx.Utils().formatAmountInStandard(dustThreshold) + '). Incrementing fee to remove change.');
           // Remove dust change by incrementing fee
           fee += changeAmount;
         }
@@ -1990,12 +1988,13 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     });
 
     if (netTotal < txpAmount) {
-      log.debug('Could not reach Txp total (' + Utils.formatAmountInBtc(txpAmount) + '), still missing: ' + Utils.formatAmountInBtc(txpAmount - netTotal));
+      log.debug('Could not reach Txp total (' + self.ctx.Utils().formatAmountInStandard(txpAmount) + '), still missing: ' + self.ctx.Utils().formatAmountInStandard(txpAmount - netTotal));
 
       selected = [];
       if (!lodash.isEmpty(bigInputs)) {
         var input = lodash.head(bigInputs);
-        log.debug('Using big input: ', Utils.formatUtxos(input));
+        log.debug('Using big input: ', self.ctx.Utils().formatUtxos(input));
+
         total = input.satoshis;
         fee = Math.round(baseTxpFee + feePerInput);
         netTotal = total - fee;
@@ -2011,7 +2010,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     return cb(null, selected, fee);
   };
 
-  log.debug('Selecting inputs for a ' + Utils.formatAmountInBtc(txp.getTotalAmount()) + ' txp');
+  log.debug('Selecting inputs for a ' + self.ctx.Utils().formatAmountInStandard(txp.getTotalAmount()) + ' txp');
 
   self._getUtxosForCurrentWallet(null, function(err, utxos) {
     if (err) {
@@ -2039,7 +2038,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
     utxos = sanitizeUtxos(utxos);
 
-    log.debug('Considering ' + utxos.length + ' utxos (' + Utils.formatUtxos(utxos) + ')');
+    log.debug('Considering ' + utxos.length + ' utxos (' + self.ctx.Utils().formatUtxos(utxos) + ')');
 
     var groups = [6, 1];
     if (!txp.excludeUnconfirmedUtxos) {
@@ -2068,7 +2067,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         return next();
       }
 
-      log.debug('Candidate utxos: ' + Utils.formatUtxos(candidateUtxos));
+      log.debug('Candidate utxos: ' + self.ctx.Utils().formatUtxos(candidateUtxos));
 
       lastGroupLength = candidateUtxos.length;
 
@@ -2083,8 +2082,8 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         inputs = selectedInputs;
         fee = selectedFee;
 
-        log.debug('Selected inputs from this group: ' + Utils.formatUtxos(inputs));
-        log.debug('Fee for this selection: ' + Utils.formatAmountInBtc(fee));
+        log.debug('Selected inputs from this group: ' + self.ctx.Utils().formatUtxos(inputs));
+        log.debug('Fee for this selection: ' + self.ctx.Utils().formatAmountInStandard(fee));
 
         return next();
       });
@@ -2103,7 +2102,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
       if (!err) {
         var change = lodash.sumBy(txp.inputs, 'satoshis') - lodash.sumBy(txp.outputs, 'amount') - txp.fee;
-        log.debug('Successfully built transaction. Total fees: ' + Utils.formatAmountInBtc(txp.fee) + ', total change: ' + Utils.formatAmountInBtc(change));
+        log.debug('Successfully built transaction. Total fees: ' + self.ctx.Utils().formatAmountInStandard(txp.fee) + ', total change: ' + self.ctx.Utils().formatAmountInStandard(change));
       } else {
         log.warn('Error building transaction', err);
       }
@@ -2159,7 +2158,7 @@ WalletService.prototype._validateOutputs = function(opts, wallet, cb) {
     var output = opts.outputs[i];
     output.valid = false;
 
-    if (!checkRequired(output, ['toAddress', 'amount'])) {
+    if (!self.checkRequired(output, ['toAddress', 'amount'])) {
       return new ClientError('Argument missing in output #' + (i + 1) + '.');
     }
 
@@ -2457,7 +2456,7 @@ WalletService.prototype.createTx = function(opts, cb) {
 };
 WalletService.prototype._verifyRequestPubKey = function(requestPubKey, signature, xPubKey) {
   var pub = (new HDPublicKey(xPubKey)).deriveChild(Constants.PATHS.REQUEST_KEY_AUTH).publicKey;
-  return Utils.verifyMessage(requestPubKey, signature, pub.toString());
+  return this.ctx.Utils.verifyMessage(requestPubKey, signature, pub.toString());
 };
 
 /**
@@ -2473,7 +2472,7 @@ WalletService.prototype.publishTx = function(opts, cb) {
     return utxo.txid + '|' + utxo.vout
   };
 
-  if (!checkRequired(opts, ['txProposalId', 'proposalSignature'], cb)) {
+  if (!self.checkRequired(opts, ['txProposalId', 'proposalSignature'], cb)) {
     return;
   }
 
@@ -2482,7 +2481,6 @@ WalletService.prototype.publishTx = function(opts, cb) {
       if (err) {
         return cb(err);
       }
-
       self.storage.fetchTx(self.walletId, opts.txProposalId, function(err, txp) {
         if (err) {
           return cb(err);
@@ -2587,7 +2585,7 @@ WalletService.prototype.getTx = function(opts, cb) {
 WalletService.prototype.editTxNote = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, 'txid', cb)) {
+  if (!self.checkRequired(opts, 'txid', cb)) {
     return;
   }
 
@@ -2625,7 +2623,7 @@ WalletService.prototype.editTxNote = function(opts, cb) {
 WalletService.prototype.getTxNote = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, 'txid', cb)) {
+  if (!self.checkRequired(opts, 'txid', cb)) {
     return;
   }
   self.storage.fetchTxNote(self.walletId, opts.txid, cb);
@@ -2691,7 +2689,7 @@ WalletService.prototype.getRemainingDeleteLockTime = function(txp) {
 WalletService.prototype.removePendingTx = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['txProposalId'], cb)) {
+  if (!self.checkRequired(opts, ['txProposalId'], cb)) {
     return;
   }
 
@@ -2736,13 +2734,13 @@ WalletService.prototype._broadcastRawTx = function(network, raw, cb) {
 /**
  * Broadcast a raw transaction.
  * @param {Object} opts
- * @param {string} [opts.network = self.LIVENET] - The Bitcoin network for this transaction.
+ * @param {string} [opts.network = self.LIVENET] - The network for this transaction.
  * @param {string} opts.rawTx - Raw tx data.
  */
 WalletService.prototype.broadcastRawTx = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['network', 'rawTx'], cb)) {
+  if (!self.checkRequired(opts, ['network', 'rawTx'], cb)) {
     return;
   }
 
@@ -2780,7 +2778,7 @@ WalletService.prototype._checkTxInBlockchain = function(txp, cb) {
 WalletService.prototype.signTx = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['txProposalId', 'signatures'], cb)) {
+  if (!self.checkRequired(opts, ['txProposalId', 'signatures'], cb)) {
     return;
   }
 
@@ -2886,7 +2884,7 @@ WalletService.prototype._processBroadcast = function(txp, opts, cb) {
 WalletService.prototype.broadcastTx = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['txProposalId'], cb)) {
+  if (!self.checkRequired(opts, ['txProposalId'], cb)) {
     return;
   }
 
@@ -2955,7 +2953,7 @@ WalletService.prototype.broadcastTx = function(opts, cb) {
 WalletService.prototype.rejectTx = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['txProposalId'], cb)) {
+  if (!self.checkRequired(opts, ['txProposalId'], cb)) {
     return;
   }
 
@@ -3714,7 +3712,7 @@ WalletService.prototype.startScan = function(opts, cb) {
 WalletService.prototype.getFiatRate = function(opts, cb) {
   var self = this;
 
-  if (!checkRequired(opts, ['code'], cb)) {
+  if (!self.checkRequired(opts, ['code'], cb)) {
     return;
   }
 
@@ -3734,11 +3732,11 @@ WalletService.prototype.getFiatRate = function(opts, cb) {
  * @param {string} [opts.platform] - The platform associated with this token.
  */
 WalletService.prototype.pushNotificationsSubscribe = function(opts, cb) {
-  if (!checkRequired(opts, ['token'], cb)) {
+  var self = this;
+
+  if (!self.checkRequired(opts, ['token'], cb)) {
     return;
   }
-
-  var self = this;
 
   var sub = Model.PushNotificationSub.create({
     copayerId: self.copayerId,
@@ -3756,12 +3754,11 @@ WalletService.prototype.pushNotificationsSubscribe = function(opts, cb) {
  * @param {string} opts.token - The token representing the app/device.
  */
 WalletService.prototype.pushNotificationsUnsubscribe = function(opts, cb) {
-  if (!checkRequired(opts, ['token'], cb)) {
-    return;
-  }
-
   var self = this;
 
+  if (!self.checkRequired(opts, ['token'], cb)) {
+    return;
+  }
   self.storage.removePushNotificationSub(self.copayerId, opts.token, cb);
 };
 
@@ -3771,11 +3768,11 @@ WalletService.prototype.pushNotificationsUnsubscribe = function(opts, cb) {
  * @param {string} opts.txid - The txid of the tx to be notified of.
  */
 WalletService.prototype.txConfirmationSubscribe = function(opts, cb) {
-  if (!checkRequired(opts, ['txid'], cb)) {
+  var self = this;
+
+  if (!self.checkRequired(opts, ['txid'], cb)) {
     return;
   }
-
-  var self = this;
 
   var sub = Model.TxConfirmationSub.create({
     copayerId: self.copayerId,
@@ -3792,11 +3789,11 @@ WalletService.prototype.txConfirmationSubscribe = function(opts, cb) {
  * @param {string} opts.txid - The txid of the tx to be notified of.
  */
 WalletService.prototype.txConfirmationUnsubscribe = function(opts, cb) {
-  if (!checkRequired(opts, ['txid'], cb)) {
+  var self = this;
+
+  if (!self.checkRequired(opts, ['txid'], cb)) {
     return;
   }
-
-  var self = this;
 
   self.storage.removeTxConfirmationSub(self.copayerId, opts.txid, cb);
 };

@@ -46,7 +46,7 @@ var config = {
   pushNotificationsOpts: {
     templatePath: './lib/templates',
     defaultLanguage: 'en',
-    defaultUnit: 'btc',
+    defaultUnit: 'BTC',
     subjectPrefix: '',
     pushServerUrl: 'https://fcm.googleapis.com/fcm',
     authorizationKey: ''
@@ -93,7 +93,7 @@ var config = {
     //  from: 'wallet-service@btc.io',
     //  templatePath: './lib/templates',
     //  defaultLanguage: 'en',
-    //  defaultUnit: 'btc',
+    //  defaultUnit: 'BTC',
     //  publicTxUrlTemplate: {
     //    'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
     //    'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}',

@@ -12,7 +12,6 @@ var MessageBroker = require('./messagebroker');
 var Mustache = require('mustache');
 var path = require('path');
 var sjcl = require('sjcl');
-var Utils = require('./common/utils');
 var lodash = owsCommon.deps.lodash;
 
 log.debug = log.verbose;
@@ -77,7 +76,7 @@ PushNotificationsService.prototype.start = function(opts, cb) {
 
   self.templatePath = path.normalize((self.config.pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
   self.defaultLanguage = self.config.pushNotificationsOpts.defaultLanguage || 'en';
-  self.defaultUnit = self.config.pushNotificationsOpts.defaultUnit || 'btc';
+  self.defaultUnit = self.config.pushNotificationsOpts.defaultUnit || 'BTC';
   self.subjectPrefix = self.config.pushNotificationsOpts.subjectPrefix || '';
   self.pushServerUrl = self.config.pushNotificationsOpts.pushServerUrl;
   self.authorizationKey = self.config.pushNotificationsOpts.authorizationKey;
@@ -314,17 +313,13 @@ PushNotificationsService.prototype._readAndApplyTemplates = function(notificatio
 
 PushNotificationsService.prototype._getDataForTemplate = function(notification, recipient, cb) {
   var self = this;
-  var UNIT_LABELS = {
-    btc: 'BTC',
-    bit: 'bits'
-  };
 
   var data = lodash.cloneDeep(notification.data);
   data.subjectPrefix = lodash.trim(self.subjectPrefix + ' ');
   if (data.amount) {
     try {
-      var unit = recipient.unit.toLowerCase();
-      data.amount = Utils.formatAmount(+data.amount, unit) + ' ' + UNIT_LABELS[unit];
+      var unit = recipient.unit;
+      data.amount = self.ctx.Utils().formatAmount(+data.amount, unit);
     } catch (ex) {
       return cb(new Error('Could not format amount', ex));
     }

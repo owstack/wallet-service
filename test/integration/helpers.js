@@ -251,7 +251,7 @@ helpers._parseAmount = function(str) {
 
   if (lodash.isNumber(str)) str = str.toString();
 
-  var re = /^((?:\d+c)|u)?\s*([\d\.]+)\s*(btc|bit|sat)?$/;
+  var re = /^((?:\d+c)|u)?\s*([\d\.]+)\s*(BTC|bit|satoshi)?$/;
   var match = str.match(re);
 
   if (!match) throw new Error('Could not parse amount ' + str);
@@ -263,13 +263,13 @@ helpers._parseAmount = function(str) {
 
   switch (match[3]) {
     default:
-    case 'btc':
+    case 'BTC':
       result.amount = Utils.strip(+match[2] * 1e8);
       break;
     case 'bit':
       result.amount = Utils.strip(+match[2] * 1e2);
       break
-    case 'sat':
+    case 'satoshi':
       result.amount = Utils.strip(+match[2]);
       break;
   };

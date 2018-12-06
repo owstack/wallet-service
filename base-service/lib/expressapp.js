@@ -36,11 +36,8 @@ var DEFAULT_BASE_PATH = '/ws/api';
  * @param config.LTC (optional*) - Litecoin service configuration.
  * @param {Callback} cb
  *
- * Note - at least one coin network configuration must be provided.
- *
  * For each service the following configuration parameters may be set. If the service
- * configuration is not specified then default values are used. For example, see
- * `../../btc-service/config.js` for default bitcoin service configuration.
+ * configuration is not specified then default values are used (if any).
  *
  * @param config.{service}.blockchainExplorerOpts
  * @param config.{service}.fiatRateServiceOpts

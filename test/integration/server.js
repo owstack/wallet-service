@@ -1575,6 +1575,7 @@ describe('Wallet service', function() {
     });
 
     it.skip('should save preferences only for requesting wallet', function(done) {});
+
     it('should validate entries', function(done) {
       var invalid = [{
         preferences: {
@@ -3974,7 +3975,7 @@ describe('Wallet service', function() {
       });
 
       it('should select unconfirmed utxos if not enough confirmed utxos', function(done) {
-        helpers.stubUtxos(server, wallet, ['u 1btc', '0.5btc'], function() {
+        helpers.stubUtxos(server, wallet, ['u 1BTC', '0.5BTC'], function() {
           var txOpts = {
             outputs: [{
               toAddress: '18PzpUFkFZE8zKWUPvfykkTxmB9oMR8qP7',
@@ -4033,7 +4034,7 @@ describe('Wallet service', function() {
       });
 
       it('should correct fee if resulting change would be below threshold', function(done) {
-        helpers.stubUtxos(server, wallet, ['200bit', '500sat'], function() {
+        helpers.stubUtxos(server, wallet, ['200bit', '500satoshi'], function() {
           var txOpts = {
             outputs: [{
               toAddress: '18PzpUFkFZE8zKWUPvfykkTxmB9oMR8qP7',
@@ -7760,7 +7761,7 @@ describe('Wallet service', function() {
     });
 
     it('should get wallet from tx proposal', function(done) {
-      helpers.stubUtxos(server, wallet, '1 btc', function() {
+      helpers.stubUtxos(server, wallet, '1 BTC', function() {
         helpers.stubBroadcast();
         var txOpts = {
           outputs: [{
