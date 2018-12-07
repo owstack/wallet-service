@@ -2,7 +2,7 @@
   "name": "@owstack/wallet-service",
   "description": "A service for mutisignatire HD Bitcoin wallets",
   "version": "0.0.1",
-  "licence": "MIT",
+  "license": "MIT",
   "keywords": [
     "bitcoin",
     "btc",
@@ -66,6 +66,7 @@
   },
   "devDependencies": {
     "chai": "^1.9.1",
+    "fs-extra": "^0.30.0",
     "istanbul": "*",
     "jsdoc": "^3.3.0-beta1",
     "memdown": "^1.0.0",
