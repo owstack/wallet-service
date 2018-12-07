@@ -9,16 +9,18 @@ var Address = btcLib.Address;
 var Defaults = require('../common/defaults');
 var Networks = btcLib.Networks;
 var Transaction = btcLib.Transaction;
+var Unit = btcLib.Unit;
 var inherits = require('inherits');
 
-function BtcTxProposal(opts) {
-	var context = {
-		Address: Address,
-		Defaults: Defaults,
-		Networks: Networks,
-		Transaction: Transaction
-	};
+var context = {
+	Address: Address,
+	Defaults: Defaults,
+	Networks: Networks,
+	Transaction: Transaction,
+	Unit: Unit
+};
 
+function BtcTxProposal(opts) {
   return BaseTxProposal.apply(this, [context, opts]);
 };
 inherits(BtcTxProposal, BaseTxProposal);
@@ -32,13 +34,6 @@ Object.keys(BaseTxProposal).forEach(function(key) {
  *
  */
 BtcTxProposal.fromObj = function(obj) {
-	var context = {
-		Address: Address,
-		Defaults: Defaults,
-		Networks: Networks,
-		Transaction: Transaction
-	};
-
 	return BaseTxProposal.fromObj(context, obj);
 };
 

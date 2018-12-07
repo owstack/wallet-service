@@ -7,11 +7,11 @@ var BaseCopayer = BaseWalletService.Model.Copayer;
 var Address = require('./address');
 var inherits = require('inherits');
 
-function BtcCopayer(opts) {
-	var context = {
-		Address: Address
-	};
+var context = {
+	Address: Address
+};
 
+function BtcCopayer(opts) {
   return BaseCopayer.apply(this, [context, opts]);
 };
 inherits(BtcCopayer, BaseCopayer);
@@ -25,10 +25,6 @@ Object.keys(BaseCopayer).forEach(function(key) {
  *
  */
 BtcCopayer.create = function(opts) {
-	var context = {
-		Address: Address
-	};
-
 	return BaseCopayer.create(context, opts);
 };
 
@@ -36,10 +32,6 @@ BtcCopayer.create = function(opts) {
  *
  */
 BtcCopayer.fromObj = function(obj) {
-	var context = {
-		Address: Address
-	};
-
 	return BaseCopayer.fromObj(context, obj);
 };
 

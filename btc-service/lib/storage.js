@@ -10,14 +10,14 @@ var TxProposal = require('./model/txproposal');
 var Wallet = require('./model/wallet');
 var inherits = require('inherits');
 
-function BtcStorage(config) {
-	var context = {
-		Address: Address,
-		Session: Session,
-		TxProposal: TxProposal,
-		Wallet: Wallet
-	};
+var context = {
+	Address: Address,
+	Session: Session,
+	TxProposal: TxProposal,
+	Wallet: Wallet
+};
 
+function BtcStorage(config) {
   return Storage.apply(this, [context, config]);
 };
 inherits(BtcStorage, Storage);

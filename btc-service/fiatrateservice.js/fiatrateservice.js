@@ -8,11 +8,11 @@ var BaseFiatRateService = baseService.FiatRateService;
 var FiatRateService = require('../lib/fiatrateservice');
 var inherits = require('inherits');
 
-function BtcFiatRateService(config) {
-	var context = {
-		FiatRateService: FiatRateService
-	};
+var context = {
+	FiatRateService: FiatRateService
+};
 
+function BtcFiatRateService(config) {
   BaseFiatRateService.apply(this, [context, config]);
 };
 inherits(BtcFiatRateService, BaseFiatRateService);

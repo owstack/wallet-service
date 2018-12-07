@@ -51,6 +51,7 @@ function WalletService(context, opts, config, cb) {
   this.LIVENET = this.ctx.Networks.livenet.code;
   this.TESTNET = this.ctx.Networks.testnet.code;
   this.COIN = this.ctx.Networks.coin;
+  this.atomicsName = this.ctx.Unit().atomicsName();
 
   this.initialize(opts, config, cb);
 };
@@ -998,8 +999,6 @@ WalletService.prototype.savePreferences = function(opts, cb) {
     name: 'unit',
     isValid: function(value) {
       return lodash.isString(value) && lodash.includes(self.ctx.Unit().getCodes(), value);
-
-//      return lodash.isString(value);
     },
   }];
 
@@ -1280,10 +1279,10 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
     }
 
     var utxos = lodash.map(utxos, function(utxo) {
-      var u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', 'satoshis', 'confirmations']);
+      var u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', self.atomicsName, 'confirmations']);
       u.confirmations = u.confirmations || 0;
       u.locked = false;
-      u.satoshis = lodash.isNumber(u.satoshis) ? +u.satoshis : self.ctx.Utils.strip(u.amount * 1e8);
+      u[self.atomicsName] = lodash.isNumber(u[self.atomicsName]) ? +u[self.atomicsName] : self.ctx.Utils.strip(u.amount * 1e8);
       delete u.amount;
       return u;
     });
@@ -1404,11 +1403,13 @@ WalletService.prototype.getUtxos = function(opts, cb) {
 };
 
 WalletService.prototype._totalizeUtxos = function(utxos) {
+  var self = this;
+
   var balance = {
-    totalAmount: lodash.sumBy(utxos, 'satoshis'),
-    lockedAmount: lodash.sumBy(lodash.filter(utxos, 'locked'), 'satoshis'),
-    totalConfirmedAmount: lodash.sumBy(lodash.filter(utxos, 'confirmations'), 'satoshis'),
-    lockedConfirmedAmount: lodash.sumBy(lodash.filter(lodash.filter(utxos, 'locked'), 'confirmations'), 'satoshis'),
+    totalAmount: lodash.sumBy(utxos, self.atomicsName),
+    lockedAmount: lodash.sumBy(lodash.filter(utxos, 'locked'), self.atomicsName),
+    totalConfirmedAmount: lodash.sumBy(lodash.filter(utxos, 'confirmations'), self.atomicsName),
+    lockedConfirmedAmount: lodash.sumBy(lodash.filter(lodash.filter(utxos, 'locked'), 'confirmations'), self.atomicsName),
   };
   balance.availableAmount = balance.totalAmount - balance.lockedAmount;
   balance.availableConfirmedAmount = balance.totalConfirmedAmount - balance.lockedConfirmedAmount;
@@ -1437,7 +1438,7 @@ WalletService.prototype._getBalanceFromAddresses = function(addresses, cb) {
     });
 
     lodash.each(utxos, function(utxo) {
-      byAddress[utxo.address].amount += utxo.satoshis;
+      byAddress[utxo.address].amount += utxo[self.atomicsName];
     });
 
     balance.byAddress = lodash.values(byAddress);
@@ -1571,7 +1572,7 @@ WalletService.prototype.getBalance = function(opts, cb) {
  * Return info needed to send all funds in the wallet
  * @param {Object} opts
  * @param {number} opts.feeLevel[='normal'] - Optional. Specify the fee level for this TX ('priority', 'normal', 'economy', 'superEconomy') as defined in Defaults.FEE_LEVELS.
- * @param {number} opts.feePerKb - Optional. Specify the fee per KB for this TX (in satoshi).
+ * @param {number} opts.feePerKb - Optional. Specify the fee per KB for this TX (in atomic units).
  * @param {string} opts.excludeUnconfirmedUtxos[=false] - Optional. Do not use UTXOs of unconfirmed transactions as inputs
  * @param {string} opts.returnInputs[=false] - Optional. Return the list of UTXOs that would be included in the tx.
  * @returns {Object} sendMaxInfo
@@ -1630,7 +1631,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         inputs = lodash.filter(inputs, 'confirmations');
       }
       inputs = lodash.sortBy(inputs, function(input) {
-        return -input.satoshis;
+        return -input[self.atomicsName];
       });
 
       if (lodash.isEmpty(inputs)) {
@@ -1658,18 +1659,18 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         var feePerInput = sizePerInput * txp.feePerKb / 1000.;
 
         var partitionedByAmount = lodash.partition(inputs, function(input) {
-          return input.satoshis > feePerInput;
+          return input[self.atomicsName] > feePerInput;
         });
 
         info.utxosBelowFee = partitionedByAmount[1].length;
-        info.amountBelowFee = lodash.sumBy(partitionedByAmount[1], 'satoshis');
+        info.amountBelowFee = lodash.sumBy(partitionedByAmount[1], self.atomicsName);
         inputs = partitionedByAmount[0];
 
         lodash.each(inputs, function(input, i) {
           var sizeInKb = (baseTxpSize + (i + 1) * sizePerInput) / 1000.;
           if (sizeInKb > self.ctx.Defaults.MAX_TX_SIZE_IN_KB) {
             info.utxosAboveMaxSize = inputs.length - i;
-            info.amountAboveMaxSize = lodash.sumBy(lodash.slice(inputs, i), 'satoshis');
+            info.amountAboveMaxSize = lodash.sumBy(lodash.slice(inputs, i), self.atomicsName);
             return false;
           }
           txp.inputs.push(input);
@@ -1680,7 +1681,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         }
 
         var fee = txp.getEstimatedFee();
-        var amount = lodash.sumBy(txp.inputs, 'satoshis') - fee;
+        var amount = lodash.sumBy(txp.inputs, self.atomicsName) - fee;
 
         if (amount < self.ctx.Defaults.MIN_OUTPUT_AMOUNT) {
           return cb(null, info);
@@ -1867,7 +1868,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       if (utxo.locked) {
         return false;
       }
-      if (utxo.satoshis <= feePerInput) {
+      if (utxo[self.atomicsName] <= feePerInput) {
         return false;
       }
       if (txp.excludeUnconfirmedUtxos && !utxo.confirmations) {
@@ -1893,7 +1894,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
   };
 
   function select(utxos, cb) {
-    var totalValueInUtxos = lodash.sumBy(utxos, 'satoshis');
+    var totalValueInUtxos = lodash.sumBy(utxos, self.atomicsName);
     var netValueInUtxos = totalValueInUtxos - baseTxpFee - (utxos.length * feePerInput);
 
     if (totalValueInUtxos < txpAmount) {
@@ -1909,12 +1910,12 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     log.debug('Big input threshold ' + self.ctx.Utils().formatAmountInStandard(bigInputThreshold));
 
     var partitions = lodash.partition(utxos, function(utxo) {
-      return utxo.satoshis > bigInputThreshold;
+      return utxo[self.atomicsName] > bigInputThreshold;
     });
 
-    var bigInputs = lodash.sortBy(partitions[0], 'satoshis');
+    var bigInputs = lodash.sortBy(partitions[0], self.atomicsName);
     var smallInputs = lodash.sortBy(partitions[1], function(utxo) {
-      return -utxo.satoshis;
+      return -utxo[self.atomicsName];
     });
 
     log.debug('Considering ' + bigInputs.length + ' big inputs (' + self.ctx.Utils().formatUtxos(bigInputs) + ')');
@@ -1929,13 +1930,13 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     lodash.each(smallInputs, function(input, i) {
       log.debug('Input #' + i + ': ' + self.ctx.Utils().formatUtxos(input));
 
-      var netInputAmount = input.satoshis - feePerInput;
+      var netInputAmount = input[self.atomicsName] - feePerInput;
 
       log.debug('The input contributes ' + self.ctx.Utils().formatAmountInStandard(netInputAmount));
 
       selected.push(input);
 
-      total += input.satoshis;
+      total += input[self.atomicsName];
       netTotal += netInputAmount;
 
       var txpSize = baseTxpSize + selected.length * sizePerInput;
@@ -1995,7 +1996,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         var input = lodash.head(bigInputs);
         log.debug('Using big input: ', self.ctx.Utils().formatUtxos(input));
 
-        total = input.satoshis;
+        total = input[self.atomicsName];
         fee = Math.round(baseTxpFee + feePerInput);
         netTotal = total - fee;
         selected = [input];
@@ -2101,7 +2102,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       var err = self._checkTx(txp);
 
       if (!err) {
-        var change = lodash.sumBy(txp.inputs, 'satoshis') - lodash.sumBy(txp.outputs, 'amount') - txp.fee;
+        var change = lodash.sumBy(txp.inputs, self.atomicsName) - lodash.sumBy(txp.outputs, 'amount') - txp.fee;
         log.debug('Successfully built transaction. Total fees: ' + self.ctx.Utils().formatAmountInStandard(txp.fee) + ', total change: ' + self.ctx.Utils().formatAmountInStandard(change));
       } else {
         log.warn('Error building transaction', err);
@@ -2294,11 +2295,11 @@ WalletService.prototype._getFeePerKb = function(wallet, opts, cb) {
  * @param {string} opts.txProposalId - Optional. If provided it will be used as this TX proposal ID. Should be unique in the scope of the wallet.
  * @param {Array} opts.outputs - List of outputs.
  * @param {string} opts.outputs[].toAddress - Destination address.
- * @param {number} opts.outputs[].amount - Amount to transfer in satoshi.
+ * @param {number} opts.outputs[].amount - Amount to transfer in atomic units.
  * @param {string} opts.outputs[].message - A message to attach to this output.
  * @param {string} opts.message - A message to attach to this transaction.
  * @param {number} opts.feeLevel[='normal'] - Optional. Specify the fee level for this TX ('priority', 'normal', 'economy', 'superEconomy') as defined in Defaults.FEE_LEVELS.
- * @param {number} opts.feePerKb - Optional. Specify the fee per KB for this TX (in satoshi).
+ * @param {number} opts.feePerKb - Optional. Specify the fee per KB for this TX (in atomic units).
  * @param {string} opts.changeAddress - Optional. Use this address as the change address for the tx. The address should belong to the wallet. In the case of singleAddress wallets, the first main address will be used.
  * @param {Boolean} opts.sendMax - Optional. Send maximum amount of funds that make sense under the specified fee/feePerKb conditions. (defaults to false).
  * @param {string} opts.payProUrl - Optional. Paypro URL for peers to verify TX

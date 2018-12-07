@@ -10,6 +10,7 @@ var WalletService = Service.BTC.WalletService;
 var btcLib = require('@owstack/btc-lib');
 
 var Networks = btcLib.Networks;
+var Unit = btcLib.Unit;
 var LIVENET = Networks.livenet.code;
 var TESTNET = Networks.testnet.code;
 
@@ -30,6 +31,7 @@ var Utils = WalletService.Utils;
 var Server = WalletService.Server;
 
 var storage, blockchainExplorer, request;
+var atomicsName = Unit().atomicsName();
 var lodash = owsCommon.deps.lodash;
 
 log.debug = log.verbose;
@@ -1137,7 +1139,7 @@ describe('Wallet service', function() {
             status.pendingTxps.length.should.equal(1);
             var balance = status.balance;
             balance.totalAmount.should.equal(3e8);
-            balance.lockedAmount.should.equal(tx.inputs[0].satoshis);
+            balance.lockedAmount.should.equal(tx.inputs[0][atomicsName]);
             balance.availableAmount.should.equal(balance.totalAmount - balance.lockedAmount);
             done();
           });
@@ -1629,7 +1631,7 @@ describe('Wallet service', function() {
           should.not.exist(err);
           should.exist(utxos);
           utxos.length.should.equal(2);
-          lodash.sumBy(utxos, 'satoshis').should.equal(3 * 1e8);
+          lodash.sumBy(utxos, atomicsName).should.equal(3 * 1e8);
           server.getMainAddresses({}, function(err, addresses) {
             var utxo = utxos[0];
             var address = lodash.find(addresses, {
@@ -1650,13 +1652,13 @@ describe('Wallet service', function() {
         var address = utxos[0].address;
         var amount = lodash.sumBy(lodash.filter(utxos, {
           address: address
-        }), 'satoshis');
+        }), atomicsName);
         server.getUtxos({
           addresses: [address]
         }, function(err, utxos) {
           should.not.exist(err);
           should.exist(utxos);
-          lodash.sumBy(utxos, 'satoshis').should.equal(amount);
+          lodash.sumBy(utxos, atomicsName).should.equal(amount);
           done();
         });
       });
@@ -1872,18 +1874,18 @@ describe('Wallet service', function() {
         server.getBalance({}, function(err, balance) {
           should.not.exist(err);
           should.exist(balance);
-          balance.totalAmount.should.equal(helpers.toSatoshi(6));
+          balance.totalAmount.should.equal(helpers.toAtomic(6));
           balance.lockedAmount.should.equal(0);
-          balance.availableAmount.should.equal(helpers.toSatoshi(6));
+          balance.availableAmount.should.equal(helpers.toAtomic(6));
 
-          balance.totalConfirmedAmount.should.equal(helpers.toSatoshi(4));
+          balance.totalConfirmedAmount.should.equal(helpers.toAtomic(4));
           balance.lockedConfirmedAmount.should.equal(0);
-          balance.availableConfirmedAmount.should.equal(helpers.toSatoshi(4));
+          balance.availableConfirmedAmount.should.equal(helpers.toAtomic(4));
 
           should.exist(balance.byAddress);
           balance.byAddress.length.should.equal(2);
-          balance.byAddress[0].amount.should.equal(helpers.toSatoshi(4));
-          balance.byAddress[1].amount.should.equal(helpers.toSatoshi(2));
+          balance.byAddress[0].amount.should.equal(helpers.toAtomic(4));
+          balance.byAddress[1].amount.should.equal(helpers.toAtomic(2));
           server.getMainAddresses({}, function(err, addresses) {
             should.not.exist(err);
             var addresses = lodash.uniq(lodash.map(addresses, 'address'));
@@ -1931,7 +1933,7 @@ describe('Wallet service', function() {
           server.getBalance({}, function(err, balance) {
             should.not.exist(err);
             balance.byAddress.length.should.equal(1);
-            balance.byAddress[0].amount.should.equal(helpers.toSatoshi(1));
+            balance.byAddress[0].amount.should.equal(helpers.toAtomic(1));
             balance.byAddress[0].address.should.equal(utxos[0].address);
             done();
           });
@@ -1977,18 +1979,18 @@ describe('Wallet service', function() {
         }, function(err, balance) {
           should.not.exist(err);
           should.exist(balance);
-          balance.totalAmount.should.equal(helpers.toSatoshi(6));
+          balance.totalAmount.should.equal(helpers.toAtomic(6));
           balance.lockedAmount.should.equal(0);
-          balance.availableAmount.should.equal(helpers.toSatoshi(6));
+          balance.availableAmount.should.equal(helpers.toAtomic(6));
 
-          balance.totalConfirmedAmount.should.equal(helpers.toSatoshi(4));
+          balance.totalConfirmedAmount.should.equal(helpers.toAtomic(4));
           balance.lockedConfirmedAmount.should.equal(0);
-          balance.availableConfirmedAmount.should.equal(helpers.toSatoshi(4));
+          balance.availableConfirmedAmount.should.equal(helpers.toAtomic(4));
 
           should.exist(balance.byAddress);
           balance.byAddress.length.should.equal(2);
-          balance.byAddress[0].amount.should.equal(helpers.toSatoshi(4));
-          balance.byAddress[1].amount.should.equal(helpers.toSatoshi(2));
+          balance.byAddress[0].amount.should.equal(helpers.toAtomic(4));
+          balance.byAddress[1].amount.should.equal(helpers.toAtomic(2));
           setTimeout(done, 100);
         });
       });
@@ -2026,7 +2028,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3));
+            balance.totalAmount.should.equal(helpers.toAtomic(3));
             next();
           });
         },
@@ -2055,7 +2057,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3));
+            balance.totalAmount.should.equal(helpers.toAtomic(3));
             next();
           });
         },
@@ -2068,7 +2070,7 @@ describe('Wallet service', function() {
             var last = lodash.last(notifications);
             last.type.should.equal('BalanceUpdated');
             var balance = last.data;
-            balance.totalAmount.should.equal(helpers.toSatoshi(3.5));
+            balance.totalAmount.should.equal(helpers.toAtomic(3.5));
             next();
           });
         },
@@ -2106,7 +2108,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3));
+            balance.totalAmount.should.equal(helpers.toAtomic(3));
             next();
           });
         },
@@ -2127,7 +2129,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3.5));
+            balance.totalAmount.should.equal(helpers.toAtomic(3.5));
             next();
           });
         },
@@ -2169,7 +2171,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3));
+            balance.totalAmount.should.equal(helpers.toAtomic(3));
             next();
           });
         },
@@ -2189,7 +2191,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3.5));
+            balance.totalAmount.should.equal(helpers.toAtomic(3.5));
             next();
           });
         },
@@ -2239,7 +2241,7 @@ describe('Wallet service', function() {
           }, function(err, balance) {
             should.not.exist(err);
             should.exist(balance);
-            balance.totalAmount.should.equal(helpers.toSatoshi(3));
+            balance.totalAmount.should.equal(helpers.toAtomic(3));
             next();
           });
         },
@@ -2548,7 +2550,7 @@ describe('Wallet service', function() {
             tx.isRejected().should.equal.false;
             tx.isPending().should.equal.true;
             tx.isTemporary().should.equal.true;
-            tx.amount.should.equal(helpers.toSatoshi(0.8));
+            tx.amount.should.equal(helpers.toAtomic(0.8));
             tx.feePerKb.should.equal(123e2);
             should.not.exist(tx.feeLevel);
             server.getPendingTxs({}, function(err, txs) {
@@ -2707,12 +2709,12 @@ describe('Wallet service', function() {
             server.createTx(txOpts, function(err, tx) {
               should.not.exist(err);
               should.exist(tx);
-              tx.amount.should.equal(helpers.toSatoshi(0.8));
+              tx.amount.should.equal(helpers.toAtomic(0.8));
               should.not.exist(tx.feePerKb);
               tx.fee.should.equal(1000e2);
               var t = tx.getTx();
               t.getFee().should.equal(1000e2);
-              t.getChangeOutput().satoshis.should.equal(3e8 - 0.8e8 - 1000e2);
+              t.getChangeOutput()[atomicsName].should.equal(3e8 - 0.8e8 - 1000e2);
               done();
             });
           });
@@ -3206,7 +3208,7 @@ describe('Wallet service', function() {
             should.exist(txp);
             var t = txp.getTx().toObject();
             t.outputs.length.should.equal(1);
-            t.outputs[0].satoshis.should.equal(max);
+            t.outputs[0][atomicsName].should.equal(max);
             done();
           });
         });
@@ -3335,7 +3337,7 @@ describe('Wallet service', function() {
             should.exist(tx);
             var tx1 = tx.getTx();
             tx1.outputs.length.should.equal(1);
-            tx1.outputs[0].satoshis.should.equal(tx.amount);
+            tx1.outputs[0][atomicsName].should.equal(tx.amount);
             done();
           });
         });
@@ -3391,7 +3393,7 @@ describe('Wallet service', function() {
                 server.getBalance({}, function(err, balance) {
                   should.not.exist(err);
                   balance.totalAmount.should.equal(3.6e8);
-                  var amountInputs = lodash.sumBy(txs[0].inputs, 'satoshis');
+                  var amountInputs = lodash.sumBy(txs[0].inputs, atomicsName);
                   balance.lockedAmount.should.equal(amountInputs);
                   balance.lockedAmount.should.be.below(balance.totalAmount);
                   balance.availableAmount.should.equal(balance.totalAmount - balance.lockedAmount);
@@ -3473,7 +3475,7 @@ describe('Wallet service', function() {
             t.getFee().should.equal(tx.fee);
             should.not.exist(t.getChangeOutput());
             t.toObject().inputs.length.should.equal(tx.inputs.length);
-            t.toObject().outputs[0].satoshis.should.equal(tx.amount);
+            t.toObject().outputs[0][atomicsName].should.equal(tx.amount);
             done();
           });
         });
@@ -3494,8 +3496,8 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             var t = txp.getTx();
-            var changeOutput = t.getChangeOutput().satoshis;
-            var outputs = lodash.without(lodash.map(t.outputs, 'satoshis'), changeOutput);
+            var changeOutput = t.getChangeOutput()[atomicsName];
+            var outputs = lodash.without(lodash.map(t.outputs, atomicsName), changeOutput);
 
             outputs.should.not.deep.equal(lodash.map(txOpts.outputs, 'amount'));
             txOpts.noShuffleOutputs = true;
@@ -3504,8 +3506,8 @@ describe('Wallet service', function() {
               should.exist(txp);
 
               t = txp.getTx();
-              changeOutput = t.getChangeOutput().satoshis;
-              outputs = lodash.without(lodash.map(t.outputs, 'satoshis'), changeOutput);
+              changeOutput = t.getChangeOutput()[atomicsName];
+              outputs = lodash.without(lodash.map(t.outputs, atomicsName), changeOutput);
 
               outputs.should.deep.equal(lodash.map(txOpts.outputs, 'amount'));
               done();
@@ -3661,7 +3663,7 @@ describe('Wallet service', function() {
             tx.inputs.length.should.equal(2);
             server.getBalance({}, function(err, balance) {
               should.not.exist(err);
-              balance.lockedConfirmedAmount.should.equal(helpers.toSatoshi(2.5));
+              balance.lockedConfirmedAmount.should.equal(helpers.toAtomic(2.5));
               balance.availableConfirmedAmount.should.equal(0);
               txOpts.outputs[0].amount = 0.01e8;
               server.createTx(txOpts, function(err, tx) {
@@ -3711,7 +3713,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(35000);
+            txp.inputs[0][atomicsName].should.equal(35000);
 
             done();
           });
@@ -3724,14 +3726,14 @@ describe('Wallet service', function() {
           var txOpts = {
             outputs: [{
               toAddress: '18PzpUFkFZE8zKWUPvfykkTxmB9oMR8qP7',
-              amount: lodash.sumBy(utxos, 'satoshis') - 0.5e8,
+              amount: lodash.sumBy(utxos, atomicsName) - 0.5e8,
             }],
             feePerKb: 100e2,
           };
           server.createTx(txOpts, function(err, txp) {
             should.not.exist(err);
             should.exist(txp);
-            var amounts = lodash.map(txp.inputs, 'satoshis');
+            var amounts = lodash.map(txp.inputs, atomicsName);
             amounts.length.should.equal(30);
             lodash.every(amounts, function(amount, i) {
               if (i == 0) return true;
@@ -3755,7 +3757,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(3);
-            txp.inputs[0].satoshis.should.equal(10000);
+            txp.inputs[0][atomicsName].should.equal(10000);
 
             done();
           });
@@ -3796,7 +3798,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(1e8);
+            txp.inputs[0][atomicsName].should.equal(1e8);
             done();
           });
         });
@@ -3819,7 +3821,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(1e8);
+            txp.inputs[0][atomicsName].should.equal(1e8);
             Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR = _old;
             done();
           });
@@ -3841,7 +3843,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(1e8);
+            txp.inputs[0][atomicsName].should.equal(1e8);
 
             done();
           });
@@ -3861,7 +3863,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(9e8);
+            txp.inputs[0][atomicsName].should.equal(9e8);
             done();
           });
         });
@@ -3885,7 +3887,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(100e8);
+            txp.inputs[0][atomicsName].should.equal(100e8);
             Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR = _old1;
             Defaults.MAX_TX_SIZE_IN_KB = _old2;
             done();
@@ -3987,7 +3989,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0].satoshis.should.equal(1e8);
+            txp.inputs[0][atomicsName].should.equal(1e8);
             done();
           });
         });
@@ -4045,7 +4047,7 @@ describe('Wallet service', function() {
           server.createTx(txOpts, function(err, txp) {
             should.not.exist(err);
             txp.inputs.length.should.equal(1);
-            (lodash.sumBy(txp.inputs, 'satoshis') - txp.outputs[0].amount - txp.fee).should.equal(0);
+            (lodash.sumBy(txp.inputs, atomicsName) - txp.outputs[0].amount - txp.fee).should.equal(0);
             var changeOutput = txp.getTx().getChangeOutput();
             should.not.exist(changeOutput);
             done();
@@ -4743,7 +4745,7 @@ describe('Wallet service', function() {
         }, function(err, info) {
           should.not.exist(err);
           should.exist(info);
-          var amounts = lodash.map(info.inputs, 'satoshis');
+          var amounts = lodash.map(info.inputs, atomicsName);
           amounts.length.should.equal(30);
           lodash.every(amounts, function(amount, i) {
             if (i == 0) return true;
@@ -6442,7 +6444,7 @@ describe('Wallet service', function() {
                 time: Date.now() / 1000,
                 inputs: [{
                   address: tx.inputs[0].address,
-                  amount: utxos[0].satoshis,
+                  amount: utxos[0][atomicsName],
                 }],
                 outputs: [{
                   address: changeAddresses[0].address,
@@ -7211,7 +7213,7 @@ describe('Wallet service', function() {
               should.exist(utxos);
               helpers.stubAddressActivity(lodash.map(utxos, 'address'));
               server.getBalance({}, function(err, balance) {
-                balance.totalAmount.should.equal(helpers.toSatoshi(6));
+                balance.totalAmount.should.equal(helpers.toAtomic(6));
                 next(null, server, wallet);
               });
             });
@@ -7234,7 +7236,7 @@ describe('Wallet service', function() {
             server.scan({}, function(err) {
               should.not.exist(err);
               server.getBalance(wallet.id, function(err, balance) {
-                balance.totalAmount.should.equal(helpers.toSatoshi(6));
+                balance.totalAmount.should.equal(helpers.toAtomic(6));
                 next();
               })
             });

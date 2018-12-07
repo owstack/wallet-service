@@ -11,13 +11,13 @@ var Storage = require('./storage');
 var Utils = Common.Utils;
 var inherits = require('inherits');
 
-function BtcPushNotificationsService(config) {
-	var context = {
-		Networks: Networks,
-		Storage: Storage,
-		Utils: Utils
-	};
+var context = {
+	Networks: Networks,
+	Storage: Storage,
+	Utils: Utils
+};
 
+function BtcPushNotificationsService(config) {
   return PushNotificationsService.apply(this, [context, config]);
 };
 inherits(BtcPushNotificationsService, PushNotificationsService);

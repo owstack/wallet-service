@@ -8,11 +8,11 @@ var BasePushNotificationsService = baseService.PushNotificationsService;
 var PushNotificationsService = require('../lib/pushnotificationsservice');
 var inherits = require('inherits');
 
-function BtcPushNotificationsService(config) {
-	var context = {
-		PushNotificationsService: PushNotificationsService
-	};
+var context = {
+	PushNotificationsService: PushNotificationsService
+};
 
+function BtcPushNotificationsService(config) {
   return BasePushNotificationsService.apply(this, [context, config]);
 };
 inherits(BtcPushNotificationsService, BasePushNotificationsService);

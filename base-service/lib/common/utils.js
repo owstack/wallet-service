@@ -15,6 +15,9 @@ function Utils(context) {
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
+
+  // Set some frequently used contant values based on context.
+  this.atomicsName = this.ctx.Unit().atomicsName();
 };
 
 Utils.prototype.formatAmount = function(atomic, code, opts) {
@@ -30,7 +33,7 @@ Utils.prototype.formatUtxos = function(utxos) {
   var self = this;
   if (lodash.isEmpty(utxos)) return 'none';
   return lodash.map([].concat(utxos), function(i) {
-    var amount = self.formatAmountInStandard(i.satoshis);
+    var amount = self.formatAmountInStandard(i[self.atomicsName]);
     var confirmations = i.confirmations ? i.confirmations + 'c' : 'u';
     return amount + '/' + confirmations;
   }).join(', ');
@@ -54,8 +57,6 @@ Utils.strip = function(number) {
   return parseFloat(number.toPrecision(12));
 };
 
-/* TODO: It would be nice to be compatible with bitcoind signmessage. How
- * the hash is calculated there? */
 Utils.hashMessage = function(text, noReverse) {
   $.checkArgument(text);
   var buf = new Buffer(text);

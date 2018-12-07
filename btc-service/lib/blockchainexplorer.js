@@ -9,12 +9,12 @@ var Explorer = require('./blockchainexplorers/explorer');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcBlockchainExplorer(opts, config) {
-	var context = {
-		Explorer: Explorer,
-		Networks: Networks
-	};
+var context = {
+	Explorer: Explorer,
+	Networks: Networks
+};
 
+function BtcBlockchainExplorer(opts, config) {
   return BlockchainExplorer.apply(this, [context, opts, config]);
 };
 inherits(BtcBlockchainExplorer, BlockchainExplorer);

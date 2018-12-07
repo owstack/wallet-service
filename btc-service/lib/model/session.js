@@ -7,11 +7,11 @@ var BaseSession = BaseWalletService.Model.Session;
 var Defaults = require('../common/defaults');
 var inherits = require('inherits');
 
-function BtcSession(opts) {
-	var context = {
-		Defaults: Defaults
-	};
+var context = {
+	Defaults: Defaults
+};
 
+function BtcSession(opts) {
   return BaseSession.apply(this, [context, opts]);
 };
 inherits(BtcSession, BaseSession);
@@ -25,10 +25,6 @@ Object.keys(BaseSession).forEach(function(key) {
  *
  */
 BtcSession.fromObj = function(obj) {
-	var context = {
-		Defaults: Defaults
-	};
-
 	return BaseSession.fromObj(context, obj);
 };
 

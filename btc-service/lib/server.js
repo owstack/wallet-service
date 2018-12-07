@@ -24,27 +24,27 @@ var Wallet = Model.Wallet;
 var inherits = require('inherits');
 var lodash = owsCommon.deps.lodash;
 
+var context = {
+	Address: Address,
+	BlockchainExplorer: BlockchainExplorer,
+	Copayer: Copayer,
+	Defaults: Defaults,
+	FiatRateService: FiatRateService,
+	Networks: Networks,
+	Session: Session,
+	Storage: Storage,
+	Transaction: Transaction,
+	TxProposal: TxProposal,
+	Unit: Unit,
+	Utils: Utils,
+	Wallet: Wallet
+};
+
 function BtcServer(opts, config, cb) {
   if (!(this instanceof BtcServer)) {
     return new BtcServer(opts, config, cb);
   }
 	
-	var context = {
-		Address: Address,
-		BlockchainExplorer: BlockchainExplorer,
-		Copayer: Copayer,
-		Defaults: Defaults,
-		FiatRateService: FiatRateService,
-		Networks: Networks,
-		Session: Session,
-		Storage: Storage,
-		Transaction: Transaction,
-		TxProposal: TxProposal,
-		Unit: Unit,
-		Utils: Utils,
-		Wallet: Wallet
-	};
-
   return Server.apply(this, [context, opts, config, cb]);
 };
 inherits(BtcServer, Server);

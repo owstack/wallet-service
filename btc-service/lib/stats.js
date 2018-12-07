@@ -8,11 +8,11 @@ var Networks = btcLib.Networks;
 var Stats = BaseWalletService.Stats;
 var inherits = require('inherits');
 
-function BtcStats(config) {
-	var context = {
-		Networks: Networks
-	};
+var context = {
+	Networks: Networks
+};
 
+function BtcStats(config) {
   return Stats.apply(this, [context, config]);
 };
 inherits(BtcStats, Stats);

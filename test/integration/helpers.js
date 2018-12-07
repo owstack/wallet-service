@@ -23,10 +23,12 @@ var Storage = WalletService.Storage;
 var testConfig = require('../testconfig');
 var TestData = require('../testdata');
 var tingodb = require('tingodb')({memStore: true});
+var Unit = btcLib.Unit;
 var Utils = WalletService.Common.Utils;
 var Server = WalletService.Server;
 var lodash = owsCommon.deps.lodash;
 
+var atomicsName = Unit().atomicsName();
 var storage;
 var blockchainExplorer;
 var useMongoDb = !!process.env.USE_MONGO_DB;
@@ -235,11 +237,11 @@ helpers.randomTXID = function() {
   return Hash.sha256(new Buffer(Math.random() * 100000)).toString('hex');;
 };
 
-helpers.toSatoshi = function(btc) {
-  if (lodash.isArray(btc)) {
-    return lodash.map(btc, helpers.toSatoshi);
+helpers.toAtomic = function(standards) {
+  if (lodash.isArray(standards)) {
+    return lodash.map(standards, helpers.toAtomic);
   } else {
-    return Utils.strip(btc * 1e8);
+    return Utils.strip(Unit.fromStandardUnit(standards).toAtomicUnit());
   }
 };
 
@@ -315,15 +317,16 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
         }
         should.exist(scriptPubKey);
 
-        return {
+        var res = {
           txid: helpers.randomTXID(),
           vout: lodash.random(0, 10),
-          satoshis: parsed.amount,
           scriptPubKey: scriptPubKey.toBuffer().toString('hex'),
           address: address.address,
           confirmations: parsed.confirmations,
           publicKeys: address.publicKeys,
         };
+        res[atomicsName] = parsed.amount;
+        return res;
       }));
 
       if (opts.keepUtxos) {
@@ -394,8 +397,6 @@ helpers.stubAddressActivity = function(activeAddresses) {
 };
 
 helpers.clientSign = function(txp, derivedXPrivKey) {
-  var self = this;
-
   //Derive proper key to sign, for each input
   var privs = [];
   var derived = {};

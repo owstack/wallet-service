@@ -70,7 +70,7 @@ Explorer.prototype.getUtxos = function(addresses, cb) {
 };
 
 /**
- * Broadcast a transaction to the bitcoin network
+ * Broadcast a transaction to the network
  */
 Explorer.prototype.broadcast = function(rawTx, cb) {
   var args = {
@@ -134,8 +134,10 @@ Explorer.prototype.getTransactions = function(addresses, from, to, cb) {
         txs = txs.items;
     }
 
-    // NOTE: Whenever Explorer breaks communication with bitcoind, it returns invalid data but no error code.
-    if (!lodash.isArray(txs) || (txs.length != lodash.compact(txs).length)) return cb(new Error('Could not retrieve transactions from blockchain. Request was:' + JSON.stringify(args)));
+    // NOTE: When Explorer breaks communication with the full-node, it returns invalid data but no error code.
+    if (!lodash.isArray(txs) || (txs.length != lodash.compact(txs).length)) {
+      return cb(new Error('Could not retrieve transactions from blockchain. Request was:' + JSON.stringify(args)));
+    }
 
     return cb(null, txs, total);
   });

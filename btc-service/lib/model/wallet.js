@@ -8,12 +8,12 @@ var Address = require('./address');
 var Copayer = require('./copayer');
 var inherits = require('inherits');
 
-function BtcWallet(obj) {
-	var context = {
-		Address: Address,
-		Copayer: Copayer
-	};
+var context = {
+	Address: Address,
+	Copayer: Copayer
+};
 
+function BtcWallet(obj) {
   return BaseWallet.apply(this, [context, obj]);
 };
 inherits(BtcWallet, BaseWallet);
@@ -27,11 +27,6 @@ Object.keys(BaseWallet).forEach(function(key) {
  *
  */
 BtcWallet.create = function(obj) {
-	var context = {
-		Address: Address,
-		Copayer: Copayer
-	};
-
 	return BaseWallet.create(context, obj);
 };
 
@@ -39,11 +34,6 @@ BtcWallet.create = function(obj) {
  *
  */
 BtcWallet.fromObj = function(obj) {
-	var context = {
-		Address: Address,
-		Copayer: Copayer
-	};
-
 	return BaseWallet.fromObj(context, obj);
 };
 

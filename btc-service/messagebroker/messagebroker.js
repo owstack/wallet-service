@@ -9,11 +9,11 @@ var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcMessageBroker(config) {
-	var context = {
-		Networks: Networks
-	};
+var context = {
+	Networks: Networks
+};
 
+function BtcMessageBroker(config) {
   BaseMessageBroker.apply(this, [context, config]);
 };
 inherits(BtcMessageBroker, BaseMessageBroker);

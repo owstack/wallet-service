@@ -10,12 +10,12 @@ var EmailService = require('../lib/emailservice');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcEmailService(config) {
-	var context = {
-		EmailService: EmailService,
-		Networks: Networks
-	};
+var context = {
+	EmailService: EmailService,
+	Networks: Networks
+};
 
+function BtcEmailService(config) {
   BaseEmailService.apply(this, [context, config]);
 };
 inherits(BtcEmailService, BaseEmailService);

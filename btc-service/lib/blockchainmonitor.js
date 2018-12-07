@@ -9,12 +9,12 @@ var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcBlockchainMonitor(config) {
-	var context = {
-		BlockchainExplorer: BlockchainExplorer,
-		Networks: Networks
-	};
+var context = {
+	BlockchainExplorer: BlockchainExplorer,
+	Networks: Networks
+};
 
+function BtcBlockchainMonitor(config) {
   return BlockchainMonitor.apply(this, [context, config]);
 };
 inherits(BtcBlockchainMonitor, BlockchainMonitor);

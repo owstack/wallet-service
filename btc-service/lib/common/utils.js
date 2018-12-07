@@ -8,14 +8,14 @@ var Unit = btcLib.Unit;
 var Utils = BaseWalletService.Common.Utils;
 var inherits = require('inherits');
 
+var context = {
+	Unit: Unit
+};
+
 function BtcUtils() {
   if (!(this instanceof BtcUtils)) {
     return new BtcUtils();
   }
-
-	var context = {
-		Unit: Unit
-	};
 
   return Utils.apply(this, [context]);
 };

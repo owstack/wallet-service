@@ -22,6 +22,7 @@ function TxProposal(context, opts) {
   // Set some frequently used contant values based on context.
   this.LIVENET = this.ctx.Networks.livenet.code;
   this.TESTNET = this.ctx.Networks.testnet.code;
+  this.atomicsName = this.ctx.Unit().atomicsName();
 
   opts = opts || {};
 
@@ -160,10 +161,10 @@ TxProposal.prototype._buildTx = function() {
   lodash.each(self.outputs, function(o) {
     $.checkState(o.script || o.toAddress, 'Output should have either toAddress or script specified');
     if (o.script) {
-      t.addOutput(new self.ctx.Transaction.Output({
-        script: o.script,
-        satoshis: o.amount
-      }));
+      var arg = {};
+      arg.script = o.script;
+      arg[self.atomicsName] = o.amount;
+      t.addOutput(new self.ctx.Transaction.Output(arg));
     } else {
       t.to(o.toAddress, o.amount);
     }
@@ -188,9 +189,9 @@ TxProposal.prototype._buildTx = function() {
     });
   }
 
-  // Validate actual inputs vs outputs independently of Btc
-  var totalInputs = lodash.sumBy(t.inputs, 'output.satoshis');
-  var totalOutputs = lodash.sumBy(t.outputs, 'satoshis');
+  // Validate actual inputs vs outputs independently
+  var totalInputs = lodash.sumBy(t.inputs, 'output.'+self.atomicsName);
+  var totalOutputs = lodash.sumBy(t.outputs, self.atomicsName);
 
   $.checkState(totalInputs > 0 && totalOutputs > 0 && totalInputs >= totalOutputs);
   $.checkState(totalInputs - totalOutputs <= this.ctx.Defaults.MAX_TX_FEE);

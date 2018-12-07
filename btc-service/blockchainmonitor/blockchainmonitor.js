@@ -8,11 +8,11 @@ var BaseBlockchainMonitor = baseService.BlockchainMonitor;
 var BlockchainMonitor = require('../lib/blockchainmonitor');
 var inherits = require('inherits');
 
-function BtcBlockchainMonitor(config) {
-	var context = {
-		BlockchainMonitor: BlockchainMonitor
-	};
+var context = {
+	BlockchainMonitor: BlockchainMonitor
+};
 
+function BtcBlockchainMonitor(config) {
   BaseBlockchainMonitor.apply(this, [context, config]);
 };
 inherits(BtcBlockchainMonitor, BaseBlockchainMonitor);

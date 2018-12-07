@@ -8,11 +8,11 @@ var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcExplorer(opts) {
-	var context = {
-		Networks: Networks
-	};
+var context = {
+	Networks: Networks
+};
 
+function BtcExplorer(opts) {
   return Explorer.apply(this, [context, opts]);
 };
 inherits(BtcExplorer, Explorer);

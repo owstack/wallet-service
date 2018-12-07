@@ -7,11 +7,11 @@ var FiatRateService = BaseWalletService.FiatRateService;
 var Storage = require('./storage');
 var inherits = require('inherits');
 
-function BtcFiatRateService(config) {
-	var context = {
-		Storage: Storage
-	};
+var context = {
+	Storage: Storage
+};
 
+function BtcFiatRateService(config) {
   return FiatRateService.apply(this, [context, config]);
 };
 inherits(BtcFiatRateService, FiatRateService);
