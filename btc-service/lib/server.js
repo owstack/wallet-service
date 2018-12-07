@@ -1,24 +1,25 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BaseServer = BaseWalletService.Server;
 
 var owsCommon = require('@owstack/ows-common');
-var btcLib = require('@owstack/btc-lib');
 var Common = require('./common');
 var Model = require('./model');
-var Address = btcLib.Address;
+var Address = cLib.Address;
 var BlockchainExplorer = require('./blockchainexplorer');
 var Copayer = Model.Copayer;
 var Defaults = Common.Defaults;
 var FiatRateService = require('./fiatrateservice');
-var Networks = btcLib.Networks;
-var Server = BaseWalletService.Server;
+var Networks = cLib.Networks;
 var Session = Model.Session;
 var Storage = require('./storage');
-var Transaction = btcLib.Transaction;
+var Transaction = cLib.Transaction;
 var TxProposal = Model.TxProposal;
-var Unit = btcLib.Unit;
+var Unit = cLib.Unit;
 var Utils = Common.Utils;
 var Wallet = Model.Wallet;
 var inherits = require('inherits');
@@ -45,13 +46,13 @@ function CServer(opts, config, cb) {
     return new CServer(opts, config, cb);
   }
 	
-  return Server.apply(this, [context, opts, config, cb]);
+  return BaseServer.apply(this, [context, opts, config, cb]);
 };
-inherits(CServer, Server);
+inherits(CServer, BaseServer);
 
 // Expose all static methods.
-Object.keys(Server).forEach(function(key) {
-  CServer[key] = Server[key];
+Object.keys(BaseServer).forEach(function(key) {
+  CServer[key] = BaseServer[key];
 });
 
 /**

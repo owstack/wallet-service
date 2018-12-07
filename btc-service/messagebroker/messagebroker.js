@@ -2,11 +2,12 @@
 
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../base-service');
 var BaseMessageBroker = baseService.MessageBroker;
 
-var btcLib = require('@owstack/btc-lib');
-var Networks = btcLib.Networks;
+var Networks = cLib.Networks;
 var inherits = require('inherits');
 
 var context = {

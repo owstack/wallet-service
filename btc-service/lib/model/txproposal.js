@@ -1,15 +1,16 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../../base-service');
 var BaseWalletService = baseService.WalletService;
-
 var BaseTxProposal = BaseWalletService.Model.TxProposal;
-var btcLib = require('@owstack/btc-lib');
-var Address = btcLib.Address;
+
+var Address = cLib.Address;
 var Defaults = require('../common/defaults');
-var Networks = btcLib.Networks;
-var Transaction = btcLib.Transaction;
-var Unit = btcLib.Unit;
+var Networks = cLib.Networks;
+var Transaction = cLib.Transaction;
+var Unit = cLib.Unit;
 var inherits = require('inherits');
 
 var context = {

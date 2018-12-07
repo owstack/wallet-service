@@ -2,8 +2,8 @@
 
 var baseService = require('../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BaseFiatRateService = BaseWalletService.FiatRateService;
 
-var FiatRateService = BaseWalletService.FiatRateService;
 var Storage = require('./storage');
 var inherits = require('inherits');
 
@@ -12,13 +12,13 @@ var context = {
 };
 
 function CFiatRateService(config) {
-  return FiatRateService.apply(this, [context, config]);
+  BaseFiatRateService.apply(this, [context, config]);
 };
-inherits(CFiatRateService, FiatRateService);
+inherits(CFiatRateService, BaseFiatRateService);
 
 // Expose all static methods.
-Object.keys(FiatRateService).forEach(function(key) {
-  CFiatRateService[key] = FiatRateService[key];
+Object.keys(BaseFiatRateService).forEach(function(key) {
+  CFiatRateService[key] = BaseFiatRateService[key];
 });
 
 module.exports = CFiatRateService;

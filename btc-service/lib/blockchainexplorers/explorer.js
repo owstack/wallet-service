@@ -1,11 +1,12 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BaseExplorer = BaseWalletService.BlockchainExplorers.Explorer;
 
-var Explorer = BaseWalletService.BlockchainExplorers.Explorer;
-var btcLib = require('@owstack/btc-lib');
-var Networks = btcLib.Networks;
+var Networks = cLib.Networks;
 var inherits = require('inherits');
 
 var context = {
@@ -13,13 +14,13 @@ var context = {
 };
 
 function CExplorer(opts) {
-  return Explorer.apply(this, [context, opts]);
+  return BaseExplorer.apply(this, [context, opts]);
 };
-inherits(CExplorer, Explorer);
+inherits(CExplorer, BaseExplorer);
 
 // Expose all static methods.
-Object.keys(Explorer).forEach(function(key) {
-  CExplorer[key] = Explorer[key];
+Object.keys(BaseExplorer).forEach(function(key) {
+  CExplorer[key] = BaseExplorer[key];
 });
 
 module.exports = CExplorer;

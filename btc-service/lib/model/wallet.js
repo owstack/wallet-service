@@ -2,8 +2,8 @@
 
 var baseService = require('../../../base-service');
 var BaseWalletService = baseService.WalletService;
-
 var BaseWallet = BaseWalletService.Model.Wallet;
+
 var Address = require('./address');
 var Copayer = require('./copayer');
 var inherits = require('inherits');

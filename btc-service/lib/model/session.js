@@ -2,8 +2,8 @@
 
 var baseService = require('../../../base-service');
 var BaseWalletService = baseService.WalletService;
-
 var BaseSession = BaseWalletService.Model.Session;
+
 var Defaults = require('../common/defaults');
 var inherits = require('inherits');
 

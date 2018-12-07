@@ -4,7 +4,6 @@ var owsCommon = require('@owstack/ows-common');
 var baseConfig = require('../config');
 var log = require('npmlog');
 var lodash = owsCommon.deps.lodash;
-var WalletService = require('./server');
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
@@ -29,7 +28,7 @@ function BlockchainExplorer(context, opts, config) {
 
   var url = this.config[this.COIN].url || providers[provider][network].url;
   var apiPrefix = this.config[this.COIN].apiPrefix || providers[provider][network].apiPrefix;
-  var userAgent = WalletService.getServiceVersion();
+  var userAgent = this.ctx.Server.getServiceVersion();
 
   switch (provider) {
     case 'explorer':

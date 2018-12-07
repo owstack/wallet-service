@@ -1,13 +1,14 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BaseBlockchainMonitor = BaseWalletService.BlockchainMonitor;
 
 var BlockchainExplorer = require('./blockchainexplorer');
-var BlockchainMonitor = BaseWalletService.BlockchainMonitor;
-var btcLib = require('@owstack/btc-lib');
-var Networks = btcLib.Networks;
-var Unit = btcLib.Unit;
+var Networks = cLib.Networks;
+var Unit = cLib.Unit;
 var inherits = require('inherits');
 
 var context = {
@@ -17,13 +18,13 @@ var context = {
 };
 
 function CBlockchainMonitor(config) {
-  return BlockchainMonitor.apply(this, [context, config]);
+  BaseBlockchainMonitor.apply(this, [context, config]);
 };
-inherits(CBlockchainMonitor, BlockchainMonitor);
+inherits(CBlockchainMonitor, BaseBlockchainMonitor);
 
 // Expose all static methods.
-Object.keys(BlockchainMonitor).forEach(function(key) {
-  CBlockchainMonitor[key] = BlockchainMonitor[key];
+Object.keys(BaseBlockchainMonitor).forEach(function(key) {
+  CBlockchainMonitor[key] = BaseBlockchainMonitor[key];
 });
 
 module.exports = CBlockchainMonitor;

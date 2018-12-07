@@ -1,11 +1,12 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../../base-service');
 var BaseWalletService = baseService.WalletService;
-
 var BaseAddress = BaseWalletService.Model.Address;
-var btcLib = require('@owstack/btc-lib');
-var Address = btcLib.Address;
+
+var Address = cLib.Address;
 var inherits = require('inherits');
 
 var context = {

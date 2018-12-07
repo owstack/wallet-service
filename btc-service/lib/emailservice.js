@@ -1,12 +1,13 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BaseEmailService = BaseWalletService.EmailService;
 
-var EmailService = BaseWalletService.EmailService;
-var btcLib = require('@owstack/btc-lib');
 var Common = require('./common');
-var Networks = btcLib.Networks;
+var Networks = cLib.Networks;
 var Storage = require('./storage');
 var Utils = Common.Utils;
 var inherits = require('inherits');
@@ -18,13 +19,13 @@ var context = {
 };
 
 function CEmailService(config) {
-  return EmailService.apply(this, [context, config]);
+  BaseEmailService.apply(this, [context, config]);
 };
-inherits(CEmailService, EmailService);
+inherits(CEmailService, BaseEmailService);
 
 // Expose all static methods.
-Object.keys(EmailService).forEach(function(key) {
-  CEmailService[key] = EmailService[key];
+Object.keys(BaseEmailService).forEach(function(key) {
+  CEmailService[key] = BaseEmailService[key];
 });
 
 module.exports = CEmailService;

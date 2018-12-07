@@ -2,10 +2,10 @@
 
 var baseService = require('../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BaseStorage = BaseWalletService.Storage;
 
 var Address = require('./model/address');
 var Session = require('./model/session');
-var Storage = BaseWalletService.Storage;
 var TxProposal = require('./model/txproposal');
 var Wallet = require('./model/wallet');
 var inherits = require('inherits');
@@ -18,13 +18,13 @@ var context = {
 };
 
 function CStorage(config) {
-  return Storage.apply(this, [context, config]);
+  return BaseStorage.apply(this, [context, config]);
 };
-inherits(CStorage, Storage);
+inherits(CStorage, BaseStorage);
 
 // Expose all static methods.
-Object.keys(Storage).forEach(function(key) {
-  CStorage[key] = Storage[key];
+Object.keys(BaseStorage).forEach(function(key) {
+  CStorage[key] = BaseStorage[key];
 });
 
 module.exports = CStorage;

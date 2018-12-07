@@ -1,12 +1,13 @@
 'use strict';
 
+var cLib = require('@owstack/btc-lib');
+
 var baseService = require('../../base-service');
 var BaseWalletService = baseService.WalletService;
+var BasePushNotificationsService = BaseWalletService.PushNotificationsService;
 
-var PushNotificationsService = BaseWalletService.PushNotificationsService;
-var btcLib = require('@owstack/btc-lib');
 var Common = require('./common');
-var Networks = btcLib.Networks;
+var Networks = cLib.Networks;
 var Storage = require('./storage');
 var Utils = Common.Utils;
 var inherits = require('inherits');
@@ -18,13 +19,13 @@ var context = {
 };
 
 function CPushNotificationsService(config) {
-  return PushNotificationsService.apply(this, [context, config]);
+  BasePushNotificationsService.apply(this, [context, config]);
 };
-inherits(CPushNotificationsService, PushNotificationsService);
+inherits(CPushNotificationsService, BasePushNotificationsService);
 
 // Expose all static methods.
-Object.keys(PushNotificationsService).forEach(function(key) {
-  CPushNotificationsService[key] = PushNotificationsService[key];
+Object.keys(BasePushNotificationsService).forEach(function(key) {
+  CPushNotificationsService[key] = BasePushNotificationsService[key];
 });
 
 module.exports = CPushNotificationsService;
