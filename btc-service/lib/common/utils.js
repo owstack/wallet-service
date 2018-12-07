@@ -1,6 +1,6 @@
 'use strict';
 
-var cLib = require('@owstack/btc-lib');
+var cLib = require('../../cLib');
 
 var baseService = require('../../../base-service');
 var BaseWalletService = baseService.WalletService;
