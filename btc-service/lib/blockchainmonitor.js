@@ -7,11 +7,13 @@ var BlockchainExplorer = require('./blockchainexplorer');
 var BlockchainMonitor = BaseWalletService.BlockchainMonitor;
 var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
+var Unit = btcLib.Unit;
 var inherits = require('inherits');
 
 var context = {
 	BlockchainExplorer: BlockchainExplorer,
-	Networks: Networks
+	Networks: Networks,
+	Unit: Unit
 };
 
 function BtcBlockchainMonitor(config) {

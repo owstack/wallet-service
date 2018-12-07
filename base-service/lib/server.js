@@ -3107,7 +3107,7 @@ WalletService.prototype._normalizeTxHistory = function(txs) {
     var inputs = lodash.map(tx.vin, function(item) {
       return {
         address: item.addr,
-        amount: item.valueSat,
+        amount: item.valueAtomic,
       }
     });
 
