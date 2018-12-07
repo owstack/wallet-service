@@ -11,14 +11,14 @@ var context = {
 	Storage: Storage
 };
 
-function BtcFiatRateService(config) {
+function CFiatRateService(config) {
   return FiatRateService.apply(this, [context, config]);
 };
-inherits(BtcFiatRateService, FiatRateService);
+inherits(CFiatRateService, FiatRateService);
 
 // Expose all static methods.
 Object.keys(FiatRateService).forEach(function(key) {
-  BtcFiatRateService[key] = FiatRateService[key];
+  CFiatRateService[key] = FiatRateService[key];
 });
 
-module.exports = BtcFiatRateService;
+module.exports = CFiatRateService;

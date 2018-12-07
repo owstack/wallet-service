@@ -12,16 +12,16 @@ var context = {
 	BlockchainMonitor: BlockchainMonitor
 };
 
-function BtcBlockchainMonitor(config) {
+function CBlockchainMonitor(config) {
   BaseBlockchainMonitor.apply(this, [context, config]);
 };
-inherits(BtcBlockchainMonitor, BaseBlockchainMonitor);
+inherits(CBlockchainMonitor, BaseBlockchainMonitor);
 
 // Expose all static methods.
 Object.keys(BaseBlockchainMonitor).forEach(function(key) {
-  BtcBlockchainMonitor[key] = BaseBlockchainMonitor[key];
+  CBlockchainMonitor[key] = BaseBlockchainMonitor[key];
 });
 
 // Start the service with base configuration (default).
-var service = new BtcBlockchainMonitor();
+var service = new CBlockchainMonitor();
 service.start();

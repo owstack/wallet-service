@@ -16,14 +16,14 @@ var context = {
 	Unit: Unit
 };
 
-function BtcBlockchainMonitor(config) {
+function CBlockchainMonitor(config) {
   return BlockchainMonitor.apply(this, [context, config]);
 };
-inherits(BtcBlockchainMonitor, BlockchainMonitor);
+inherits(CBlockchainMonitor, BlockchainMonitor);
 
 // Expose all static methods.
 Object.keys(BlockchainMonitor).forEach(function(key) {
-  BtcBlockchainMonitor[key] = BlockchainMonitor[key];
+  CBlockchainMonitor[key] = BlockchainMonitor[key];
 });
 
-module.exports = BtcBlockchainMonitor;
+module.exports = CBlockchainMonitor;

@@ -15,14 +15,14 @@ var context = {
 	Networks: Networks
 };
 
-function BtcNode(config, opts) {
+function CNode(config, opts) {
   BaseNode.apply(this, [context, config, opts]);
 };
-inherits(BtcNode, BaseNode);
+inherits(CNode, BaseNode);
 
 // Expose all static methods.
 Object.keys(BaseNode).forEach(function(key) {
-  BtcNode[key] = BaseNode[key];
+  CNode[key] = BaseNode[key];
 });
 
-module.exports = BtcNode;
+module.exports = CNode;

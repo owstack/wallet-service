@@ -17,14 +17,14 @@ var context = {
 	Utils: Utils
 };
 
-function BtcEmailService(config) {
+function CEmailService(config) {
   return EmailService.apply(this, [context, config]);
 };
-inherits(BtcEmailService, EmailService);
+inherits(CEmailService, EmailService);
 
 // Expose all static methods.
 Object.keys(EmailService).forEach(function(key) {
-  BtcEmailService[key] = EmailService[key];
+  CEmailService[key] = EmailService[key];
 });
 
-module.exports = BtcEmailService;
+module.exports = CEmailService;

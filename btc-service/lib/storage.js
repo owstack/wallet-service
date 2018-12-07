@@ -17,14 +17,14 @@ var context = {
 	Wallet: Wallet
 };
 
-function BtcStorage(config) {
+function CStorage(config) {
   return Storage.apply(this, [context, config]);
 };
-inherits(BtcStorage, Storage);
+inherits(CStorage, Storage);
 
 // Expose all static methods.
 Object.keys(Storage).forEach(function(key) {
-  BtcStorage[key] = Storage[key];
+  CStorage[key] = Storage[key];
 });
 
-module.exports = BtcStorage;
+module.exports = CStorage;

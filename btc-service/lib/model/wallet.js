@@ -13,28 +13,28 @@ var context = {
 	Copayer: Copayer
 };
 
-function BtcWallet(obj) {
+function CWallet(obj) {
   return BaseWallet.apply(this, [context, obj]);
 };
-inherits(BtcWallet, BaseWallet);
+inherits(CWallet, BaseWallet);
 
 // Expose all static methods.
 Object.keys(BaseWallet).forEach(function(key) {
-  BtcWallet[key] = BaseWallet[key];
+  CWallet[key] = BaseWallet[key];
 });
 
 /**
  *
  */
-BtcWallet.create = function(obj) {
+CWallet.create = function(obj) {
 	return BaseWallet.create(context, obj);
 };
 
 /**
  *
  */
-BtcWallet.fromObj = function(obj) {
+CWallet.fromObj = function(obj) {
 	return BaseWallet.fromObj(context, obj);
 };
 
-module.exports = BtcWallet;
+module.exports = CWallet;

@@ -12,16 +12,16 @@ var context = {
 	FiatRateService: FiatRateService
 };
 
-function BtcFiatRateService(config) {
+function CFiatRateService(config) {
   BaseFiatRateService.apply(this, [context, config]);
 };
-inherits(BtcFiatRateService, BaseFiatRateService);
+inherits(CFiatRateService, BaseFiatRateService);
 
 // Expose all static methods.
 Object.keys(BaseFiatRateService).forEach(function(key) {
-  BtcFiatRateService[key] = BaseFiatRateService[key];
+  CFiatRateService[key] = BaseFiatRateService[key];
 });
 
 // Start the service with base configuration (default).
-var service = new BtcFiatRateService();
+var service = new CFiatRateService();
 service.start();

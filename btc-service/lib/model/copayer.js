@@ -11,28 +11,28 @@ var context = {
 	Address: Address
 };
 
-function BtcCopayer(opts) {
+function CCopayer(opts) {
   return BaseCopayer.apply(this, [context, opts]);
 };
-inherits(BtcCopayer, BaseCopayer);
+inherits(CCopayer, BaseCopayer);
 
 // Expose all static methods.
 Object.keys(BaseCopayer).forEach(function(key) {
-  BtcCopayer[key] = BaseCopayer[key];
+  CCopayer[key] = BaseCopayer[key];
 });
 
 /**
  *
  */
-BtcCopayer.create = function(opts) {
+CCopayer.create = function(opts) {
 	return BaseCopayer.create(context, opts);
 };
 
 /**
  *
  */
-BtcCopayer.fromObj = function(obj) {
+CCopayer.fromObj = function(obj) {
 	return BaseCopayer.fromObj(context, obj);
 };
 
-module.exports = BtcCopayer;
+module.exports = CCopayer;

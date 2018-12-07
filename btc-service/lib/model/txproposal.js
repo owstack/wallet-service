@@ -20,21 +20,21 @@ var context = {
 	Unit: Unit
 };
 
-function BtcTxProposal(opts) {
+function CTxProposal(opts) {
   return BaseTxProposal.apply(this, [context, opts]);
 };
-inherits(BtcTxProposal, BaseTxProposal);
+inherits(CTxProposal, BaseTxProposal);
 
 // Expose all static methods.
 Object.keys(BaseTxProposal).forEach(function(key) {
-  BtcTxProposal[key] = BaseTxProposal[key];
+  CTxProposal[key] = BaseTxProposal[key];
 });
 
 /**
  *
  */
-BtcTxProposal.fromObj = function(obj) {
+CTxProposal.fromObj = function(obj) {
 	return BaseTxProposal.fromObj(context, obj);
 };
 
-module.exports = BtcTxProposal;
+module.exports = CTxProposal;

@@ -12,28 +12,28 @@ var context = {
 	Address: Address
 };
 
-function BtcAddress() {
+function CAddress() {
   return BaseAddress.apply(this, [context]);
 };
-inherits(BtcAddress, BaseAddress);
+inherits(CAddress, BaseAddress);
 
 // Expose all static methods.
 Object.keys(BaseAddress).forEach(function(key) {
-  BtcAddress[key] = BaseAddress[key];
+  CAddress[key] = BaseAddress[key];
 });
 
 /**
  *
  */
-BtcAddress.create = function(opts) {
+CAddress.create = function(opts) {
 	return BaseAddress.create(context, opts);
 };
 
 /**
  *
  */
-BtcAddress.fromObj = function(obj) {
+CAddress.fromObj = function(obj) {
 	return BaseAddress.fromObj(context, obj);
 };
 
-module.exports = BtcAddress;
+module.exports = CAddress;

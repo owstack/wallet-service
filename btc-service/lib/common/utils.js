@@ -12,18 +12,18 @@ var context = {
 	Unit: Unit
 };
 
-function BtcUtils() {
-  if (!(this instanceof BtcUtils)) {
-    return new BtcUtils();
+function CUtils() {
+  if (!(this instanceof CUtils)) {
+    return new CUtils();
   }
 
   return Utils.apply(this, [context]);
 };
-inherits(BtcUtils, Utils);
+inherits(CUtils, Utils);
 
 // Expose all static methods.
 Object.keys(Utils).forEach(function(key) {
-  BtcUtils[key] = Utils[key];
+  CUtils[key] = Utils[key];
 });
 
-module.exports = BtcUtils;
+module.exports = CUtils;

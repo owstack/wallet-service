@@ -11,21 +11,21 @@ var context = {
 	Defaults: Defaults
 };
 
-function BtcSession(opts) {
+function CSession(opts) {
   return BaseSession.apply(this, [context, opts]);
 };
-inherits(BtcSession, BaseSession);
+inherits(CSession, BaseSession);
 
 // Expose all static methods.
 Object.keys(BaseSession).forEach(function(key) {
-  BtcSession[key] = BaseSession[key];
+  CSession[key] = BaseSession[key];
 });
 
 /**
  *
  */
-BtcSession.fromObj = function(obj) {
+CSession.fromObj = function(obj) {
 	return BaseSession.fromObj(context, obj);
 };
 
-module.exports = BtcSession;
+module.exports = CSession;

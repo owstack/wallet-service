@@ -12,16 +12,16 @@ var context = {
 	PushNotificationsService: PushNotificationsService
 };
 
-function BtcPushNotificationsService(config) {
+function CPushNotificationsService(config) {
   BasePushNotificationsService.apply(this, [context, config]);
 };
-inherits(BtcPushNotificationsService, BasePushNotificationsService);
+inherits(CPushNotificationsService, BasePushNotificationsService);
 
 // Expose all static methods.
 Object.keys(BasePushNotificationsService).forEach(function(key) {
-  BtcPushNotificationsService[key] = BasePushNotificationsService[key];
+  CPushNotificationsService[key] = BasePushNotificationsService[key];
 });
 
 // Start the service with base configuration (default) and no options.
-var service = new BtcPushNotificationsService();
+var service = new CPushNotificationsService();
 service.start();

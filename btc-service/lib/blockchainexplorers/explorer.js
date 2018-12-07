@@ -12,14 +12,14 @@ var context = {
 	Networks: Networks
 };
 
-function BtcExplorer(opts) {
+function CExplorer(opts) {
   return Explorer.apply(this, [context, opts]);
 };
-inherits(BtcExplorer, Explorer);
+inherits(CExplorer, Explorer);
 
 // Expose all static methods.
 Object.keys(Explorer).forEach(function(key) {
-  BtcExplorer[key] = Explorer[key];
+  CExplorer[key] = Explorer[key];
 });
 
-module.exports = BtcExplorer;
+module.exports = CExplorer;

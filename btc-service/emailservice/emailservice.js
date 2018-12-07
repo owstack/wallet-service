@@ -15,16 +15,16 @@ var context = {
 	Networks: Networks
 };
 
-function BtcEmailService(config) {
+function CEmailService(config) {
   BaseEmailService.apply(this, [context, config]);
 };
-inherits(BtcEmailService, BaseEmailService);
+inherits(CEmailService, BaseEmailService);
 
 // Expose all static methods.
 Object.keys(BaseEmailService).forEach(function(key) {
-  BtcEmailService[key] = BaseEmailService[key];
+  CEmailService[key] = BaseEmailService[key];
 });
 
 // Start the service with base configuration (default).
-var service = new BtcEmailService();
+var service = new CEmailService();
 service.start();

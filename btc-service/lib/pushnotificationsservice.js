@@ -17,14 +17,14 @@ var context = {
 	Utils: Utils
 };
 
-function BtcPushNotificationsService(config) {
+function CPushNotificationsService(config) {
   return PushNotificationsService.apply(this, [context, config]);
 };
-inherits(BtcPushNotificationsService, PushNotificationsService);
+inherits(CPushNotificationsService, PushNotificationsService);
 
 // Expose all static methods.
 Object.keys(PushNotificationsService).forEach(function(key) {
-  BtcPushNotificationsService[key] = PushNotificationsService[key];
+  CPushNotificationsService[key] = PushNotificationsService[key];
 });
 
-module.exports = BtcPushNotificationsService;
+module.exports = CPushNotificationsService;

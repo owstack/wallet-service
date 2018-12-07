@@ -40,33 +40,33 @@ var context = {
 	Wallet: Wallet
 };
 
-function BtcServer(opts, config, cb) {
-  if (!(this instanceof BtcServer)) {
-    return new BtcServer(opts, config, cb);
+function CServer(opts, config, cb) {
+  if (!(this instanceof CServer)) {
+    return new CServer(opts, config, cb);
   }
 	
   return Server.apply(this, [context, opts, config, cb]);
 };
-inherits(BtcServer, Server);
+inherits(CServer, Server);
 
 // Expose all static methods.
 Object.keys(Server).forEach(function(key) {
-  BtcServer[key] = Server[key];
+  CServer[key] = Server[key];
 });
 
 /**
  *
  */
-BtcServer.getInstance = function(opts, config, cb) {
-  BtcServer(opts, config, cb);
+CServer.getInstance = function(opts, config, cb) {
+  CServer(opts, config, cb);
 };
 
 /**
  *
  */
-BtcServer.getInstanceWithAuth = function(opts, config, auth, cb) {
+CServer.getInstanceWithAuth = function(opts, config, auth, cb) {
   try {
-    BtcServer.getInstance(opts, config, function(server) {
+    CServer.getInstance(opts, config, function(server) {
 		  server.initInstanceWithAuth(auth, cb);
     });
   } catch (ex) {
@@ -75,4 +75,4 @@ BtcServer.getInstanceWithAuth = function(opts, config, auth, cb) {
 
 };
 
-module.exports = BtcServer;
+module.exports = CServer;

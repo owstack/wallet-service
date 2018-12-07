@@ -14,14 +14,14 @@ var context = {
 	Networks: Networks
 };
 
-function BtcBlockchainExplorer(opts, config) {
+function CBlockchainExplorer(opts, config) {
   return BlockchainExplorer.apply(this, [context, opts, config]);
 };
-inherits(BtcBlockchainExplorer, BlockchainExplorer);
+inherits(CBlockchainExplorer, BlockchainExplorer);
 
 // Expose all static methods.
 Object.keys(BlockchainExplorer).forEach(function(key) {
-  BtcBlockchainExplorer[key] = BlockchainExplorer[key];
+  CBlockchainExplorer[key] = BlockchainExplorer[key];
 });
 
-module.exports = BtcBlockchainExplorer;
+module.exports = CBlockchainExplorer;

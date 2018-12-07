@@ -12,14 +12,14 @@ var context = {
 	Networks: Networks
 };
 
-function BtcStats(config) {
+function CStats(config) {
   return Stats.apply(this, [context, config]);
 };
-inherits(BtcStats, Stats);
+inherits(CStats, Stats);
 
 // Expose all static methods.
 Object.keys(Stats).forEach(function(key) {
-  BtcStats[key] = Stats[key];
+  CStats[key] = Stats[key];
 });
 
-module.exports = BtcStats;
+module.exports = CStats;

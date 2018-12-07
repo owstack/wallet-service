@@ -13,16 +13,16 @@ var context = {
 	Networks: Networks
 };
 
-function BtcMessageBroker(config) {
+function CMessageBroker(config) {
   BaseMessageBroker.apply(this, [context, config]);
 };
-inherits(BtcMessageBroker, BaseMessageBroker);
+inherits(CMessageBroker, BaseMessageBroker);
 
 // Expose all static methods.
 Object.keys(BaseMessageBroker).forEach(function(key) {
-  BtcMessageBroker[key] = BaseMessageBroker[key];
+  CMessageBroker[key] = BaseMessageBroker[key];
 });
 
 // Start the service with base configuration (default).
-var service = new BtcMessageBroker();
+var service = new CMessageBroker();
 service.start();
