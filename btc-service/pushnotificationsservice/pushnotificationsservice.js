@@ -13,7 +13,7 @@ var context = {
 };
 
 function BtcPushNotificationsService(config) {
-  return BasePushNotificationsService.apply(this, [context, config]);
+  BasePushNotificationsService.apply(this, [context, config]);
 };
 inherits(BtcPushNotificationsService, BasePushNotificationsService);
 
@@ -22,6 +22,6 @@ Object.keys(BasePushNotificationsService).forEach(function(key) {
   BtcPushNotificationsService[key] = BasePushNotificationsService[key];
 });
 
-// Start the service with base configuration (default).
+// Start the service with base configuration (default) and no options.
 var service = new BtcPushNotificationsService();
 service.start();

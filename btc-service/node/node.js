@@ -9,13 +9,13 @@ var EmailService = require('../lib/emailservice');
 var Networks = btcLib.Networks;
 var inherits = require('inherits');
 
-function BtcNode(config, opts) {
-	var context = {
-		BlockchainMonitor: BlockchainMonitor,
-		EmailService: EmailService,
-		Networks: Networks
-	};
+var context = {
+	BlockchainMonitor: BlockchainMonitor,
+	EmailService: EmailService,
+	Networks: Networks
+};
 
+function BtcNode(config, opts) {
   BaseNode.apply(this, [context, config, opts]);
 };
 inherits(BtcNode, BaseNode);

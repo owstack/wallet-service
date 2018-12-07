@@ -14,11 +14,11 @@ function Service(context, config) {
   this.ctx = context;
 
   this.config = config || baseConfig;
-	this.pushNotificationsService = new this.ctx.PushNotificationsService(this.ctx, this.config);
+	this.pushNotificationsService = new this.ctx.PushNotificationsService(this.config);
 };
 
-Service.prototype.start = function() {
-	this.pushNotificationsService.start(function(err) {
+Service.prototype.start = function(opts) {
+	this.pushNotificationsService.start(opts, function(err) {
 	  if (err) {
 	  	throw err;
 	  }

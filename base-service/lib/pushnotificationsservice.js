@@ -58,6 +58,7 @@ function PushNotificationsService(context, config) {
 PushNotificationsService.prototype.start = function(opts, cb) {
   var self = this;
 
+  opts = opts || {};
   self.request = opts.request || defaultRequest;
 
   function _readDirectories(basePath, cb) {

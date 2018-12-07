@@ -6,7 +6,6 @@
  */
 
 var BlockchainMonitor = require('./blockchainmonitor/blockchainmonitor');
-//var DB = require('./db');
 var EmailService = require('./emailservice/emailservice');
 var FiatRateService = require('./fiatrateservice/fiatrateservice');
 var Locker = require('./locker/locker');
@@ -17,7 +16,6 @@ var WalletService = require('./lib');
 
 module.exports = {
   BlockchainMonitor: BlockchainMonitor,
-	//DB: DB,
 	EmailService: EmailService,
 	FiatRateService: FiatRateService,
 	Locker: Locker,
