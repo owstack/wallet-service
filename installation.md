@@ -5,36 +5,44 @@ Ensure MongoDB (2.6+) is installed and running. This document assumes that mongo
 See the configuration section to configure a different host/port.
 
 ### Install Wallet Service from NPM
-Use the following steps to Install wallet-service from the npmjs repository and run it with defaults.
+Use the following steps to Install wallet-service from the npmjs repository and run it with defaults. To change configuration before running, see the Configuration section.
 ```bash
 npm install @owstack/wallet-service
 cd wallet-service
 ```
-To change configuration before running, see the Configuration section.
+Create instances for all supported coin networks.
+```bash
+npm run create
+```
+Start the wallet service.
 ```bash
 npm start
 ```
 
 ### Install wallet-service from github source
-Use the following steps to Install wallet-service from github source and run it with defaults.
+Use the following steps to Install wallet-service from github source and run it with defaults. To change configuration before running, see the Configuration section.
 ```bash
 git clone https://github.com/owstack/wallet-service.git
 cd wallet-service
 npm install
 ```
-To change configuration before running, see the Configuration section.
+Create instances for all supported coin networks.
+```bash
+npm run create
+```
 ```bash
 npm start
 ```
 ### Configuration
-Configuration for all required modules can be specified in https://github.com/owstack/wallet-service/blob/master/config.js
+Configuration for all required modules can be specified in https://github.com/owstack/wallet-service/blob/master/base-service/config.js
 
-The wallet-ervice is composed of 5 separate node services:
-* Locker - locker/locker.js
+The wallet-service is composed of the following separate node services:
+* Locker - base-service/locker/locker.js
+* Wallet Service - base-service/ws.js
+
 * Message Broker - messagebroker/messagebroker.js
 * Blockchain Monitor - bcmonitor/bcmonitor.js (This service talks to the Blockchain Explorer service configured under blockchainExplorerOpts - see Configure blockchain service below.)
 * Email Service - emailservice/emailservice.js
-* Wallet Service - ws.js
 
 #### Configure MongoDB
 Example configuration for connecting to the MongoDB instance:

@@ -1,6 +1,6 @@
 {
   "name": "@owstack/wallet-service",
-  "description": "A service for mutisignatire HD Bitcoin wallets",
+  "description": "A service for multisignature HD wallets",
   "version": "0.0.1",
   "license": "MIT",
   "keywords": [
@@ -10,7 +10,7 @@
     "bch",
     "litecoin",
     "ltc",
-    "multisig",
+    "multisignature",
     "wallet",
     "server"
   ],
@@ -22,6 +22,8 @@
     "url": "https://github.com/owstack/wallet-service/issues"
   },
   "scripts": {
+    "create": "./scripts/service.js create",
+    "clean": "./scripts/service.js clean",
     "start": "./start.sh",
     "stop": "./stop.sh",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter spec test",

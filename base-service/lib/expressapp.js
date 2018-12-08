@@ -342,7 +342,7 @@ ExpressApp.prototype.start = function(cb) {
     };
   }
 
-  router.post('/v2/wallets/', createWalletLimiter, function(req, res) {
+  router.post('/v1/wallets/', createWalletLimiter, function(req, res) {
     try {
       getServer(req, res, function(server) {
         server.createWallet(req.body, function(err, walletId) {
@@ -371,7 +371,7 @@ ExpressApp.prototype.start = function(cb) {
     }
   });
 
-  router.post('/v2/wallets/:id/copayers/', function(req, res) {
+  router.post('/v1/wallets/:id/copayers/', function(req, res) {
     req.body.walletId = req.params['id'];
     try {
       getServer(req, res, function(server) {
@@ -386,7 +386,7 @@ ExpressApp.prototype.start = function(cb) {
     }
   });
 
-  router.get('/v2/wallets/', function(req, res) {
+  router.get('/v1/wallets/', function(req, res) {
     getServerWithAuth(req, res, function(server) {
       var opts = {};
       if (req.query.includeExtendedInfo == '1') opts.includeExtendedInfo = true;
@@ -455,7 +455,7 @@ ExpressApp.prototype.start = function(cb) {
     return returnError(err, res, req);
   });
 
-  router.post('/v2/txproposals/', function(req, res) {
+  router.post('/v1/txproposals/', function(req, res) {
     getServerWithAuth(req, res, function(server) {
       server.createTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
@@ -464,7 +464,7 @@ ExpressApp.prototype.start = function(cb) {
     });
   });
 
-  router.post('/v3/addresses/', function(req, res) {
+  router.post('/v1/addresses/', function(req, res) {
     getServerWithAuth(req, res, function(server) {
       server.createAddress(req.body, function(err, address) {
         if (err) return returnError(err, res, req);
@@ -497,7 +497,7 @@ ExpressApp.prototype.start = function(cb) {
     });
   });
 
-  router.get('/v3/feelevels/:network', function(req, res) {
+  router.get('/v1/feelevels/:network', function(req, res) {
     var opts = {};
     if (req.params['network']) {
       opts.network = req.params['network'];
@@ -769,7 +769,7 @@ ExpressApp.prototype.start = function(cb) {
     });
   });
 
-  router.delete('/v2/pushnotifications/subscriptions/:token', function(req, res) {
+  router.delete('/v1/pushnotifications/subscriptions/:token', function(req, res) {
     var opts = {
       token: req.params['token'],
     };
