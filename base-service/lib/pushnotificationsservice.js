@@ -76,12 +76,13 @@ PushNotificationsService.prototype.start = function(opts, cb) {
     });
   };
 
-  self.templatePath = path.normalize((self.config.pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
-  self.defaultLanguage = self.config.pushNotificationsOpts.defaultLanguage;
+  var pushNotificationsOpts = self.config.pushNotificationsOpts;
+  self.templatePath = path.normalize((pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
+  self.defaultLanguage = pushNotificationsOpts.defaultLanguage;
   self.defaultUnit = self.ctx.Unit().standardsName();
-  self.subjectPrefix = self.config.pushNotificationsOpts.subjectPrefix || '';
-  self.pushServerUrl = self.config.pushNotificationsOpts.pushServerUrl;
-  self.authorizationKey = self.config.pushNotificationsOpts.authorizationKey;
+  self.subjectPrefix = pushNotificationsOpts.subjectPrefix || '';
+  self.pushServerUrl = pushNotificationsOpts.pushServerUrl;
+  self.authorizationKey = pushNotificationsOpts.authorizationKey;
 
   $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
   $.checkArgument(self.authorizationKey, 'Missing authorizationKey attribute in configuration.');

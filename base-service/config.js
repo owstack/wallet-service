@@ -43,6 +43,28 @@ var config = {
     }
   },
 
+  // To use email notifications:
+  // emailOpts: {
+  //  host: 'localhost',
+  //  port: 25,
+  //  ignoreTLS: true,
+  //  subjectPrefix: '[Wallet Service]',
+  //  from: 'wallet-service@btc.io',
+  //  templatePath: './lib/templates',
+  //  defaultLanguage: 'en',
+  //  publicTxUrlTemplate: {
+  //    'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
+  //    'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}',
+  //  },
+  //},
+
+  // To use sendgrid for sending email notifications:
+  // var sgTransport = require('nodemail-sendgrid-transport');
+  // mailer: sgTransport({
+  //  api_user: xxx,
+  //  api_key: xxx,
+  // });
+
   pushNotificationsOpts: {
     templatePath: './lib/templates',
     defaultLanguage: 'en',
@@ -55,13 +77,6 @@ var config = {
     defaultProvider: 'BitPay',
     fetchInterval: 60 // in minutes
   },
-
-  // To use sendgrid for sending email notifications:
-  // var sgTransport = require('nodemail-sendgrid-transport');
-  // mailer: sgTransport({
-  //  api_user: xxx,
-  //  api_key: xxx,
-  // });
 
   // Each server (by coin network) has it's own configuration. Where the same services
   // run for each coin network the url's must be unique across all coin networks.
@@ -81,23 +96,7 @@ var config = {
           apiPrefix: '/api'
         }
       }
-    },
-
-    // To use email notifications:
-    // emailOpts: {
-    //  host: 'localhost',
-    //  port: 25,
-    //  ignoreTLS: true,
-    //  subjectPrefix: '[Wallet Service]',
-    //  from: 'wallet-service@btc.io',
-    //  templatePath: './lib/templates',
-    //  defaultLanguage: 'en',
-    //  publicTxUrlTemplate: {
-    //    'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
-    //    'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}',
-    //  },
-    //},
-
+    }
   },
 
   BCH: {

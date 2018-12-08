@@ -72,7 +72,6 @@ describe('Push notifications', function() {
               pushNotificationsOpts: {
                 templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
-                defaultUnit: 'BTC',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
                 authorizationKey: 'secret'
@@ -228,7 +227,6 @@ describe('Push notifications', function() {
               pushNotificationsOpts: {
                 templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
-                defaultUnit: 'BTC',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
                 authorizationKey: 'secret'
@@ -485,7 +483,6 @@ describe('Push notifications', function() {
               pushNotificationsOpts: {
                 templatePath: './base-service/lib/templates',
                 defaultLanguage: 'en',
-                defaultUnit: 'BTC',
                 subjectPrefix: '',
                 pushServerUrl: 'http://localhost:8000',
                 authorizationKey: 'secret'

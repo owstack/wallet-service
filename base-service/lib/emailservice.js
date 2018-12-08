@@ -84,7 +84,7 @@ EmailService.prototype.start = function(opts, cb) {
     });
   };
 
-  var emailOpts = self.config[self.COIN].emailOpts;
+  var emailOpts = self.config.emailOpts;
   self.defaultLanguage = emailOpts.defaultLanguage;
   self.defaultUnit = self.ctx.Unit().standardsName();
   self.templatePath = path.normalize((emailOpts.templatePath || (__dirname + '/templates')) + '/');

@@ -59,15 +59,13 @@ describe('Email notifications', function() {
             emailService = new EmailService({
               lockOpts: {},
               mailer: mailerStub,
-              BTC: {
-                emailOpts: {
-                  defaultLanguage: 'en',
-                  defaultUnit: 'BTC',
-                  from: 'ws@dummy.net',
-                  subjectPrefix: '[test wallet]',
-                  publicTxUrlTemplate: publicTxUrlTemplate
-                }
-              }
+              emailOpts: {
+                defaultLanguage: 'en',
+                from: 'ws@dummy.net',
+                subjectPrefix: '[test wallet]',
+                publicTxUrlTemplate: publicTxUrlTemplate
+              },
+              BTC: {}
             });
 
             emailService.start({
@@ -418,15 +416,14 @@ describe('Email notifications', function() {
 
     it('should support multiple emailservice instances running concurrently', function(done) {
       var emailService2 = new EmailService({
-        BTC: {
-          emailOpts: {
-            defaultLanguage: 'en',
-            defaultUnit: 'BTC',
-            from: 'ws@dummy.net',
-            subjectPrefix: '[test wallet 2]',
-          }
+        mailer: mailerStub,
+        emailOpts: {
+          defaultLanguage: 'en',
+          defaultUnit: 'BTC',
+          from: 'ws@dummy.net',
+          subjectPrefix: '[test wallet 2]',
         },
-        mailer: mailerStub
+        BTC: {}
       });
       emailService2.start({
         lock: emailService.lock, // Use same locker service
@@ -482,15 +479,13 @@ describe('Email notifications', function() {
             emailService = new EmailService({
               lockOpts: {},
               mailer: mailerStub,
-              BTC: {
-                emailOpts: {
-                  defaultLanguage: 'en',
-                  defaultUnit: 'BTC',
-                  from: 'ws@dummy.net',
-                  subjectPrefix: '[test wallet]',
-                  publicTxUrlTemplate: publicTxUrlTemplate
-                }
-              }
+              emailOpts: {
+                defaultLanguage: 'en',
+                from: 'ws@dummy.net',
+                subjectPrefix: '[test wallet]',
+                publicTxUrlTemplate: publicTxUrlTemplate
+              },
+              BTC: {}
             });
 
             var publicTxUrlTemplate = {};
