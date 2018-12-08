@@ -78,13 +78,12 @@ PushNotificationsService.prototype.start = function(opts, cb) {
 
   self.templatePath = path.normalize((self.config.pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
   self.defaultLanguage = self.config.pushNotificationsOpts.defaultLanguage;
-  self.defaultUnit = self.config.pushNotificationsOpts.defaultUnit;
+  self.defaultUnit = self.ctx.Unit().standardsName();
   self.subjectPrefix = self.config.pushNotificationsOpts.subjectPrefix || '';
   self.pushServerUrl = self.config.pushNotificationsOpts.pushServerUrl;
   self.authorizationKey = self.config.pushNotificationsOpts.authorizationKey;
 
   $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
-  $.checkArgument(self.defaultUnit, 'Missing defaultUnit attribute in configuration.');
   $.checkArgument(self.authorizationKey, 'Missing authorizationKey attribute in configuration.');
 
   async.parallel([

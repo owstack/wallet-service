@@ -86,7 +86,7 @@ EmailService.prototype.start = function(opts, cb) {
 
   var emailOpts = self.config[self.COIN].emailOpts;
   self.defaultLanguage = emailOpts.defaultLanguage;
-  self.defaultUnit = emailOpts.defaultUnit;
+  self.defaultUnit = self.ctx.Unit().standardsName();
   self.templatePath = path.normalize((emailOpts.templatePath || (__dirname + '/templates')) + '/');
   self.publicTxUrlTemplate = emailOpts.publicTxUrlTemplate || {};
   self.subjectPrefix = emailOpts.subjectPrefix || '[Wallet service]';
