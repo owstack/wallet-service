@@ -97,7 +97,7 @@ describe('ExpressApp', function() {
         });
       });
 
-      it('/v2/wallets', function(done) {
+      it('/v1/wallets', function(done) {
         var server = {
           getStatus: sinon.stub().callsArgWith(1, null, {})
         };
@@ -109,7 +109,7 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + config.basePath + '/v2/wallets',
+            url: testHost + ':' + testPort + config.basePath + '/v1/wallets',
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',

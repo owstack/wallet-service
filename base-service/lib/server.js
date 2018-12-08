@@ -130,7 +130,7 @@ WalletService.prototype.initialize = function(opts, config, cb) {
   function initMessageBroker(cb) {
     if (!messageBroker) {
       messageBroker = opts.messageBroker || new MessageBroker(self.config.messageBrokerOpts);
-      messageBroker.onMessage(WalletService.handleIncomingNotification);
+      messageBroker.onMessage(lodash.bind(self.handleIncomingNotification, self));
     }
     return cb();
   };
@@ -186,14 +186,14 @@ WalletService.prototype.initialize = function(opts, config, cb) {
   });
 };
 
-WalletService.handleIncomingNotification = function(notification, cb) {
+WalletService.prototype.handleIncomingNotification = function(notification, cb) {
   var self = this;
   cb = cb || function() {};
 
-  if (!notification || notification.type != 'NewBlock') {
+  if (!notification || notification.type != 'NewBlock' || !MessageBroker.isNotificationForMe(notification, self.COIN)) {
     return cb();
   }
-  WalletService._clearBlockchainHeightCache(notification.data.network, notification.targetNetworks);
+  WalletService._clearBlockchainHeightCache(notification.data.network, notification.targetNetwork);
   return cb();
 };
 
@@ -705,10 +705,11 @@ WalletService.prototype._notify = function(type, data, opts, cb) {
   var notification = Model.Notification.create({
     type: type,
     data: data,
-    ticker: this.notifyTicker++,
+    ticker: self.notifyTicker++,
     creatorId: opts.isGlobal ? null : copayerId,
     walletId: walletId,
-    targetNetworks: {
+    targetNetwork: {
+      coin: self.COIN,
       livenet: self.LIVENET,
       testnet: self.TESTNET
     }
@@ -3163,10 +3164,10 @@ WalletService._initBlockchainHeightCache = function(networks) {
   });
 };
 
-WalletService._clearBlockchainHeightCache = function(network, targetNetworks) {
-  WalletService._initBlockchainHeightCache([targetNetworks.livenet, targetNetworks.testnet]);
+WalletService._clearBlockchainHeightCache = function(network, targetNetwork) {
+  WalletService._initBlockchainHeightCache([targetNetwork.livenet, targetNetwork.testnet]);
 
-  if (!lodash.includes([targetNetworks.livenet, targetNetworks.testnet], network)) {
+  if (!lodash.includes([targetNetwork.livenet, targetNetwork.testnet], network)) {
     log.error('Incorrect network in new block: ' + network);
     return;
   }

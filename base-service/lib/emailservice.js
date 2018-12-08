@@ -334,6 +334,10 @@ EmailService.prototype.sendEmail = function(notification, cb) {
   var self = this;
   cb = cb || function() {};
 
+  if (!MessageBroker.isNotificationForMe(notification, self.COIN)) {
+    return cb();
+  }
+
   var emailType = EMAIL_TYPES[notification.type];
   if (!emailType) return cb();
 

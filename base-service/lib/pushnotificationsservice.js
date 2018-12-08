@@ -121,6 +121,10 @@ PushNotificationsService.prototype._sendPushNotifications = function(notificatio
   var self = this;
   cb = cb || function() {};
 
+  if (!MessageBroker.isNotificationForMe(notification, self.COIN)) {
+    return cb();
+  }
+
   var notifType = PUSHNOTIFICATIONS_TYPES[notification.type];
   if (!notifType) {
     return cb();

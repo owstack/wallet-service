@@ -4,7 +4,7 @@ var baseConfig = require('../config');
 var events = require('events');
 var inherits = require('inherits');
 var log = require('npmlog');
-var nodeutil = require('util');
+var inherits = require('inherits');
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
@@ -30,8 +30,11 @@ function MessageBroker(config) {
     log.info('Using message broker server at ' + url);
   }
 };
+inherits(MessageBroker, events.EventEmitter);
 
-nodeutil.inherits(MessageBroker, events.EventEmitter);
+MessageBroker.isNotificationForMe = function(notification, coin) {
+  return notification.targetNetwork.coin == coin;
+};
 
 MessageBroker.prototype.send = function(data) {
   if (this.remote) {

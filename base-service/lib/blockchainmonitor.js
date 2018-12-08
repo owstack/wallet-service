@@ -136,7 +136,8 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
           type: 'NewOutgoingTxByThirdParty',
           data: args,
           walletId: walletId,
-          targetNetworks: {
+          targetNetwork: {
+            coin: self.COIN,
             livenet: self.LIVENET,
             testnet: self.TESTNET
           }
@@ -192,7 +193,8 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
             amount: out.amount,
           },
           walletId: walletId,
-          targetNetworks: {
+          targetNetwork: {
+            coin: self.COIN,
             livenet: self.LIVENET,
             testnet: self.TESTNET
           }
@@ -236,7 +238,8 @@ BlockchainMonitor.prototype._notifyNewBlock = function(network, hash) {
       hash: hash,
       network: network,
     },
-    targetNetworks: {
+    targetNetwork: {
+      coin: self.COIN,
       livenet: self.LIVENET,
       testnet: self.TESTNET
     }
@@ -268,7 +271,8 @@ BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
             network: network,
             // TODO: amount
           },
-          targetNetworks: {
+          targetNetwork: {
+            coin: self.COIN,
             livenet: self.LIVENET,
             testnet: self.TESTNET
           }
