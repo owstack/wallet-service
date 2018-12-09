@@ -44,25 +44,27 @@ var config = {
 */
   // To use email notifications:
   // emailOpts: {
-  //  host: 'localhost',
-  //  port: 25,
-  //  ignoreTLS: true,
-  //  subjectPrefix: '[Wallet Service]',
-  //  from: 'wallet-service@btc.io',
-  //  templatePath: './lib/templates',
-  //  defaultLanguage: 'en',
-  //  publicTxUrlTemplate: {
-  //    'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
-  //    'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}',
-  //  },
-  //},
+  //   transport: {
+  //     host: 'localhost',
+  //     port: 25,
+  //     ignoreTLS: true,
+  //   },
+  //   defaultLanguage: 'en',
+  //   subjectPrefix: '[Wallet Service]',
+  //   from: 'wallet-service@owstack.com',
+  //   templatePath: './lib/templates',
+  //   publicTxUrlTemplate: {
+  //     'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
+  //     'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
+  //   }
+  // },
 
-  // To use sendgrid for sending email notifications:
-  // var sgTransport = require('nodemail-sendgrid-transport');
-  // mailer:sgTransport({
-  //  api_user: xxx,
-  //  api_key: xxx,
-  // });
+  // Sendgrid.
+  // const sgMail = require('@sendgrid/mail');
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  //
+  // Add config:
+  // mailer: sgMail,
 
   pushNotificationsOpts: {
     templatePath: './lib/templates',

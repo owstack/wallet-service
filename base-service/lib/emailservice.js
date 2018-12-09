@@ -118,7 +118,7 @@ EmailService.prototype.start = function(opts, cb) {
       done();
     },
     function(done) {
-      self.mailer = self.config.mailer || nodemailer.createTransport(self.config.emailOpts);
+      self.mailer = self.config.mailer || nodemailer.createTransport(self.config.emailOpts.transport);
       done();
     },
   ], function(err) {
