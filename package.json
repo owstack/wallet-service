@@ -22,8 +22,7 @@
     "url": "https://github.com/owstack/wallet-service/issues"
   },
   "scripts": {
-    "create": "./scripts/service.js create",
-    "clean": "./scripts/service.js clean",
+    "services": "./scripts/services.js",
     "start": "./start.sh",
     "stop": "./stop.sh",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter spec test",
