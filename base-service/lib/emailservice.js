@@ -3,6 +3,7 @@
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
 var baseConfig = require('../config');
+var Constants = owsCommon.Constants;
 var fs = require('fs');
 var log = require('npmlog');
 var Lock = require('./lock');
@@ -60,8 +61,6 @@ function EmailService(context, config) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
-  this.TESTNET = this.ctx.Networks.testnet.code;
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
@@ -86,14 +85,12 @@ EmailService.prototype.start = function(opts, cb) {
 
   var emailOpts = self.config.emailOpts;
   self.defaultLanguage = emailOpts.defaultLanguage;
-  self.defaultUnit = self.ctx.Unit().standardsName();
   self.templatePath = path.normalize((emailOpts.templatePath || (__dirname + '/templates')) + '/');
   self.publicTxUrlTemplate = emailOpts.publicTxUrlTemplate || {};
   self.subjectPrefix = emailOpts.subjectPrefix || '[Wallet service]';
   self.from = emailOpts.from;
 
   $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
-  $.checkArgument(self.defaultUnit, 'Missing defaultUnit attribute in configuration.');
 
   async.parallel([
     function(done) {
@@ -121,7 +118,7 @@ EmailService.prototype.start = function(opts, cb) {
       done();
     },
     function(done) {
-      self.mailer = self.config.mailer || nodemailer.createTransport(self.config[self.COIN].emailOpts);
+      self.mailer = self.config.mailer || nodemailer.createTransport(self.config.emailOpts);
       done();
     },
   ], function(err) {
@@ -206,7 +203,7 @@ EmailService.prototype._getRecipientsList = function(notification, emailType, cb
         copayerId: p.copayerId,
         emailAddress: p.email,
         language: p.language,
-        unit: p.unit || self.defaultUnit,
+        unit: p.unit || notification.targetNetwork.defaultUnit
       };
     }));
 
@@ -251,7 +248,15 @@ EmailService.prototype._getDataForTemplate = function(notification, recipient, c
     }
 
     if (lodash.includes(['NewIncomingTx', 'NewOutgoingTx'], notification.type) && data.txid) {
-      var networkAlias = self.ctx.Networks.get(wallet.network).alias;
+      var networkAlias;
+      switch (wallet.network) {
+        case notification.targetNetwork.livenet: networkAlias = Constants.LIVENET; break;
+        case notification.targetNetwork.testnet: networkAlias = Constants.TESTNET; break;
+        default:
+          var err = 'Network mismatch. Expected ' + wallet.network + ' to be one of [' + notification.targetNetwork.livenet + ',' + notification.targetNetwork.testnet + ']';
+          return cb(err);
+      }
+
       var urlTemplate = self.publicTxUrlTemplate[networkAlias];
       if (urlTemplate) {
         try {

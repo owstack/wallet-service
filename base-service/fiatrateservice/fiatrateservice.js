@@ -23,8 +23,6 @@ Service.prototype.start = function() {
 	});
 }
 
-if (require.main === module) {
-	throw 'The base fiat rate service cannot be started from the command line';
-}
-
-module.exports = Service;
+// Start the service with base configuration (default).
+var service = new Service();
+service.start();

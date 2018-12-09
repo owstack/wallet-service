@@ -48,8 +48,6 @@ function PushNotificationsService(context, config) {
   this.ctx = context;
 
   // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
-  this.TESTNET = this.ctx.Networks.testnet.code;
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
@@ -79,7 +77,6 @@ PushNotificationsService.prototype.start = function(opts, cb) {
   var pushNotificationsOpts = self.config.pushNotificationsOpts;
   self.templatePath = path.normalize((pushNotificationsOpts.templatePath || (__dirname + '/templates')) + '/');
   self.defaultLanguage = pushNotificationsOpts.defaultLanguage;
-  self.defaultUnit = self.ctx.Unit().standardsName();
   self.subjectPrefix = pushNotificationsOpts.subjectPrefix || '';
   self.pushServerUrl = pushNotificationsOpts.pushServerUrl;
   self.authorizationKey = pushNotificationsOpts.authorizationKey;
@@ -269,7 +266,7 @@ PushNotificationsService.prototype._getRecipientsList = function(notification, n
           return {
             copayerId: copayer.id,
             language: p.language || self.defaultLanguage,
-            unit: p.unit || self.defaultUnit,
+            unit: p.unit || notification.targetNetwork.defaultUnit
           }
         }
       }));

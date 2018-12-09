@@ -10,15 +10,12 @@ function Service(context, config) {
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.COIN = this.ctx.Networks.coin;
-
   this.config = config || baseConfig;
 	this.emailService = new this.ctx.EmailService(this.config);
 };
 
 Service.prototype.start = function(opts) {
-	if (this.config[this.COIN].emailOpts) {
+	if (this.config.emailOpts) {
 		this.emailService.start(opts, function(err) {
 		  if (err) {
 		  	throw err;

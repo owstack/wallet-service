@@ -114,7 +114,7 @@ describe('request-list', function() {
     });
   });
 
-  it('should query only the first 2 urls if the second is successfull (5xx)', function(done) {
+  it('should query only the first 2 urls if the second is successful (5xx)', function(done) {
     request.onCall(0).yields(null, {
       statusCode: 500
     });
@@ -135,7 +135,7 @@ describe('request-list', function() {
     });
   });
 
-  it('should query only the first 2 urls if the second is successfull (timeout)', function(done) {
+  it('should query only the first 2 urls if the second is successful (timeout)', function(done) {
     request.onCall(0).yields({
       code: 'ETIMEDOUT',
       connect: true
@@ -157,7 +157,7 @@ describe('request-list', function() {
     });
   });
   
-  it('should use the latest response if all requests are unsuccessfull', function(done) {
+  it('should use the latest response if all requests are unsuccessful', function(done) {
     request.onCall(0).yields({
       code: 'ETIMEDOUT',
       connect: true

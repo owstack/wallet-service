@@ -1,12 +1,9 @@
-#!/usr/bin/env node
-
 'use strict';
 
 var baseConfig = require('../config');
 var log = require('npmlog');
 
 log.debug = log.verbose;
-log.level = 'debug';
 
 function Service(context, config) {
   // Context defines the coin network and is set by the implementing service in

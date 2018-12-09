@@ -6,19 +6,16 @@ var baseConfig = require('../config');
 var Defaults = require('./common/defaults');
 var log = require('npmlog');
 var request = require('request');
+var Storage = require('./storage');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
-function FiatRateService(context, config) {
-  if (!(this instanceof FiatRateService)){
+function FiatRateService(config) {
+  if (!(this instanceof FiatRateService)) {
     return new FiatRateService(context);
   }
-
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
 
   this.config = config || baseConfig;
 };
@@ -26,7 +23,7 @@ function FiatRateService(context, config) {
 FiatRateService.prototype.start = function(cb) {
   var self = this;
 
-  self.init(function(err) {
+  self.init({}, function(err) {
     if (err) {
       cb(err);
     }
@@ -50,7 +47,7 @@ FiatRateService.prototype.init = function(opts, cb) {
         self.storage = opts.storage;
         done();
       } else {
-        self.storage = new self.ctx.Storage();      
+        self.storage = new Storage(); // Create with no context (not required for this service)
         self.storage.connect(self.config.storageOpts, done);
       }
     },

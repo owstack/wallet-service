@@ -138,6 +138,7 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
           walletId: walletId,
           targetNetwork: {
             coin: self.COIN,
+            defaultUnit: self.ctx.Unit().standardsName(),
             livenet: self.LIVENET,
             testnet: self.TESTNET
           }
@@ -195,6 +196,7 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
           walletId: walletId,
           targetNetwork: {
             coin: self.COIN,
+            defaultUnit: self.ctx.Unit().standardsName(),
             livenet: self.LIVENET,
             testnet: self.TESTNET
           }
@@ -240,6 +242,7 @@ BlockchainMonitor.prototype._notifyNewBlock = function(network, hash) {
     },
     targetNetwork: {
       coin: self.COIN,
+      defaultUnit: self.ctx.Unit().standardsName(),
       livenet: self.LIVENET,
       testnet: self.TESTNET
     }
@@ -273,6 +276,7 @@ BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
           },
           targetNetwork: {
             coin: self.COIN,
+            defaultUnit: self.ctx.Unit().standardsName(),
             livenet: self.LIVENET,
             testnet: self.TESTNET
           }

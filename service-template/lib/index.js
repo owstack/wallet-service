@@ -8,7 +8,6 @@ WalletService.BlockchainExplorers = require('./blockchainexplorers');
 WalletService.BlockchainMonitor = require('./blockchainmonitor');
 WalletService.Common = require('./common');
 WalletService.EmailService = require('./emailservice');
-WalletService.FiatRateService = require('./fiatrateservice');
 WalletService.PushNotificationsService = require('./pushnotificationsservice');
 WalletService.Model = require('./model');
 WalletService.Server = require('./server');

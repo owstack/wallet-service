@@ -13,7 +13,6 @@ var Address = cLib.Address;
 var BlockchainExplorer = require('./blockchainexplorer');
 var Copayer = Model.Copayer;
 var Defaults = Common.Defaults;
-var FiatRateService = require('./fiatrateservice');
 var Networks = cLib.Networks;
 var Session = Model.Session;
 var Storage = require('./storage');
@@ -30,7 +29,6 @@ var context = {
 	BlockchainExplorer: BlockchainExplorer,
 	Copayer: Copayer,
 	Defaults: Defaults,
-	FiatRateService: FiatRateService,
 	Networks: Networks,
 	Session: Session,
 	Storage: Storage,

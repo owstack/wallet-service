@@ -37,12 +37,17 @@ npm start
 Configuration for all required modules can be specified in https://github.com/owstack/wallet-service/blob/master/base-service/config.js
 
 The wallet-service is composed of the following separate node services:
+
+One global instance of each:
+* Fiat Rate Service - base-service/fiatrateservice/fiatrateservice.js
 * Locker - base-service/locker/locker.js
+* Message Broker - base-service/messagebroker/messagebroker.js
 * Wallet Service - base-service/ws.js
 
-* Message Broker - messagebroker/messagebroker.js
-* Blockchain Monitor - bcmonitor/bcmonitor.js (This service talks to the Blockchain Explorer service configured under blockchainExplorerOpts - see Configure blockchain service below.)
-* Email Service - emailservice/emailservice.js
+One instance of each per coin network:
+* Blockchain Monitor - service-template/bcmonitor/bcmonitor.js (This service talks to the Blockchain Explorer service configured under blockchainExplorerOpts - see Configure blockchain service below.)
+* Email Service - service-template/emailservice/emailservice.js
+* Push Notifications Service - service-template/pushnotificationsservice/pushnotificationsservice.js
 
 #### Configure MongoDB
 Example configuration for connecting to the MongoDB instance:

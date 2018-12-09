@@ -10,6 +10,7 @@ var Constants = owsCommon.Constants;
 var EmailValidator = require('email-validator');
 var errors = owsCommon.errors;
 var Errors = require('./errors/errordefinitions');
+var FiatRateService = require('./fiatrateservice');
 var HDPublicKey = keyLib.HDPublicKey;
 var Lock = require('./lock');
 var log = require('npmlog');
@@ -147,7 +148,7 @@ WalletService.prototype.initialize = function(opts, config, cb) {
       fiatRateService = self.config.fiatRateService;
       return cb();
     } else {
-      var newFiatRateService = new self.ctx.FiatRateService(self.config);
+      var newFiatRateService = new FiatRateService(self.config);
       newFiatRateService.init({
         storage: self.storage
       } , function(err) {
@@ -710,6 +711,7 @@ WalletService.prototype._notify = function(type, data, opts, cb) {
     walletId: walletId,
     targetNetwork: {
       coin: self.COIN,
+      defaultUnit: self.ctx.Unit().standardsName(),
       livenet: self.LIVENET,
       testnet: self.TESTNET
     }
