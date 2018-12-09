@@ -3,7 +3,7 @@
 var owsCommon = require('@owstack/ows-common');
 
 var async = require('async');
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var defaultRequest = require('request');
 var fs = require('fs');
 var log = require('npmlog');

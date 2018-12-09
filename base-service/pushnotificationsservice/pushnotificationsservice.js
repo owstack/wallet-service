@@ -1,6 +1,6 @@
 'use strict';
 
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var log = require('npmlog');
 
 log.debug = log.verbose;

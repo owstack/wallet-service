@@ -1,7 +1,7 @@
 'use strict';
 
 var owsCommon = require('@owstack/ows-common');
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var log = require('npmlog');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();

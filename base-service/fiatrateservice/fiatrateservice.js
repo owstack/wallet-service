@@ -2,7 +2,7 @@
 
 'use strict';
 
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var FiatRateService = require('../lib/fiatrateservice');
 var log = require('npmlog');
 

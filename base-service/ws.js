@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var async = require('async');
-var baseConfig = require('./config');
+var baseConfig = require('../config');
 var cluster = require('cluster');
 var clusterInstances = config.clusterInstances || numCPUs;
 var ExpressApp = require('./lib/expressapp');

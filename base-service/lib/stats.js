@@ -5,7 +5,7 @@
 var owsCommon = require('@owstack/ows-common');
 
 var async = require('async');
-var config = require('../config');
+var config = require('../../config');
 var log = require('npmlog');
 var mongodb = require('mongodb');
 var moment = require('moment');

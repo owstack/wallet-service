@@ -1,6 +1,6 @@
 'use strict';
 
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var io = require('socket.io');
 var log = require('npmlog');
 

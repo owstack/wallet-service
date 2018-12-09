@@ -2,7 +2,7 @@
 
 'use strict';
 
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var Locker = require('locker-server');
 
 function Service(config) {

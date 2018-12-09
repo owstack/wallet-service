@@ -7,10 +7,10 @@ var sinon = require('sinon');
 var Service = require('../');
 var WalletService = Service.BTC.WalletService;
 
-var config = require('../base-service/config');
 var Defaults = WalletService.Common.Defaults;
 var http = require('http');
 var request = require('request');
+var testConfig = require('./testconfig');
 
 var proxyquire = require('proxyquire');
 var xyExpressApp = '../base-service/lib/expressapp';
@@ -20,7 +20,7 @@ describe('ExpressApp', function() {
   describe('#constructor', function() {
     it('will set an express app', function() {
       var TestExpressApp = proxyquire(xyExpressApp, {});
-      var express = new TestExpressApp(config);
+      var express = new TestExpressApp(testConfig);
       should.exist(express.app);
       should.exist(express.app.use);
       should.exist(express.app.enable);
@@ -34,7 +34,7 @@ describe('ExpressApp', function() {
       var httpServer;
 
       function start(ExpressApp, done) {
-        var app = new ExpressApp(config);
+        var app = new ExpressApp(testConfig);
         httpServer = http.Server(app.app);
 
         app.start(function(err) {
@@ -61,7 +61,7 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + config.basePath + '/v1/version',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/version',
             headers: {
               'x-service': 'BTC'
             }
@@ -81,7 +81,7 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + config.basePath + '/v1/version',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/version',
             headers: {
               'x-service': 'invalid'
             }
@@ -109,7 +109,7 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + config.basePath + '/v1/wallets',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/wallets',
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
@@ -138,7 +138,7 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + config.basePath + '/v1/addresses?limit=4&reverse=1',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/addresses?limit=4&reverse=1',
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
@@ -171,7 +171,7 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + config.basePath + '/v1/sendmaxinfo?feePerKb=10000&returnInputs=1',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/sendmaxinfo?feePerKb=10000&returnInputs=1',
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
@@ -204,7 +204,7 @@ describe('ExpressApp', function() {
 
           start(TestExpressApp, function() {
             var reqOpts = {
-              url: testHost + ':' + testPort + config.basePath + '/v1/balance',
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/balance',
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
@@ -255,7 +255,7 @@ describe('ExpressApp', function() {
         it('should fetch notifications from a specified id', function(done) {
           start(TestExpressApp, function() {
             var requestOptions = {
-              url: testHost + ':' + testPort + config.basePath + '/v1/notifications' + '?notificationId=123',
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?notificationId=123',
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
@@ -279,7 +279,7 @@ describe('ExpressApp', function() {
         it('should allow custom minTs within limits', function(done) {
           start(TestExpressApp, function() {
             var requestOptions = {
-              url: testHost + ':' + testPort + config.basePath + '/v1/notifications' + '?timeSpan=30',
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?timeSpan=30',
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
@@ -303,7 +303,7 @@ describe('ExpressApp', function() {
           start(TestExpressApp, function() {
             var overLimit  = Defaults.MAX_NOTIFICATIONS_TIMESPAN * 2;
             var requestOptions = {
-              url: testHost + ':' + testPort + config.basePath + '/v1/notifications' + '?timeSpan=' + overLimit ,
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?timeSpan=' + overLimit ,
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',

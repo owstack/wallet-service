@@ -2,7 +2,7 @@
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var Constants = owsCommon.Constants;
 var Lock = require('./lock');
 var log = require('npmlog');

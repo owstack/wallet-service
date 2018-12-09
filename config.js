@@ -44,21 +44,21 @@ var config = {
   },
 
   // Email service global configuration.
-  // emailOpts: {
-  //   transport: {
-  //     host: 'localhost',
-  //     port: 25,
-  //     ignoreTLS: true
-  //   },
-  //   defaultLanguage: 'en',
-  //   subjectPrefix: '[Wallet Service]',
-  //   from: 'wallet-service@owstack.com',
-  //   templatePath: './lib/templates',
-  //   publicTxUrlTemplate: {
-  //     'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
-  //     'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
-  //   }
-  // },
+  emailOpts: {
+    transport: {
+      host: 'localhost',
+      port: 25,
+      ignoreTLS: true
+    },
+    defaultLanguage: 'en',
+    subjectPrefix: '[Wallet Service]',
+    from: 'wallet-service@owstack.com',
+    templatePath: './lib/templates',
+    publicTxUrlTemplate: {
+      'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
+      'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
+    }
+  },
 
   // Sendgrid.
   // const sgMail = require('@sendgrid/mail');

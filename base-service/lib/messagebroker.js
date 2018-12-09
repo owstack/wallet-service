@@ -1,6 +1,6 @@
 'use strict';
 
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var events = require('events');
 var inherits = require('inherits');
 var log = require('npmlog');

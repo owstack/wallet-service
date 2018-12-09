@@ -1,7 +1,7 @@
 'use strict';
 
 var async = require('async');
-var baseConfig = require('../config');
+var baseConfig = require('../../config');
 var EventEmitter = require('events').EventEmitter;
 var ExpressApp = require('../lib/expressapp');
 var fs = require('fs');
