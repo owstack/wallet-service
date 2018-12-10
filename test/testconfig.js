@@ -2,9 +2,14 @@
 
 var config = {
   basePath: '/ws/api',
-  disableLogs: false,
   port: 3232,
   ignoreRateLimiter: false,
+
+  // Log levels; debug, warn, info, error
+  log: {
+    disable: false,
+    level: 'info'
+  },
 
   // Uncomment to make wallet-service a forking server
   // cluster: true,

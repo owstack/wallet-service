@@ -1,7 +1,9 @@
 'use strict';
 
 var Providers = {
-  OWS: require('./ows')
+  bitpay: require('./bitpay'),
+  bitstamp: require('./bitstamp'),
+  ows: require('./ows')
 }
 
 module.exports = Providers;

@@ -68,10 +68,10 @@ function EmailService(context, config) {
 };
 
 EmailService.prototype.setLog = function() {
-  if (this.config.log.level.disable) {
-    log.level = 'silent';
+  if (this.config.log) {
+    log.level = (this.config.log.disable == true ? 'silent' : this.config.log.level || 'info');
   } else {
-    log.level = this.config.log.level || 'info';
+    log.level = 'info';
   }
 };
 

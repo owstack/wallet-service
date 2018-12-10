@@ -45,7 +45,7 @@ describe('Fiat rate service', function() {
 
   describe('#getRate', function() {
     it('should get current rate', function(done) {
-      service.storage.storeFiatRate('BitPay', [{
+      service.storage.storeFiatRate('OpenWalletStack', [{
         code: 'USD',
         value: 123.45,
       }], function(err) {
@@ -61,12 +61,12 @@ describe('Fiat rate service', function() {
     });
 
     it('should get current rate for different currency', function(done) {
-      service.storage.storeFiatRate('BitPay', [{
+      service.storage.storeFiatRate('OpenWalletStack', [{
         code: 'USD',
         value: 123.45,
       }], function(err) {
         should.not.exist(err);
-        service.storage.storeFiatRate('BitPay', [{
+        service.storage.storeFiatRate('OpenWalletStack', [{
           code: 'EUR',
           value: 345.67,
         }], function(err) {
@@ -83,7 +83,7 @@ describe('Fiat rate service', function() {
     });
 
     it('should get current rate for different provider', function(done) {
-      service.storage.storeFiatRate('BitPay', [{
+      service.storage.storeFiatRate('OpenWalletStack', [{
         code: 'USD',
         value: 100.00,
       }], function(err) {
@@ -114,13 +114,13 @@ describe('Fiat rate service', function() {
     it('should get rate for specific ts', function(done) {
       var clock = sinon.useFakeTimers(0, 'Date');
       clock.tick(20);
-      service.storage.storeFiatRate('BitPay', [{
+      service.storage.storeFiatRate('OpenWalletStack', [{
         code: 'USD',
         value: 123.45,
       }], function(err) {
         should.not.exist(err);
         clock.tick(100);
-        service.storage.storeFiatRate('BitPay', [{
+        service.storage.storeFiatRate('OpenWalletStack', [{
           code: 'USD',
           value: 345.67,
         }], function(err) {
@@ -144,7 +144,7 @@ describe('Fiat rate service', function() {
       var clock = sinon.useFakeTimers(0, 'Date');
       async.each([1.00, 2.00, 3.00, 4.00], function(value, next) {
         clock.tick(100);
-        service.storage.storeFiatRate('BitPay', [{
+        service.storage.storeFiatRate('OpenWalletStack', [{
           code: 'USD',
           value: value,
         }, {
@@ -184,7 +184,7 @@ describe('Fiat rate service', function() {
 
     it('should not get rate older than 2hs', function(done) {
       var clock = sinon.useFakeTimers(0, 'Date');
-      service.storage.storeFiatRate('BitPay', [{
+      service.storage.storeFiatRate('OpenWalletStack', [{
         code: 'USD',
         value: 123.45,
       }], function(err) {
@@ -225,6 +225,13 @@ describe('Fiat rate service', function() {
       var bitstamp = {
         last: 120.00,
       };
+      var openwalletstack = [{
+        code: 'USD',
+        rate: 123.45,
+      }, {
+        code: 'EUR',
+        rate: 234.56,
+      }];
       request.get.withArgs({
         url: 'https://bitpay.com/api/rates/',
         json: true
@@ -233,6 +240,10 @@ describe('Fiat rate service', function() {
         url: 'https://www.bitstamp.net/api/ticker/',
         json: true
       }).yields(null, null, bitstamp);
+      request.get.withArgs({
+        url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
+        json: true
+      }).yields(null, null, openwalletstack);
 
       service._fetch(function(err) {
         should.not.exist(err);
@@ -265,17 +276,28 @@ describe('Fiat rate service', function() {
 
     it('should not stop when failing to fetch provider', function(done) {
       var clock = sinon.useFakeTimers(100, 'Date');
+      var bitpay = [{
+        code: 'USD',
+        rate: 123.45,
+      }, {
+        code: 'EUR',
+        rate: 234.56,
+      }];
       var bitstamp = {
         last: 120.00,
       };
       request.get.withArgs({
-        url: 'https://bitpay.com/api/rates/',
+        url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
         json: true
       }).yields('dummy error', null, null);
       request.get.withArgs({
         url: 'https://www.bitstamp.net/api/ticker/',
         json: true
       }).yields(null, null, bitstamp);
+      request.get.withArgs({
+        url: 'https://bitpay.com/api/rates/',
+        json: true
+      }).yields(null, null, bitpay);
 
       service._fetch(function(err) {
         should.not.exist(err);
