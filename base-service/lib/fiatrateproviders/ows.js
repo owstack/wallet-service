@@ -4,8 +4,8 @@ var owsCommon = require('@owstack/ows-common');
 var lodash = owsCommon.deps.lodash;
 
 var provider = {
-  name: 'BitPay',
-  url: 'https://bitpay.com/api/rates/',
+  name: 'OpenWalletStack',
+  url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
   parseFn: function(raw) {
     var rates = lodash.compact(lodash.map(raw, function(d) {
       if (!d.code || !d.rate) {
@@ -13,7 +13,7 @@ var provider = {
       }
       return {
         code: d.code,
-        value: d.rate,
+        value: d.rate
       };
     }));
     return rates;

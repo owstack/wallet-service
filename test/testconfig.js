@@ -37,9 +37,11 @@ var config = {
   },
 
   messageBrokerOpts: {
-    messageBrokerServer: {
-      url: 'http://localhost:3380'
-    }
+    port: 3380,
+    // If using a remote server.
+    // messageBrokerServer: {
+    //   url: 'http://remotehost:3380'
+    // }
   },
 */
   // To use email notifications:
@@ -87,7 +89,7 @@ var config = {
       defaultProvider: 'explorer',
       explorer: {
         // Multiple servers (in priority order)
-        // url: ['http://a.b.c', 'https://test-explorer.openwalletstack.com:443'],
+        // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
         livenet: {
           url: 'http://btc.owstack.org:3001',
           apiPrefix: '/explorer-api'

@@ -26,6 +26,15 @@ function BlockchainMonitor(context, config) {
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
+  this.setLog();
+};
+
+BlockchainMonitor.prototype.setLog = function() {
+  if (this.config.log.level.disable) {
+    log.level = 'silent';
+  } else {
+    log.level = this.config.log.level || 'info';
+  }
 };
 
 BlockchainMonitor.prototype.start = function(opts, cb) {

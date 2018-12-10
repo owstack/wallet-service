@@ -18,6 +18,15 @@ function FiatRateService(config) {
   }
 
   this.config = config || baseConfig;
+  this.setLog();
+};
+
+FiatRateService.prototype.setLog = function() {
+  if (this.config.log.level.disable) {
+    log.level = 'silent';
+  } else {
+    log.level = this.config.log.level || 'info';
+  }
 };
 
 FiatRateService.prototype.start = function(cb) {
@@ -127,13 +136,17 @@ FiatRateService.prototype.getRate = function(opts, cb) {
   opts = opts || {};
 
   var now = Date.now();
-  var provider = opts.provider || Defaults.FIAT_RATE_PROVIDER;
+  var provider = opts.provider || self.config.fiatRateServiceOpts.provider || Defaults.FIAT_RATE_PROVIDER;
   var ts = (lodash.isNumber(opts.ts) || lodash.isArray(opts.ts)) ? opts.ts : now;
 
   async.map([].concat(ts), function(ts, cb) {
     self.storage.fetchFiatRate(provider, opts.code, ts, function(err, rate) {
-      if (err) return cb(err);
-      if (rate && (ts - rate.ts) > Defaults.FIAT_RATE_MAX_LOOK_BACK_TIME * 60 * 1000) rate = null;
+      if (err) {
+        return cb(err);
+      }
+      if (rate && (ts - rate.ts) > Defaults.FIAT_RATE_MAX_LOOK_BACK_TIME * 60 * 1000) {
+        rate = null;
+      }
 
       return cb(null, {
         ts: +ts,
@@ -142,7 +155,9 @@ FiatRateService.prototype.getRate = function(opts, cb) {
       });
     });
   }, function(err, res) {
-    if (err) return cb(err);
+    if (err) {
+      return cb(err);
+    }
     if (!lodash.isArray(ts)) res = res[0];
     return cb(null, res);
   });

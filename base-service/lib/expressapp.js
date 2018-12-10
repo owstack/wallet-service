@@ -6,6 +6,7 @@ var LtcWalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
+var baseConfig = require('../../config');
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var ClientError = require('./errors/clienterror');
@@ -20,7 +21,6 @@ var $ = require('preconditions').singleton();
 
 log.disableColor();
 log.debug = log.verbose;
-log.level = 'info';
 
 var DEFAULT_BASE_PATH = '/ws/api';
 
@@ -45,7 +45,7 @@ var DEFAULT_BASE_PATH = '/ws/api';
 var ExpressApp = function(config) {
   $.checkArgument(config, 'No configuration provided for Express app');
 
-  this.config = config;
+  this.config = config || baseConfig;
   this.app = express();
 };
 
@@ -90,9 +90,13 @@ ExpressApp.prototype.start = function(cb) {
     limit: POST_LIMIT
   }));
 
-  if (this.config.disableLogs) {
+  
+  var logConfig = this.config.log;
+  if (log.disable) {
     log.level = 'silent';
   } else {
+    log.level = this.config.log.level || 'info';
+
     var morgan = require('morgan');
     morgan.token('walletId', function getId(req) {
       return req.walletId
@@ -274,6 +278,7 @@ ExpressApp.prototype.start = function(cb) {
     };
 
     var service = req.header('x-service');
+    log.info(service + ' request ' + req.url);
     switch (service) {
       case Constants.SERVICE_BITCOIN:      return resolveBtcServer(req, res, cb, auth, opts);
       case Constants.SERVICE_BITCOIN_CASH: return resolveBchServer(req, res, cb, auth, opts);

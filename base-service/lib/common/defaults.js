@@ -29,7 +29,7 @@ Defaults.RateLimit = {
 /**
  * Fiat Rate Service.
  */
-Defaults.FIAT_RATE_PROVIDER = 'BitPay';
+Defaults.FIAT_RATE_PROVIDER = 'OpenWalletStack';
 Defaults.FIAT_RATE_FETCH_INTERVAL = 10; // In minutes
 Defaults.FIAT_RATE_MAX_LOOK_BACK_TIME = 120; // In minutes
 

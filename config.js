@@ -2,9 +2,14 @@
 
 var config = {
   basePath: '/ws/api',
-  disableLogs: false,
   port: 3232,
   ignoreRateLimiter: false,
+
+  // Log levels; debug, warn, info, error
+  log: {
+    disable: false,
+    level: 'debug'
+  },
 
   // Uncomment to make wallet-service a forking server
   // cluster: true,
@@ -29,7 +34,6 @@ var config = {
   },
 
   lockOpts: {
-    //  To use locker-server, uncomment this:
     lockerServer: {
       host: 'localhost',
       port: 3231
@@ -38,12 +42,12 @@ var config = {
 
   messageBrokerOpts: {
     port: 3380,
-    messageBrokerServer: {
-      url: 'http://localhost:3380'
-    }
+    // If using a remote service.
+    // messageBrokerServer: {
+    //   url: 'http://remotehost:3380'
+    // }
   },
 
-  // Email service global configuration.
   emailOpts: {
     transport: {
       host: 'localhost',
@@ -53,7 +57,7 @@ var config = {
     defaultLanguage: 'en',
     subjectPrefix: '[Wallet Service]',
     from: 'wallet-service@owstack.com',
-    templatePath: './lib/templates',
+    templatePath: '../base-service/lib/templates',
     publicTxUrlTemplate: {
       'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
       'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
@@ -76,7 +80,7 @@ var config = {
   },
 
   fiatRateServiceOpts: {
-    defaultProvider: 'BitPay',
+    provider: 'OpenWalletStack',
     fetchInterval: 60 // in minutes
   },
 
@@ -88,9 +92,9 @@ var config = {
       defaultProvider: 'explorer',
       explorer: {
         // Multiple servers (in priority order)
-        // url: ['http://a.b.c', 'https://test-explorer.openwalletstack.com:443'],
+        // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
         livenet: {
-          url: 'http://btc.owstack.org:3001',
+          url: 'http://btc.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
         testnet: {

@@ -18,13 +18,9 @@ Service.prototype.start = function() {
 	    server.emit('msg', data);
 	  });
 	});
-
+	
 	console.log('Message broker server listening on port ' + this.config.messageBrokerOpts.port);
 };
-
-if (require.main === module) {
-	throw 'The base message broker cannot be started from the command line';
-}
 
 // Start the service with base configuration (default).
 var service = new Service();

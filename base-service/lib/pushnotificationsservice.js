@@ -51,6 +51,15 @@ function PushNotificationsService(context, config) {
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
+  this.setLog();
+};
+
+PushNotificationsService.prototype.setLog = function() {
+  if (this.config.log.level.disable) {
+    log.level = 'silent';
+  } else {
+    log.level = this.config.log.level || 'info';
+  }
 };
 
 PushNotificationsService.prototype.start = function(opts, cb) {

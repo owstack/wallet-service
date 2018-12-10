@@ -3710,7 +3710,7 @@ WalletService.prototype.startScan = function(opts, cb) {
  * @param {Object} opts
  * @param {string} opts.code - Currency ISO code.
  * @param {Date} [opts.ts] - A timestamp to base the rate on (default Date.now()).
- * @param {String} [opts.provider] - A provider of exchange rates (default 'BitPay').
+ * @param {String} [opts.provider] - A provider of exchange rates (default 'OpenWalletStack').
  * @returns {Object} rates - The exchange rate.
  */
 WalletService.prototype.getFiatRate = function(opts, cb) {

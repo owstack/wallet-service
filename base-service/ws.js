@@ -3,19 +3,20 @@
 var async = require('async');
 var baseConfig = require('../config');
 var cluster = require('cluster');
-var clusterInstances = config.clusterInstances || numCPUs;
 var ExpressApp = require('./lib/expressapp');
 var fs = require('fs');
-var http = require('http');
 var log = require('npmlog');
-var numCPUs = require('os').cpus().length;
-var serverModule = config.https ? require('https') : require('http');
+var os = require('os');
 
 log.debug = log.verbose;
 log.disableColor();
 
+var serverModule;
+
 var WS = function(config) {
   this.config = config || baseConfig;
+
+  serverModule = this.config.https ? require('https') : require('http');
 };
 
 WS.prototype.start = function() {
@@ -41,14 +42,14 @@ WS.prototype.start = function() {
   }
 
   if (self.config.cluster && !config.lockOpts.lockerServer) {
-    throw 'When running in cluster mode, locker server need to be configured';
+    throw 'When running in cluster mode, locker server must be configured';
   }
-/*
+
   if (self.config.cluster && !self.config.messageBrokerOpts.messageBrokerServer) {
-    throw 'When running in cluster mode, message broker server need to be configured';
+    throw 'When running in cluster mode, message broker server must be configured';
   }
-*/
-  var expressApp = new ExpressApp(this.config);
+
+  var expressApp = new ExpressApp(self.config);
 
   function startInstance(cb) {
     var server = self.config.https ? serverModule.createServer(serverOpts, expressApp.app) : serverModule.Server(expressApp.app);
@@ -73,7 +74,7 @@ WS.prototype.start = function() {
 
   if (self.config.cluster && cluster.isMaster) {
     // Count the machine's CPUs
-    var instances = self.config.clusterInstances || require('os').cpus().length;
+    var instances = self.config.clusterInstances || os.cpus().length;
 
     log.info('Starting ' + instances + ' instances');
 

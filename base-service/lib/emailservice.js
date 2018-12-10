@@ -64,6 +64,15 @@ function EmailService(context, config) {
   this.COIN = this.ctx.Networks.coin;
 
   this.config = config || baseConfig;
+  this.setLog();
+};
+
+EmailService.prototype.setLog = function() {
+  if (this.config.log.level.disable) {
+    log.level = 'silent';
+  } else {
+    log.level = this.config.log.level || 'info';
+  }
 };
 
 EmailService.prototype.start = function(opts, cb) {
@@ -94,6 +103,7 @@ EmailService.prototype.start = function(opts, cb) {
 
   async.parallel([
     function(done) {
+      log.info('Reading email templates from ' + self.templatePath);
       _readDirectories(self.templatePath, function(err, res) {
         self.availableLanguages = res;
         done(err);
