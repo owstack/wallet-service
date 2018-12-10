@@ -106,11 +106,39 @@ var config = {
   },
 
   BCH: {
-    // todo
+    blockchainExplorerOpts: {
+      defaultProvider: 'explorer',
+      explorer: {
+        // Multiple servers (in priority order)
+        // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
+        livenet: {
+          url: 'http://bt.hlivenet.explorer-api.owstack.org',
+          apiPrefix: '/explorer-api'
+        },
+        testnet: {
+          url: 'https://test-insight.bitpay.com',
+          apiPrefix: '/api'
+        }
+      }
+    }
   },
 
   LTC: {
-    // todo
+    blockchainExplorerOpts: {
+      defaultProvider: 'explorer',
+      explorer: {
+        // Multiple servers (in priority order)
+        // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
+        livenet: {
+          url: 'http://ltc.livenet.explorer-api.owstack.org',
+          apiPrefix: '/explorer-api'
+        },
+        testnet: {
+          url: 'https://test-insight.bitpay.com',
+          apiPrefix: '/api'
+        }
+      }
+    }
   }
 
 };
