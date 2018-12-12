@@ -1,6 +1,7 @@
 'use strict';
 
-var BlockchainExplorers = require('../../../base-service').WalletService.BlockchainExplorers;
+var lodash = require('lodash');
+var BlockchainExplorers = lodash.cloneDeep(require('../../../base-service').WalletService.BlockchainExplorers);
 
 BlockchainExplorers.Explorer = require('./explorer');
 

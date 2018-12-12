@@ -1,6 +1,7 @@
 'use strict';
 
-var Common = require('../../../base-service').WalletService.Common;
+var lodash = require('lodash');
+var Common = lodash.cloneDeep(require('../../../base-service').WalletService.Common);
 
 Common.Defaults = require('./defaults');
 Common.Utils = require('./utils');
