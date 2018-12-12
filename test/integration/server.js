@@ -307,7 +307,7 @@ describe('Wallet service', function() {
     var server;
 
     beforeEach(function(done) {
-      Server({
+      new Server({
         blockchainExplorer: blockchainExplorer,
         request: request,
         storage: helpers.getStorage()
@@ -1722,7 +1722,7 @@ describe('Wallet service', function() {
         requestPubKey: requestPubKeyStr,
         signature: sig,
       };
-      Server({
+      new Server({
         blockchainExplorer: blockchainExplorer,
         request: request,
         storage: helpers.getStorage()
@@ -2439,7 +2439,7 @@ describe('Wallet service', function() {
 
   describe('Wallet not complete tests', function() {
     it('should fail to create address when wallet is not complete', function(done) {
-      Server({
+      new Server({
         blockchainExplorer: blockchainExplorer,
         request: request,
         storage: helpers.getStorage()
@@ -2475,7 +2475,7 @@ describe('Wallet service', function() {
     });
 
     it('should fail to create tx when wallet is not complete', function(done) {
-      Server({
+      new Server({
         blockchainExplorer: blockchainExplorer,
         request: request,
         storage: helpers.getStorage()
@@ -7432,7 +7432,7 @@ describe('Wallet service', function() {
       });
 
       // Create a second wallet
-      Server({
+      new Server({
         blockchainExplorer: blockchainExplorer,
         request: request,
         storage: helpers.getStorage()

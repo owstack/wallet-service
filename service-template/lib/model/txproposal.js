@@ -11,7 +11,6 @@ var Defaults = require('../common/defaults');
 var Networks = cLib.Networks;
 var Transaction = cLib.Transaction;
 var Unit = cLib.Unit;
-var inherits = require('inherits');
 
 var context = {
 	Address: Address,
@@ -21,15 +20,11 @@ var context = {
 	Unit: Unit
 };
 
-function CTxProposal(opts) {
-  return BaseTxProposal.apply(this, [context, opts]);
+class CTxProposal extends BaseTxProposal {
+	constructor(opts) {
+	  super(context, opts);
+	}
 };
-inherits(CTxProposal, BaseTxProposal);
-
-// Expose all static methods.
-Object.keys(BaseTxProposal).forEach(function(key) {
-  CTxProposal[key] = BaseTxProposal[key];
-});
 
 /**
  *

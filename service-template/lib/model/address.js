@@ -7,21 +7,16 @@ var BaseWalletService = baseService.WalletService;
 var BaseAddress = BaseWalletService.Model.Address;
 
 var Address = cLib.Address;
-var inherits = require('inherits');
 
 var context = {
 	Address: Address
 };
 
-function CAddress() {
-  return BaseAddress.apply(this, [context]);
+class CAddress extends BaseAddress {
+	constructor() {
+	  super(context);
+	}
 };
-inherits(CAddress, BaseAddress);
-
-// Expose all static methods.
-Object.keys(BaseAddress).forEach(function(key) {
-  CAddress[key] = BaseAddress[key];
-});
 
 /**
  *

@@ -5,21 +5,16 @@ var BaseWalletService = baseService.WalletService;
 var BaseSession = BaseWalletService.Model.Session;
 
 var Defaults = require('../common/defaults');
-var inherits = require('inherits');
 
 var context = {
 	Defaults: Defaults
 };
 
-function CSession(opts) {
-  return BaseSession.apply(this, [context, opts]);
+class CSession extends BaseSession {
+	constructor(opts) {
+	  super(context, opts);
+	}
 };
-inherits(CSession, BaseSession);
-
-// Expose all static methods.
-Object.keys(BaseSession).forEach(function(key) {
-  CSession[key] = BaseSession[key];
-});
 
 /**
  *

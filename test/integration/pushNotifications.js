@@ -459,7 +459,7 @@ describe('Push notifications', function() {
   describe('joinWallet', function() {
     beforeEach(function(done) {
       helpers.beforeEach(function(res) {
-        Server({
+        new Server({
           storage: helpers.getStorage()
           }, testConfig, function(s) {
           server = s;

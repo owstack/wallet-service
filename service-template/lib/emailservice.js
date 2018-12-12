@@ -10,7 +10,6 @@ var Common = require('./common');
 var Networks = cLib.Networks;
 var Storage = require('./storage');
 var Utils = Common.Utils;
-var inherits = require('inherits');
 
 var context = {
 	Networks: Networks,
@@ -18,14 +17,10 @@ var context = {
 	Utils: Utils
 };
 
-function CEmailService(config) {
-  BaseEmailService.apply(this, [context, config]);
+class CEmailService extends BaseEmailService {
+	constructor(config) {
+	  super(context, config);
+	}
 };
-inherits(CEmailService, BaseEmailService);
-
-// Expose all static methods.
-Object.keys(BaseEmailService).forEach(function(key) {
-  CEmailService[key] = BaseEmailService[key];
-});
 
 module.exports = CEmailService;

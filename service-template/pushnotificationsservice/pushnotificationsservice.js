@@ -6,21 +6,16 @@ var baseService = require('../../base-service');
 var BasePushNotificationsService = baseService.PushNotificationsService;
 
 var PushNotificationsService = require('../lib/pushnotificationsservice');
-var inherits = require('inherits');
 
 var context = {
 	PushNotificationsService: PushNotificationsService
 };
 
-function CPushNotificationsService(config) {
-  BasePushNotificationsService.apply(this, [context, config]);
+class CPushNotificationsService extends BasePushNotificationsService {
+	constructor(config) {
+	  super(context, config);
+	}
 };
-inherits(CPushNotificationsService, BasePushNotificationsService);
-
-// Expose all static methods.
-Object.keys(BasePushNotificationsService).forEach(function(key) {
-  CPushNotificationsService[key] = BasePushNotificationsService[key];
-});
 
 // Start the service with base configuration (default) and no options.
 var service = new CPushNotificationsService();

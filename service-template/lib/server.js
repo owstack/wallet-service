@@ -21,7 +21,6 @@ var TxProposal = Model.TxProposal;
 var Unit = cLib.Unit;
 var Utils = Common.Utils;
 var Wallet = Model.Wallet;
-var inherits = require('inherits');
 var lodash = owsCommon.deps.lodash;
 
 var context = {
@@ -39,25 +38,17 @@ var context = {
 	Wallet: Wallet
 };
 
-function CServer(opts, config, cb) {
-  if (!(this instanceof CServer)) {
-    return new CServer(opts, config, cb);
-  }
-	
-  return BaseServer.apply(this, [context, opts, config, cb]);
+class CServer extends BaseServer {
+	constructor(opts, config, cb) {
+	  super(context, opts, config, cb);
+	}
 };
-inherits(CServer, BaseServer);
-
-// Expose all static methods.
-Object.keys(BaseServer).forEach(function(key) {
-  CServer[key] = BaseServer[key];
-});
 
 /**
  *
  */
 CServer.getInstance = function(opts, config, cb) {
-  CServer(opts, config, cb);
+  new CServer(opts, config, cb);
 };
 
 /**
@@ -65,13 +56,12 @@ CServer.getInstance = function(opts, config, cb) {
  */
 CServer.getInstanceWithAuth = function(opts, config, auth, cb) {
   try {
-    CServer.getInstance(opts, config, function(server) {
+    new CServer.getInstance(opts, config, function(server) {
 		  server.initInstanceWithAuth(auth, cb);
     });
   } catch (ex) {
     return cb(ex);
   }
-
 };
 
 module.exports = CServer;

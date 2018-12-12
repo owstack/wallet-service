@@ -177,7 +177,7 @@ helpers.createAndJoinWallet = function(m, n, opts, cb) {
     request: sinon.stub()
   };
 
-  Server(serverOpts, testConfig, function(server) {
+  new Server(serverOpts, testConfig, function(server) {
     var copayerIds = [];
     var offset = opts.offset || 0;
 

@@ -8,10 +8,6 @@ var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 function Utils(context) {
-  if (!(this instanceof Utils)) {
-    return new Utils(context);
-  }
-
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;

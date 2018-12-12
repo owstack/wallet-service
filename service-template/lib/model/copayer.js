@@ -5,21 +5,16 @@ var BaseWalletService = baseService.WalletService;
 var BaseCopayer = BaseWalletService.Model.Copayer;
 
 var Address = require('./address');
-var inherits = require('inherits');
 
 var context = {
 	Address: Address
 };
 
-function CCopayer(opts) {
-  return BaseCopayer.apply(this, [context, opts]);
+class CCopayer extends BaseCopayer {
+	constructor() {
+	  super(context);
+	}
 };
-inherits(CCopayer, BaseCopayer);
-
-// Expose all static methods.
-Object.keys(BaseCopayer).forEach(function(key) {
-  CCopayer[key] = BaseCopayer[key];
-});
 
 /**
  *

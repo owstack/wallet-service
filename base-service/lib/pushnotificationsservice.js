@@ -331,7 +331,7 @@ PushNotificationsService.prototype._getDataForTemplate = function(notification, 
   if (data.amount) {
     try {
       var unit = recipient.unit;
-      data.amount = self.ctx.Utils().formatAmount(+data.amount, unit);
+      data.amount = new self.ctx.Utils().formatAmount(+data.amount, unit);
     } catch (ex) {
       return cb(new Error('Could not format amount', ex));
     }

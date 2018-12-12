@@ -10,7 +10,6 @@ var Common = require('./common');
 var Networks = cLib.Networks;
 var Storage = require('./storage');
 var Utils = Common.Utils;
-var inherits = require('inherits');
 
 var context = {
 	Networks: Networks,
@@ -18,14 +17,10 @@ var context = {
 	Utils: Utils
 };
 
-function CPushNotificationsService(config) {
-  BasePushNotificationsService.apply(this, [context, config]);
+class CPushNotificationsService extends BasePushNotificationsService {
+	constructor(config) {
+	  super(context, config);
+	}
 };
-inherits(CPushNotificationsService, BasePushNotificationsService);
-
-// Expose all static methods.
-Object.keys(BasePushNotificationsService).forEach(function(key) {
-  CPushNotificationsService[key] = BasePushNotificationsService[key];
-});
 
 module.exports = CPushNotificationsService;

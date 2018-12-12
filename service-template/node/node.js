@@ -8,7 +8,6 @@ var BaseNode = baseService.Node;
 var BlockchainMonitor = require('../lib/blockchainmonitor');
 var EmailService = require('../lib/emailservice');
 var Networks = cLib.Networks;
-var inherits = require('inherits');
 
 var context = {
 	BlockchainMonitor: BlockchainMonitor,
@@ -16,14 +15,10 @@ var context = {
 	Networks: Networks
 };
 
-function CNode(config, opts) {
-  BaseNode.apply(this, [context, config, opts]);
+class CNode extends BaseNode {
+	constructor(config, opts) {
+	  super(context, config, opts);
+	}
 };
-inherits(CNode, BaseNode);
-
-// Expose all static methods.
-Object.keys(BaseNode).forEach(function(key) {
-  CNode[key] = BaseNode[key];
-});
 
 module.exports = CNode;

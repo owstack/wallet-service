@@ -7,20 +7,15 @@ var BaseWalletService = baseService.WalletService;
 var BaseExplorer = BaseWalletService.BlockchainExplorers.Explorer;
 
 var Networks = cLib.Networks;
-var inherits = require('inherits');
 
 var context = {
 	Networks: Networks
 };
 
-function CExplorer(opts) {
-  return BaseExplorer.apply(this, [context, opts]);
+class CExplorer extends BaseExplorer {
+	constructor(opts) {
+	  super(context, opts);
+	}
 };
-inherits(CExplorer, BaseExplorer);
-
-// Expose all static methods.
-Object.keys(BaseExplorer).forEach(function(key) {
-  CExplorer[key] = BaseExplorer[key];
-});
 
 module.exports = CExplorer;

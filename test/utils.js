@@ -226,7 +226,7 @@ describe('Utils', function() {
       }];
 
       lodash.each(cases, function(testCase) {
-        var amount = Utils().formatAmount(testCase.args.amount, testCase.args.code, testCase.args.opts);
+        var amount = new Utils().formatAmount(testCase.args.amount, testCase.args.code, testCase.args.opts);
         amount.should.equal(testCase.expected);
       });
     });

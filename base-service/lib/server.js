@@ -40,10 +40,6 @@ var messageBroker;
  * @constructor
  */
 function WalletService(context, opts, config, cb) {
-  if (!(this instanceof WalletService)) {
-    return new WalletService(context, config, cb);
-  }
-
   // Context defines the coin network and is set by the implementing service in
   // order to instance this base service; e.g., btc-service.
   this.ctx = context;
@@ -52,7 +48,9 @@ function WalletService(context, opts, config, cb) {
   this.LIVENET = this.ctx.Networks.livenet.code;
   this.TESTNET = this.ctx.Networks.testnet.code;
   this.COIN = this.ctx.Networks.coin;
+
   this.atomicsName = this.ctx.Unit().atomicsName();
+  this.utils = new this.ctx.Utils();
 
   this.initialize(opts, config, cb);
 };
@@ -1901,16 +1899,16 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     var netValueInUtxos = totalValueInUtxos - baseTxpFee - (utxos.length * feePerInput);
 
     if (totalValueInUtxos < txpAmount) {
-      log.debug('Total value in all utxos (' + self.ctx.Utils().formatAmountInStandard(totalValueInUtxos) + ') is insufficient to cover for txp amount (' + self.ctx.Utils().formatAmountInStandard(txpAmount) + ')');
+      log.debug('Total value in all utxos (' + self.utils.formatAmountInStandard(totalValueInUtxos) + ') is insufficient to cover for txp amount (' + self.utils.formatAmountInStandard(txpAmount) + ')');
       return cb(Errors.INSUFFICIENT_FUNDS);
     }
     if (netValueInUtxos < txpAmount) {
-      log.debug('Value after fees in all utxos (' + self.ctx.Utils().formatAmountInStandard(netValueInUtxos) + ') is insufficient to cover for txp amount (' + self.ctx.Utils().formatAmountInStandard(txpAmount) + ')');
+      log.debug('Value after fees in all utxos (' + self.utils.formatAmountInStandard(netValueInUtxos) + ') is insufficient to cover for txp amount (' + self.utils.formatAmountInStandard(txpAmount) + ')');
       return cb(Errors.INSUFFICIENT_FUNDS_FOR_FEE);
     }
 
     var bigInputThreshold = txpAmount * self.ctx.Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR + (baseTxpFee + feePerInput);
-    log.debug('Big input threshold ' + self.ctx.Utils().formatAmountInStandard(bigInputThreshold));
+    log.debug('Big input threshold ' + self.utils.formatAmountInStandard(bigInputThreshold));
 
     var partitions = lodash.partition(utxos, function(utxo) {
       return utxo[self.atomicsName] > bigInputThreshold;
@@ -1921,8 +1919,8 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       return -utxo[self.atomicsName];
     });
 
-    log.debug('Considering ' + bigInputs.length + ' big inputs (' + self.ctx.Utils().formatUtxos(bigInputs) + ')');
-    log.debug('Considering ' + smallInputs.length + ' small inputs (' + self.ctx.Utils().formatUtxos(smallInputs) + ')');
+    log.debug('Considering ' + bigInputs.length + ' big inputs (' + self.utils.formatUtxos(bigInputs) + ')');
+    log.debug('Considering ' + smallInputs.length + ' small inputs (' + self.utils.formatUtxos(smallInputs) + ')');
 
     var total = 0;
     var netTotal = -baseTxpFee;
@@ -1931,11 +1929,11 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     var error;
 
     lodash.each(smallInputs, function(input, i) {
-      log.debug('Input #' + i + ': ' + self.ctx.Utils().formatUtxos(input));
+      log.debug('Input #' + i + ': ' + self.utils.formatUtxos(input));
 
       var netInputAmount = input[self.atomicsName] - feePerInput;
 
-      log.debug('The input contributes ' + self.ctx.Utils().formatAmountInStandard(netInputAmount));
+      log.debug('The input contributes ' + self.utils.formatAmountInStandard(netInputAmount));
 
       selected.push(input);
 
@@ -1945,7 +1943,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       var txpSize = baseTxpSize + selected.length * sizePerInput;
       fee = Math.round(baseTxpFee + selected.length * feePerInput);
 
-      log.debug('Tx size: ' + self.ctx.Utils.formatSize(txpSize) + ', Tx fee: ' + self.ctx.Utils().formatAmountInStandard(fee));
+      log.debug('Tx size: ' + self.ctx.Utils.formatSize(txpSize) + ', Tx fee: ' + self.utils.formatAmountInStandard(fee));
 
       var feeVsAmountRatio = fee / txpAmount;
       var amountVsUtxoRatio = netInputAmount / txpAmount;
@@ -1967,7 +1965,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
         if (feeVsAmountRatio > self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) {
           var feeVsSingleInputFeeRatio = fee / (baseTxpFee + feePerInput);
-          log.debug('Fee/Single-input fee: ' + self.ctx.Utils.formatRatio(feeVsSingleInputFeeRatio) + ' (max: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) + ')' + ' loses wrt single-input tx: ' + self.ctx.Utils().formatAmountInStandard((selected.length - 1) * feePerInput));
+          log.debug('Fee/Single-input fee: ' + self.ctx.Utils.formatRatio(feeVsSingleInputFeeRatio) + ' (max: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) + ')' + ' loses wrt single-input tx: ' + self.utils.formatAmountInStandard((selected.length - 1) * feePerInput));
           if (feeVsSingleInputFeeRatio > self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) {
             log.debug('Breaking because fee is too significant compared to tx amount and it is too expensive compared to using single input');
             return false;
@@ -1975,14 +1973,14 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         }
       }
 
-      log.debug('Cumuled total so far: ' + self.ctx.Utils().formatAmountInStandard(total) + ', Net total so far: ' + self.ctx.Utils().formatAmountInStandard(netTotal));
+      log.debug('Cumuled total so far: ' + self.utils.formatAmountInStandard(total) + ', Net total so far: ' + self.utils.formatAmountInStandard(netTotal));
       if (netTotal >= txpAmount) {
         var changeAmount = Math.round(total - txpAmount - fee);
-        log.debug('Tx change: ', self.ctx.Utils().formatAmountInStandard(changeAmount));
+        log.debug('Tx change: ', self.utils.formatAmountInStandard(changeAmount));
 
         var dustThreshold = Math.max(self.ctx.Defaults.MIN_OUTPUT_AMOUNT, self.ctx.Transaction.DUST_AMOUNT);
         if (changeAmount > 0 && changeAmount <= dustThreshold) {
-          log.debug('Change below dust threshold (' + self.ctx.Utils().formatAmountInStandard(dustThreshold) + '). Incrementing fee to remove change.');
+          log.debug('Change below dust threshold (' + self.utils.formatAmountInStandard(dustThreshold) + '). Incrementing fee to remove change.');
           // Remove dust change by incrementing fee
           fee += changeAmount;
         }
@@ -1992,12 +1990,12 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     });
 
     if (netTotal < txpAmount) {
-      log.debug('Could not reach Txp total (' + self.ctx.Utils().formatAmountInStandard(txpAmount) + '), still missing: ' + self.ctx.Utils().formatAmountInStandard(txpAmount - netTotal));
+      log.debug('Could not reach Txp total (' + self.utils.formatAmountInStandard(txpAmount) + '), still missing: ' + self.utils.formatAmountInStandard(txpAmount - netTotal));
 
       selected = [];
       if (!lodash.isEmpty(bigInputs)) {
         var input = lodash.head(bigInputs);
-        log.debug('Using big input: ', self.ctx.Utils().formatUtxos(input));
+        log.debug('Using big input: ', self.utils.formatUtxos(input));
 
         total = input[self.atomicsName];
         fee = Math.round(baseTxpFee + feePerInput);
@@ -2014,7 +2012,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     return cb(null, selected, fee);
   };
 
-  log.debug('Selecting inputs for a ' + self.ctx.Utils().formatAmountInStandard(txp.getTotalAmount()) + ' txp');
+  log.debug('Selecting inputs for a ' + self.utils.formatAmountInStandard(txp.getTotalAmount()) + ' txp');
 
   self._getUtxosForCurrentWallet(null, function(err, utxos) {
     if (err) {
@@ -2042,7 +2040,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
     utxos = sanitizeUtxos(utxos);
 
-    log.debug('Considering ' + utxos.length + ' utxos (' + self.ctx.Utils().formatUtxos(utxos) + ')');
+    log.debug('Considering ' + utxos.length + ' utxos (' + self.utils.formatUtxos(utxos) + ')');
 
     var groups = [6, 1];
     if (!txp.excludeUnconfirmedUtxos) {
@@ -2071,7 +2069,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         return next();
       }
 
-      log.debug('Candidate utxos: ' + self.ctx.Utils().formatUtxos(candidateUtxos));
+      log.debug('Candidate utxos: ' + self.utils.formatUtxos(candidateUtxos));
 
       lastGroupLength = candidateUtxos.length;
 
@@ -2086,8 +2084,8 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         inputs = selectedInputs;
         fee = selectedFee;
 
-        log.debug('Selected inputs from this group: ' + self.ctx.Utils().formatUtxos(inputs));
-        log.debug('Fee for this selection: ' + self.ctx.Utils().formatAmountInStandard(fee));
+        log.debug('Selected inputs from this group: ' + self.utils.formatUtxos(inputs));
+        log.debug('Fee for this selection: ' + self.utils.formatAmountInStandard(fee));
 
         return next();
       });
@@ -2106,7 +2104,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
       if (!err) {
         var change = lodash.sumBy(txp.inputs, self.atomicsName) - lodash.sumBy(txp.outputs, 'amount') - txp.fee;
-        log.debug('Successfully built transaction. Total fees: ' + self.ctx.Utils().formatAmountInStandard(txp.fee) + ', total change: ' + self.ctx.Utils().formatAmountInStandard(change));
+        log.debug('Successfully built transaction. Total fees: ' + self.utils.formatAmountInStandard(txp.fee) + ', total change: ' + self.utils.formatAmountInStandard(change));
       } else {
         log.warn('Error building transaction', err);
       }

@@ -19,7 +19,7 @@ function BlockchainExplorer(context, opts, config) {
 
   this.config = config || baseConfig;
 
-  var network = opts.network || this.LIVENET;
+  var network = opts.network || this.LIVENET;  
   var providers = this.config[this.COIN].blockchainExplorerOpts;
   var provider = opts.provider || providers.defaultProvider;
 

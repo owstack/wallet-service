@@ -13,10 +13,6 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 
 function FiatRateService(config) {
-  if (!(this instanceof FiatRateService)) {
-    return new FiatRateService(context);
-  }
-
   this.config = config || baseConfig;
   this.setLog();
 };
