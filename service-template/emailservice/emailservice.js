@@ -4,9 +4,7 @@
 
 var cLib = require('../cLib');
 
-var baseService = require('../../base-service');
-var BaseEmailService = baseService.EmailService;
-
+var BaseEmailService = require('../../base-service').EmailService;
 var EmailService = require('../lib/emailservice');
 var Networks = cLib.Networks;
 

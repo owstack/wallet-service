@@ -2,9 +2,7 @@
 
 var cLib = require('../cLib');
 
-var baseService = require('../../base-service');
-var BaseNode = baseService.Node;
-
+var BaseNode = require('../../base-service').Node;
 var BlockchainMonitor = require('../lib/blockchainmonitor');
 var EmailService = require('../lib/emailservice');
 var Networks = cLib.Networks;

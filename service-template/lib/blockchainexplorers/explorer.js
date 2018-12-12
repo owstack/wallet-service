@@ -2,8 +2,7 @@
 
 var cLib = require('../../cLib');
 
-var baseService = require('../../../base-service');
-var BaseWalletService = baseService.WalletService;
+var BaseWalletService = require('../../../base-service').WalletService;
 var BaseExplorer = BaseWalletService.BlockchainExplorers.Explorer;
 
 var Networks = cLib.Networks;

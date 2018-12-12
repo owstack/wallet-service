@@ -1,7 +1,6 @@
 'use strict';
 
-var baseService = require('../../../base-service');
-var Common = baseService.WalletService.Common;
+var Common = require('../../../base-service').WalletService.Common;
 
 Common.Defaults = require('./defaults');
 Common.Utils = require('./utils');

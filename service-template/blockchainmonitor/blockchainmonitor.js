@@ -2,9 +2,7 @@
 
 'use strict';
 
-var baseService = require('../../base-service');
-var BaseBlockchainMonitor = baseService.BlockchainMonitor;
-
+var BaseBlockchainMonitor = require('../../base-service').BlockchainMonitor;
 var BlockchainMonitor = require('../lib/blockchainmonitor');
 
 var context = {

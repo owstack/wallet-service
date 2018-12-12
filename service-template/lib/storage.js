@@ -1,7 +1,6 @@
 'use strict';
 
-var baseService = require('../../base-service');
-var BaseWalletService = baseService.WalletService;
+var BaseWalletService = require('../../base-service').WalletService;
 var BaseStorage = BaseWalletService.Storage;
 
 var Address = require('./model/address');

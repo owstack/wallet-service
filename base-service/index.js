@@ -5,16 +5,12 @@
  * @module BaseWalletService
  */
 
-var BlockchainMonitor = require('./blockchainmonitor/blockchainmonitor');
-var EmailService = require('./emailservice/emailservice');
-var Node = require('./node/node');
-var PushNotificationsService = require('./pushnotificationsservice/pushnotificationsservice');
-var WalletService = require('./lib');
+var Service = {};
 
-module.exports = {
-  BlockchainMonitor: BlockchainMonitor,
-	EmailService: EmailService,
-	Node: Node,
-	PushNotificationsService: PushNotificationsService,
-	WalletService: WalletService
-};
+Service.BlockchainMonitor = require('./blockchainmonitor/blockchainmonitor');
+Service.EmailService = require('./emailservice/emailservice');
+Service.Node = require('./node/node');
+Service.PushNotificationsService = require('./pushnotificationsservice/pushnotificationsservice');
+Service.WalletService = require('./lib');
+
+module.exports = Service;

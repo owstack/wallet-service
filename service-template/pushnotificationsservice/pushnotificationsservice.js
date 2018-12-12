@@ -2,9 +2,7 @@
 
 'use strict';
 
-var baseService = require('../../base-service');
-var BasePushNotificationsService = baseService.PushNotificationsService;
-
+var BasePushNotificationsService = require('../../base-service').PushNotificationsService;
 var PushNotificationsService = require('../lib/pushnotificationsservice');
 
 var context = {
