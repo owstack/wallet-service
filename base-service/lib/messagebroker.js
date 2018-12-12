@@ -1,15 +1,14 @@
 'use strict';
 
 var baseConfig = require('../../config');
-var events = require('events');
-var inherits = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 var log = require('npmlog');
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 log.disableColor();
 
-class MessageBroker extends events.EventEmitter {
+class MessageBroker extends EventEmitter {
   constructor(config) {
     super();
     var self = this;
