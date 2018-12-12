@@ -10,14 +10,6 @@ Use the following steps to Install wallet-service from the npmjs repository and 
 npm install @owstack/wallet-service
 cd wallet-service
 ```
-Create instances for all supported coin networks.
-```bash
-npm run create
-```
-Start the wallet service.
-```bash
-npm start
-```
 
 ### Install wallet-service from github source
 Use the following steps to Install wallet-service from github source and run it with defaults. To change configuration before running, see the Configuration section.
@@ -26,13 +18,22 @@ git clone https://github.com/owstack/wallet-service.git
 cd wallet-service
 npm install
 ```
-Create instances for all supported coin networks.
+
+### Start the wallet-service
+Start all services for all supported coin networks.
 ```bash
-npm run create
+npm start all
 ```
+Start services for a specific coin network.
 ```bash
-npm start
+npm start [ btc | bch | ltc ]
 ```
+
+### Run tests
+```bash
+npm test
+```
+
 ### Configuration
 Configuration for all required modules can be specified in https://github.com/owstack/wallet-service/blob/master/base-service/config.js
 
@@ -58,6 +59,7 @@ Example configuration for connecting to the MongoDB instance:
     },
   }
 ```
+
 #### Configure Locker service
 Example configuration for connecting to locker service:
 ```javascript
