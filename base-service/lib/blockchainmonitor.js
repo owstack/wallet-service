@@ -44,26 +44,33 @@ BlockchainMonitor.prototype.start = function(opts, cb) {
   async.parallel([
     function(done) {
       self.explorers = {};
-      lodash.map([Constants.LIVENET, Constants.TESTNET], function(network) {
+
+      lodash.forEach([Constants.LIVENET, Constants.TESTNET], function(network) {
         var explorer;
-        if (self.config[self.COIN].blockchainExplorers) {
+        if (self.config[self.COIN].blockchainExplorers &&
+          self.config[self.COIN].blockchainExplorers[network]) {
+
           explorer = self.config[self.COIN].blockchainExplorers[network];
+
         } else {
-          var localConfig = {};
-          var provider = self.config[self.COIN].blockchainExplorerOpts.defaultProvider;
+          var provider = lodash.get(self.config[self.COIN], 'blockchainExplorerOpts.defaultProvider');
 
-          if (self.config[self.COIN].blockchainExplorerOpts && self.config[self.COIN].blockchainExplorerOpts[provider][network]) {
-            localConfig = self.config[self.COIN].blockchainExplorerOpts[provider][network];
+          if (provider &&
+            self.config[self.COIN].blockchainExplorerOpts &&
+            self.config[self.COIN].blockchainExplorerOpts[provider] && 
+            self.config[self.COIN].blockchainExplorerOpts[provider][network]) {
+
+            var explorer = new self.ctx.BlockchainExplorer({
+              provider: provider,
+              network: network
+            }, self.config);
           }
-
-          var explorer = new self.ctx.BlockchainExplorer({
-            provider: provider,
-            network: network
-          }, self.config);
         }
-        $.checkState(explorer);
-        self._initExplorer(network, explorer);
-        self.explorers[network] = explorer;
+
+        if (explorer) {
+          self._initExplorer(network, explorer);
+          self.explorers[network] = explorer;
+        }
       });
       done();
     },

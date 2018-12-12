@@ -59,8 +59,8 @@ var config = {
     from: 'wallet-service@owstack.com',
     templatePath: '../base-service/lib/templates',
     publicTxUrlTemplate: {
-      'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
-      'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
+      livenet: 'http://explorer.owstack.org/explorer/tx/{{txid}}',
+      // testnet: 'http://explorer.owstack.org/explorer/tx/{{txid}}'
     }
   },
 
@@ -112,13 +112,13 @@ var config = {
         // Multiple servers (in priority order)
         // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
         livenet: {
-          url: 'http://bt.hlivenet.explorer-api.owstack.org',
+          url: 'http://bch.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
-        testnet: {
-          url: 'https://test-insight.bitpay.com',
-          apiPrefix: '/api'
-        }
+        // testnet: {
+        //   url: 'https://test-insight.bitpay.com',
+        //   apiPrefix: '/api'
+        // }
       }
     }
   },
@@ -133,10 +133,10 @@ var config = {
           url: 'http://ltc.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
-        testnet: {
-          url: 'https://test-insight.bitpay.com',
-          apiPrefix: '/api'
-        }
+        // testnet: {
+        //   url: 'https://test-insight.bitpay.com',
+        //   apiPrefix: '/api'
+        // }
       }
     }
   }
