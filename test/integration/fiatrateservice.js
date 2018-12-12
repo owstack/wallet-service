@@ -5,11 +5,10 @@ var sinon = require('sinon');
 var should = chai.should();
 
 var Service = require('../../');
-var BaseWalletService = Service.Base.WalletService;
 var WalletService = Service.BTC.WalletService;
 
 var async = require('async');
-var FiatRateService = BaseWalletService.FiatRateService;
+var FiatRateService = WalletService.FiatRateService;
 var helpers = require('./helpers');
 var log = require('npmlog');
 var testConfig = require('../testconfig');
