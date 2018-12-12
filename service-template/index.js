@@ -1,6 +1,6 @@
 'use strict';
 
-var Service = require('../base-service');
+var Service = {};
 
 Service.Node = require('./node/node');
 Service.WalletService = require('./lib');
