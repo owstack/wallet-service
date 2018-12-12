@@ -1,6 +1,6 @@
 'use strict';
 
-function TxNote() {};
+class TxNote {};
 
 TxNote.create = function(opts) {
   opts = opts || {};

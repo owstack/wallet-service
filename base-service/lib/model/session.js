@@ -2,27 +2,27 @@
 
 var Uuid = require('uuid');
 
-function Session(context, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Session {
+  constructor(context, opts) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  opts = opts || {};
+    opts = opts || {};
 
-  if (opts.fromObj) {
-    return;
+    if (opts.fromObj) {
+      return;
+    }
+
+    var now = Math.floor(Date.now() / 1000);
+
+    this.id = Uuid.v4();
+    this.version = 1;
+    this.createdOn = now;
+    this.updatedOn = now;
+    this.copayerId = opts.copayerId;
+    this.walletId = opts.walletId;
   }
-
-  var now = Math.floor(Date.now() / 1000);
-
-  this.id = Uuid.v4();
-  this.version = 1;
-  this.createdOn = now;
-  this.updatedOn = now;
-  this.copayerId = opts.copayerId;
-  this.walletId = opts.walletId;
-
-  return;
 };
 
 Session.fromObj = function(context, obj) {

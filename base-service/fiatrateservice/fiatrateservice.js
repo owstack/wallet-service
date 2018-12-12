@@ -8,9 +8,11 @@ var log = require('npmlog');
 
 log.debug = log.verbose;
 
-function Service(config) {
-  this.config = config || baseConfig;
-	this.fiatRateService = new FiatRateService(this.config);
+class Service {
+	constructor(config) {
+	  this.config = config || baseConfig;
+		this.fiatRateService = new FiatRateService(this.config);
+	}
 };
 
 Service.prototype.start = function() {

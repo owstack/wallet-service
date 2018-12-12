@@ -2,14 +2,10 @@
 
 var events = require('events');
 var log = require('npmlog');
-var inherits = require('inherits');
-var nodeutil = require('util');
 
 log.debug = log.verbose;
 
-function NotificationBroadcaster() {};
-
-nodeutil.inherits(NotificationBroadcaster, events.EventEmitter);
+class NotificationBroadcaster {};
 
 NotificationBroadcaster.prototype.broadcast = function(eventName, notification, walletService) {
   this.emit(eventName, notification, walletService);

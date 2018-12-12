@@ -4,7 +4,7 @@ var owsCommon = require('@owstack/ows-common');
 var Uuid = require('uuid');
 var lodash = owsCommon.deps.lodash;
 
-function Email() {};
+class Email {};
 
 Email.create = function(opts) {
   opts = opts || {};

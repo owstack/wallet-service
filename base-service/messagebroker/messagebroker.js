@@ -6,8 +6,10 @@ var log = require('npmlog');
 
 log.debug = log.verbose;
 
-function Service(config) {
-  this.config = config || baseConfig;
+class Service {
+	constructor(config) {
+	  this.config = config || baseConfig;
+	}
 };
 
 Service.prototype.start = function() {

@@ -5,10 +5,12 @@
 var baseConfig = require('../../config');
 var Locker = require('locker-server');
 
-function Service(config) {
-	this.lockerService = new Locker();	
+class Service {
+	constructor(config) {
+		this.lockerService = new Locker();	
 
-  this.config = config || baseConfig;
+	  this.config = config || baseConfig;
+	}
 };
 
 Service.prototype.start = function() {

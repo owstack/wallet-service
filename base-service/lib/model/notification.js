@@ -26,7 +26,7 @@ var lodash = owsCommon.deps.lodash;
  * to notify the user
  *
  */
-function Notification() {};
+class Notification {};
 
 Notification.create = function(opts) {
   opts = opts || {};

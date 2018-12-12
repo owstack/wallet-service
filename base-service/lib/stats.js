@@ -18,21 +18,23 @@ log.disableColor();
 
 var INITIAL_DATE = '2015-01-01';
 
-function Stats(context, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Stats {
+  constructor(context, opts) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
+    // Set some frequently used contant values based on context.
+    this.LIVENET = this.ctx.Networks.livenet.code;
 
-  opts = opts || {};
+    opts = opts || {};
 
-  this.network = opts.network || this.LIVENET;
-  this.from = moment(opts.from || INITIAL_DATE);
-  this.to = moment(opts.to);
-  this.fromTs = this.from.startOf('day').valueOf();
-  this.toTs = this.to.endOf('day').valueOf();
+    this.network = opts.network || this.LIVENET;
+    this.from = moment(opts.from || INITIAL_DATE);
+    this.to = moment(opts.to);
+    this.fromTs = this.from.startOf('day').valueOf();
+    this.toTs = this.to.endOf('day').valueOf();
+  }
 };
 
 Stats.prototype.run = function(cb) {

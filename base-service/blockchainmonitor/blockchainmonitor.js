@@ -7,13 +7,15 @@ var log = require('npmlog');
 
 log.debug = log.verbose;
 
-function Service(context, config) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Service {
+	constructor(context, config) {
+	  // Context defines the coin network and is set by the implementing service in
+	  // order to instance this base service; e.g., btc-service.
+	  this.ctx = context;
 
-  this.config = config || baseConfig;
-	this.blockchainmonitor = new this.ctx.BlockchainMonitor(this.config);
+	  this.config = config || baseConfig;
+		this.blockchainmonitor = new this.ctx.BlockchainMonitor(this.config);
+	}
 };
 
 Service.prototype.start = function() {

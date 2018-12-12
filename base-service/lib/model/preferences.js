@@ -1,6 +1,6 @@
 'use strict';
 
-function Preferences() {};
+class Preferences {};
 
 Preferences.create = function(opts) {
   opts = opts || {};

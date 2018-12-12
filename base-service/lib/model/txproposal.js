@@ -14,65 +14,65 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 log.disableColor();
 
-function TxProposal(context, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class TxProposal {
+  constructor(context, opts) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
-  this.TESTNET = this.ctx.Networks.testnet.code;
-  this.atomicsName = this.ctx.Unit().atomicsName();
+    // Set some frequently used contant values based on context.
+    this.LIVENET = this.ctx.Networks.livenet.code;
+    this.TESTNET = this.ctx.Networks.testnet.code;
+    this.atomicsName = this.ctx.Unit().atomicsName();
 
-  opts = opts || {};
+    opts = opts || {};
 
-  if (opts.fromObj) {
-    return;
+    if (opts.fromObj) {
+      return;
+    }
+
+    this.version = 3;
+
+    var now = Date.now();
+    this.createdOn = Math.floor(now / 1000);
+    this.id = opts.id || Uuid.v4();
+    this.walletId = opts.walletId;
+    this.creatorId = opts.creatorId;
+    this.message = opts.message;
+    this.payProUrl = opts.payProUrl;
+    this.changeAddress = opts.changeAddress;
+    this.outputs = lodash.map(opts.outputs, function(output) {
+      return lodash.pick(output, ['amount', 'toAddress', 'message', 'script']);
+    });
+    this.outputOrder = lodash.range(this.outputs.length + 1);
+    if (!opts.noShuffleOutputs) {
+      this.outputOrder = lodash.shuffle(this.outputOrder);
+    }
+    this.walletM = opts.walletM;
+    this.walletN = opts.walletN;
+    this.requiredSignatures = this.walletM;
+    this.requiredRejections = Math.min(this.walletM, this.walletN - this.walletM + 1),
+    this.status = 'temporary';
+    this.actions = [];
+    this.feeLevel = opts.feeLevel;
+    this.feePerKb = opts.feePerKb;
+    this.excludeUnconfirmedUtxos = opts.excludeUnconfirmedUtxos;
+
+    this.addressType = opts.addressType || (this.walletN > 1 ? Constants.SCRIPT_TYPES.P2SH : Constants.SCRIPT_TYPES.P2PKH);
+    $.checkState(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), this.addressType));
+
+    this.customData = opts.customData;
+
+    this.amount = this.getTotalAmount();
+    try {
+      this.network = opts.network || this.ctx.Address(this.outputs[0].toAddress).toObject().network;
+    } catch (ex) {}
+
+    $.checkState(lodash.includes(lodash.values([this.LIVENET, this.TESTNET]), this.network));
+
+    this.setInputs(opts.inputs);
+    this.fee = opts.fee;
   }
-
-  this.version = 3;
-
-  var now = Date.now();
-  this.createdOn = Math.floor(now / 1000);
-  this.id = opts.id || Uuid.v4();
-  this.walletId = opts.walletId;
-  this.creatorId = opts.creatorId;
-  this.message = opts.message;
-  this.payProUrl = opts.payProUrl;
-  this.changeAddress = opts.changeAddress;
-  this.outputs = lodash.map(opts.outputs, function(output) {
-    return lodash.pick(output, ['amount', 'toAddress', 'message', 'script']);
-  });
-  this.outputOrder = lodash.range(this.outputs.length + 1);
-  if (!opts.noShuffleOutputs) {
-    this.outputOrder = lodash.shuffle(this.outputOrder);
-  }
-  this.walletM = opts.walletM;
-  this.walletN = opts.walletN;
-  this.requiredSignatures = this.walletM;
-  this.requiredRejections = Math.min(this.walletM, this.walletN - this.walletM + 1),
-  this.status = 'temporary';
-  this.actions = [];
-  this.feeLevel = opts.feeLevel;
-  this.feePerKb = opts.feePerKb;
-  this.excludeUnconfirmedUtxos = opts.excludeUnconfirmedUtxos;
-
-  this.addressType = opts.addressType || (this.walletN > 1 ? Constants.SCRIPT_TYPES.P2SH : Constants.SCRIPT_TYPES.P2PKH);
-  $.checkState(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), this.addressType));
-
-  this.customData = opts.customData;
-
-  this.amount = this.getTotalAmount();
-  try {
-    this.network = opts.network || this.ctx.Address(this.outputs[0].toAddress).toObject().network;
-  } catch (ex) {}
-
-  $.checkState(lodash.includes(lodash.values([this.LIVENET, this.TESTNET]), this.network));
-
-  this.setInputs(opts.inputs);
-  this.fee = opts.fee;
-
-  return;
 };
 
 TxProposal.fromObj = function(context, obj) {

@@ -4,8 +4,10 @@ var owsCommon = require('@owstack/ows-common');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
-function Lock() {
-  this.tasks = {};
+class Lock {
+  constructor() {
+    this.tasks = {};
+  }
 };
 
 Lock.prototype._release = function(token, task) {

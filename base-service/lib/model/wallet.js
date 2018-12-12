@@ -8,10 +8,12 @@ var Uuid = require('uuid');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
-function Wallet(context) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Wallet {
+  constructor(context) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
+  }
 };
 
 Wallet.create = function(context, opts) {

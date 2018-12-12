@@ -12,9 +12,11 @@ var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
-function FiatRateService(config) {
-  this.config = config || baseConfig;
-  this.setLog();
+class FiatRateService {
+  constructor(config) {
+    this.config = config || baseConfig;
+    this.setLog();
+  }
 };
 
 FiatRateService.prototype.setLog = function() {

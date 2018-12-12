@@ -1,6 +1,6 @@
 'use strict';
 
-function PushNotificationSub() {};
+class PushNotificationSub {};
 
 PushNotificationSub.create = function(opts) {
   opts = opts || {};

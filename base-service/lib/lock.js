@@ -9,21 +9,23 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 log.disableColor();
 
-function Lock(opts) {
-  opts = opts || {};
-  if (opts.lockerServer) {
-    this.lock = new RemoteLock(opts.lockerServer.port, opts.lockerServer.host);
+class Lock {
+  constructor(opts) {
+    opts = opts || {};
+    if (opts.lockerServer) {
+      this.lock = new RemoteLock(opts.lockerServer.port, opts.lockerServer.host);
 
-    log.info('Using locker server:' + opts.lockerServer.host + ':' + opts.lockerServer.port);
+      log.info('Using locker server:' + opts.lockerServer.host + ':' + opts.lockerServer.port);
 
-    this.lock.on('reset', function() {
-      log.debug('Locker server reset');
-    });
-    this.lock.on('error', function(error) {
-      log.error('Locker server threw error', error);
-    });
-  } else {
-    this.lock = new LocalLock();
+      this.lock.on('reset', function() {
+        log.debug('Locker server reset');
+      });
+      this.lock.on('error', function(error) {
+        log.error('Locker server threw error', error);
+      });
+    } else {
+      this.lock = new LocalLock();
+    }
   }
 };
 

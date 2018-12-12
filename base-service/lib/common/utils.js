@@ -7,13 +7,15 @@ var secp256k1 = require('secp256k1');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
-function Utils(context) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Utils {
+  constructor(context) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.atomicsName = this.ctx.Unit().atomicsName();
+    // Set some frequently used contant values based on context.
+    this.atomicsName = this.ctx.Unit().atomicsName();
+  }
 };
 
 Utils.prototype.formatAmount = function(atomic, code, opts) {

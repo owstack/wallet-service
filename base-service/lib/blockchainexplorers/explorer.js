@@ -9,23 +9,25 @@ var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 
-function Explorer(context, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Explorer {
+  constructor(context, opts) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.alias;
-  this.TESTNET = this.ctx.Networks.testnet.alias;
+    // Set some frequently used contant values based on context.
+    this.LIVENET = this.ctx.Networks.livenet.alias;
+    this.TESTNET = this.ctx.Networks.testnet.alias;
 
-  $.checkArgument(opts);
-  $.checkArgument(lodash.includes([this.LIVENET, this.TESTNET], opts.network));
-  $.checkArgument(opts.url);
+    $.checkArgument(opts);
+    $.checkArgument(lodash.includes([this.LIVENET, this.TESTNET], opts.network));
+    $.checkArgument(opts.url);
 
-  this.apiPrefix = opts.apiPrefix || '/explorer-api';
-  this.network = opts.network || this.LIVENET;
-  this.hosts = opts.url;
-  this.userAgent = opts.userAgent || 'ws';
+    this.apiPrefix = opts.apiPrefix || '/explorer-api';
+    this.network = opts.network || this.LIVENET;
+    this.hosts = opts.url;
+    this.userAgent = opts.userAgent || 'ws';
+  }
 };
 
 var _parseErr = function(err, res) {
@@ -44,7 +46,7 @@ Explorer.prototype._doRequest = function(args, cb) {
       'User-Agent': this.userAgent,
     }
   };
-  RequestList(lodash.defaults(args, opts), cb);
+  new RequestList(lodash.defaults(args, opts), cb);
 };
 
 Explorer.prototype.getConnectionInfo = function() {

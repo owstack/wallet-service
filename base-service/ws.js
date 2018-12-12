@@ -13,10 +13,12 @@ log.disableColor();
 
 var serverModule;
 
-var WS = function(config) {
-  this.config = config || baseConfig;
+class WS {
+  constructor(config) {
+    this.config = config || baseConfig;
 
-  serverModule = this.config.https ? require('https') : require('http');
+    serverModule = this.config.https ? require('https') : require('http');
+  }
 };
 
 WS.prototype.start = function() {

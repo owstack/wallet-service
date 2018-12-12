@@ -9,7 +9,6 @@ var https = require('https');
 var http = require('http');
 var io = require('socket.io');
 var Locker = require('locker-server');
-var inherits = require('inherits');
 
 /**
  * A Node Service module
@@ -25,32 +24,35 @@ var inherits = require('inherits');
  * @param {String} opts.httpsOptions.CAroot - A HTTPS root certificate file.
  * @param {String} opts.httpsOptions.key - HTTPS key file.
  */
-function Service(context, config, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Service extends EventEmitter {
+  constructor(context, config, opts) {
+    super();
 
-  // Set some frequently used contant values based on context.
-  this.COIN = this.ctx.Networks.coin;
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  EventEmitter.call(this);
+    // Set some frequently used contant values based on context.
+    this.COIN = this.ctx.Networks.coin;
 
-  this.config = config || baseConfig;
-  this.https = opts.https || this.config.https;
-  this.httpsOptions = opts.httpsOptions || this.config.httpsOptions;
-  this.wsPort = opts.wsPort || this.config.port;
+    EventEmitter.call(this);
 
-  if (this.config.messageBrokerOpts) {
-    this.messageBrokerPort = this.config.messageBrokerOpts.port;
+    this.config = config || baseConfig;
+    this.https = opts.https || this.config.https;
+    this.httpsOptions = opts.httpsOptions || this.config.httpsOptions;
+    this.wsPort = opts.wsPort || this.config.port;
+
+    if (this.config.messageBrokerOpts) {
+      this.messageBrokerPort = this.config.messageBrokerOpts.port;
+    }
+    this.messageBrokerPort = opts.messageBrokerPort || this.messageBrokerPort || 3380;
+
+    if (this.config.lockOpts) {
+      this.lockerPort = this.config.lockOpts.lockerServer.port;
+    }
+    this.lockerPort = opts.lockerPort || this.lockerPort || 3231;
   }
-  this.messageBrokerPort = opts.messageBrokerPort || this.messageBrokerPort || 3380;
-
-  if (this.config.lockOpts) {
-    this.lockerPort = this.config.lockOpts.lockerServer.port;
-  }
-  this.lockerPort = opts.lockerPort || this.lockerPort || 3231;
 };
-inherits(Service, EventEmitter);
 
 Service.dependencies = ['@owstack/explorer-api'];
 

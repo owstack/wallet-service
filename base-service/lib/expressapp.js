@@ -42,11 +42,13 @@ var DEFAULT_BASE_PATH = '/ws/api';
  * @param config.{service}.blockchainExplorerOpts
  * @param config.{service}.fiatRateServiceOpts
  */
-var ExpressApp = function(config) {
-  $.checkArgument(config, 'No configuration provided for Express app');
+class ExpressApp {
+  constructor(config) {
+    $.checkArgument(config, 'No configuration provided for Express app');
 
-  this.config = config || baseConfig;
-  this.app = express();
+    this.config = config || baseConfig;
+    this.app = express();
+  }
 };
 
 /**

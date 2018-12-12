@@ -7,7 +7,7 @@ var should = chai.should();
 var Service = require('../');
 var WalletService = Service.BTC.WalletService;
 
-var prequest = WalletService.BlockchainExplorers.RequestList;
+var RequestList = WalletService.BlockchainExplorers.RequestList;
 
 describe('request-list', function() {
   var request;
@@ -21,7 +21,7 @@ describe('request-list', function() {
       statusCode: 200
     }, 'abc');
 
-    prequest({
+    new RequestList({
       hosts: 'url1',
       request: request,
     }, function(err, res, body) {
@@ -36,7 +36,7 @@ describe('request-list', function() {
     request.yields(null, {
       statusCode: 500
     });
-    prequest({
+    new RequestList({
       hosts: 'url1',
       request: request,
     }, function(err, res, body) {
@@ -50,7 +50,7 @@ describe('request-list', function() {
     request.yields(null, {
       statusCode: 200
     }, 'abc');
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2'],
       request: request,
     }, function(err, res, body) {
@@ -67,7 +67,7 @@ describe('request-list', function() {
     request.onCall(1).yields(null, {
       statusCode: 550
     });
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2'],
       request: request,
     }, function(err, res, body) {
@@ -87,7 +87,7 @@ describe('request-list', function() {
     request.onCall(2).yields(null, {
       statusCode: 200,
     }, 'abc');
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2', 'url3'],
       request: request,
     }, function(err, res, body) {
@@ -104,7 +104,7 @@ describe('request-list', function() {
     request.onCall(1).yields(null, {
       statusCode: 550
     });
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2'],
       request: request,
     }, function(err, res, body) {
@@ -124,7 +124,7 @@ describe('request-list', function() {
     request.onCall(2).yields(null, {
       statusCode: 200,
     }, 'abc');
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2', 'url3'],
       request: request,
     }, function(err, res, body) {
@@ -146,7 +146,7 @@ describe('request-list', function() {
     request.onCall(2).yields(null, {
       statusCode: 200,
     }, 'abc');
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2', 'url3'],
       request: request,
     }, function(err, res, body) {
@@ -168,7 +168,7 @@ describe('request-list', function() {
     request.onCall(2).yields(null, {
       statusCode: 510,
     }, 'abc');
-    prequest({
+    new RequestList({
       hosts: ['url1', 'url2', 'url3'],
       request: request,
     }, function(err, res, body) {

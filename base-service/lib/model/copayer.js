@@ -8,10 +8,12 @@ var util = require('util');
 var Uuid = require('uuid');
 var $ = require('preconditions').singleton();
 
-function Copayer(context) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Copayer {
+  constructor(context) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
+  }
 };
 
 Copayer.create = function(context, opts) {

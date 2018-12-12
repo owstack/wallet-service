@@ -5,7 +5,7 @@ var Constants = owsCommon.Constants;
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
-function AddressManager() {};
+class AddressManager {};
 
 AddressManager.create = function(opts) {
   opts = opts || {};

@@ -1,6 +1,6 @@
 'use strict';
 
-function TxConfirmationSub() {};
+class TxConfirmationSub {};
 
 TxConfirmationSub.create = function(opts) {
   opts = opts || {};

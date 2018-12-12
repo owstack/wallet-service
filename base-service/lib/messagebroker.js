@@ -4,33 +4,34 @@ var baseConfig = require('../../config');
 var events = require('events');
 var inherits = require('inherits');
 var log = require('npmlog');
-var inherits = require('inherits');
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 log.disableColor();
 
-function MessageBroker(config) {
-  var self = this;
-  config = config || baseConfig;
+class MessageBroker extends events.EventEmitter {
+  constructor(config) {
+    super();
+    var self = this;
+    config = config || baseConfig;
 
-  if (config.messageBrokerServer) {
-    var url = config.messageBrokerServer.url;
-    this.remote = true;
-    this.mq = require('socket.io-client').connect(url);
-    this.mq.on('connect', function() {});
-    this.mq.on('connect_error', function() {
-      log.warn('Error connecting to message broker server @ ' + url);
-    });
+    if (config.messageBrokerServer) {
+      var url = config.messageBrokerServer.url;
+      this.remote = true;
+      this.mq = require('socket.io-client').connect(url);
+      this.mq.on('connect', function() {});
+      this.mq.on('connect_error', function() {
+        log.warn('Error connecting to message broker server @ ' + url);
+      });
 
-    this.mq.on('msg', function(data) {
-      self.emit('msg', data);
-    });
+      this.mq.on('msg', function(data) {
+        self.emit('msg', data);
+      });
 
-    log.info('Using message broker server at ' + url);
+      log.info('Using message broker server at ' + url);
+    }
   }
 };
-inherits(MessageBroker, events.EventEmitter);
 
 MessageBroker.isNotificationForMe = function(notification, coin) {
   return notification.targetNetwork.coin == coin;

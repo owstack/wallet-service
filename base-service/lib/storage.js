@@ -28,13 +28,15 @@ var collections = {
   TX_CONFIRMATION_SUBS: 'tx_confirmation_subs',
 };
 
-var Storage = function(context, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class Storage {
+  constructor(context, opts) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  opts = opts || {};
-  this.db = opts.db;
+    opts = opts || {};
+    this.db = opts.db;
+  }
 };
 
 Storage.prototype._createIndexes = function() {

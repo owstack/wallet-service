@@ -39,20 +39,22 @@ var messageBroker;
  * Creates an instance of the Wallet Service.
  * @constructor
  */
-function WalletService(context, opts, config, cb) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class WalletService {
+  constructor(context, opts, config, cb) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.LIVENET = this.ctx.Networks.livenet.code;
-  this.TESTNET = this.ctx.Networks.testnet.code;
-  this.COIN = this.ctx.Networks.coin;
+    // Set some frequently used contant values based on context.
+    this.LIVENET = this.ctx.Networks.livenet.code;
+    this.TESTNET = this.ctx.Networks.testnet.code;
+    this.COIN = this.ctx.Networks.coin;
 
-  this.atomicsName = this.ctx.Unit().atomicsName();
-  this.utils = new this.ctx.Utils();
+    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.utils = new this.ctx.Utils();
 
-  this.initialize(opts, config, cb);
+    this.initialize(opts, config, cb);
+  }
 };
 
 WalletService.prototype.checkRequired = function(obj, args, cb) {

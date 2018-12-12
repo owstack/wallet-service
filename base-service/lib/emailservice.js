@@ -55,16 +55,18 @@ var EMAIL_TYPES = {
   },
 };
 
-function EmailService(context, config) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  this.ctx = context;
+class EmailService {
+  constructor(context, config) {
+    // Context defines the coin network and is set by the implementing service in
+    // order to instance this base service; e.g., btc-service.
+    this.ctx = context;
 
-  // Set some frequently used contant values based on context.
-  this.COIN = this.ctx.Networks.coin;
+    // Set some frequently used contant values based on context.
+    this.COIN = this.ctx.Networks.coin;
 
-  this.config = config || baseConfig;
-  this.setLog();
+    this.config = config || baseConfig;
+    this.setLog();
+  }
 };
 
 EmailService.prototype.setLog = function() {
