@@ -1,6 +1,6 @@
 'use strict';
 
-var lodash = require('lodash');
+var lodash = require('@owstack/ows-common').deps.lodash;
 var Model = lodash.cloneDeep(require('../../../base-service').WalletService.Model);
 
 Model.Address = require('./address');

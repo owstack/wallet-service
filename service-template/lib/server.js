@@ -20,7 +20,6 @@ var TxProposal = Model.TxProposal;
 var Unit = cLib.Unit;
 var Utils = Common.Utils;
 var Wallet = Model.Wallet;
-var lodash = owsCommon.deps.lodash;
 
 var context = {
 	Address: Address,
