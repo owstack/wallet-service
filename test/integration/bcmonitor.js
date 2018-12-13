@@ -9,7 +9,6 @@ var serviceName = 'BTC';
 var WalletService = Service[serviceName].WalletService;
 
 var owsCommon = require('@owstack/ows-common');
-var async = require('async');
 var BlockchainMonitor = WalletService.BlockchainMonitor;
 var helpers = require('./helpers');
 var log = require('npmlog');

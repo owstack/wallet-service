@@ -13,6 +13,7 @@ var Services = {
 };
 
 var owsCommon = require('@owstack/ows-common');
+var async = require('async');
 var helpers = require('./helpers');
 var testConfig = require('../testconfig');
 var TestData = require('../testdata');
@@ -211,4 +212,48 @@ describe('Multiple wallet services', function() {
 
     });
   });
+
+  describe('Handle requests in isolation', function() {
+    var servers = {};
+
+    beforeEach(function(done) {
+      async.each(Object.keys(Services), function(serviceName, next) {
+        new Services[serviceName].Server({
+          blockchainExplorer: helpers.getBlockchainExplorer(serviceName),
+          request: request,
+          storage: helpers.getStorage(serviceName)
+        }, testConfig, function(s) {
+          servers[serviceName] = s;
+          next();
+        });
+      }, function(err) {
+        should.not.exist(err);
+        done();
+      });
+    });
+
+    it('should create and store wallet', function(done) {
+      async.each(Object.keys(Services), function(serviceName, next) {
+        var opts = {
+          name: 'my ' + serviceName + 'wallet',
+          m: 2,
+          n: 3,
+          pubKey: TestData.keyPair.pub,
+        };
+        servers[serviceName].createWallet(opts, function(err, walletId) {
+          should.not.exist(err);
+          servers[serviceName].getStorage().fetchWallet(walletId, function(err, wallet) {
+            should.not.exist(err);
+            wallet.id.should.equal(walletId);
+            wallet.name.should.equal('my ' + serviceName + 'wallet');
+            next();
+          });
+        });
+      }, function(err) {
+        should.not.exist(err);
+        done();
+      });
+    });
+  });
+
 });
