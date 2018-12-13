@@ -5,7 +5,8 @@ var should = chai.should();
 var sinon = require('sinon');
 
 var Service = require('../');
-var WalletService = Service.BTC.WalletService;
+var serviceName = 'BTC';
+var WalletService = Service[serviceName].WalletService;
 
 var Defaults = WalletService.Common.Defaults;
 var http = require('http');

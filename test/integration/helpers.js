@@ -5,7 +5,12 @@ var sinon = require('sinon');
 var should = chai.should();
 
 var Service = require('../../');
-var WalletService = Service.BTC.WalletService;
+
+var Services = {
+  BCH: Service.BCH.WalletService,
+  BTC: Service.BTC.WalletService,
+  LTC: Service.LTC.WalletService
+};
 
 var owsCommon = require('@owstack/ows-common');
 var btcLib = require('@owstack/btc-lib');
@@ -19,18 +24,15 @@ var HDPrivateKey = keyLib.HDPrivateKey;
 var HDPublicKey = keyLib.HDPublicKey;
 var log = require('npmlog');
 var PrivateKey = keyLib.PrivateKey;
-var Storage = WalletService.Storage;
 var testConfig = require('../testconfig');
 var TestData = require('../testdata');
 var tingodb = require('tingodb')({memStore: true});
 var Unit = btcLib.Unit;
-var Utils = WalletService.Common.Utils;
-var Server = WalletService.Server;
 var lodash = owsCommon.deps.lodash;
 
 var atomicsName = Unit().atomicsName();
-var storage;
-var blockchainExplorer;
+var storage = {};
+var blockchainExplorer = {};
 var useMongoDb = !!process.env.USE_MONGO_DB;
 var helpers = {};
 
@@ -38,7 +40,7 @@ log.debug = log.verbose;
 
 helpers.CLIENT_VERSION = 'bwc-2.0.0';
 
-helpers.before = function(cb) {
+helpers.before = function(serviceName, cb) {
   function getDb(cb) {
     if (useMongoDb) {
       var mongodb = require('mongodb');
@@ -52,27 +54,27 @@ helpers.before = function(cb) {
     }
   }
   getDb(function(db) {
-    storage = new Storage({
+    storage[serviceName] = new Services[serviceName].Storage({
       db: db
     });
     return cb();
   });
 };
 
-helpers.beforeEach = function(cb) {
-  if (!storage.db) {
+helpers.beforeEach = function(serviceName, cb) {
+  if (!storage[serviceName].db) {
     return cb('Error - no storage for test');
   }
-  storage.db.dropDatabase(function(err) {
+  storage[serviceName].db.dropDatabase(function(err) {
     if (err) {
       return cb(err);
     }
-    blockchainExplorer = sinon.stub();
+    blockchainExplorer[serviceName] = sinon.stub();
 
     cb(null, {
-      blockchainExplorer: blockchainExplorer,
+      blockchainExplorer: helpers.getBlockchainExplorer(serviceName),
       request: sinon.stub(),
-      storage: storage
+      storage: helpers.getStorage(serviceName)
     });
   });
 };
@@ -81,33 +83,39 @@ helpers.after = function(server, cb) {
   server.shutDown(cb);
 };
 
-helpers.getBlockchainExplorer = function() {
-  return blockchainExplorer;
+helpers.getBlockchainExplorer = function(serviceName) {
+  return blockchainExplorer[serviceName];
 };
 
-helpers.getStorage = function() {
-  return storage;
+helpers._getServiceName = function(server) {
+  return server.getServiceInfo().coin;
 };
 
-helpers.signMessage = function(text, privKey) {
+helpers.getStorage = function(serviceName) {
+  return storage[serviceName];
+};
+
+helpers.signMessage = function(serviceName, text, privKey) {
   var priv = new PrivateKey(privKey);
-  var hash = Utils.hashMessage(text);
+  var hash = Services[serviceName].Common.Utils.hashMessage(text);
   return ECDSA.sign(hash, priv, 'little').toString();
 };
 
-helpers.signRequestPubKey = function(requestPubKey, xPrivKey) {
+helpers.signRequestPubKey = function(serviceName, requestPubKey, xPrivKey) {
   var priv = new HDPrivateKey(xPrivKey).deriveChild(Constants.PATHS.REQUEST_KEY_AUTH).privateKey;
-  return helpers.signMessage(requestPubKey, priv);
+  return helpers.signMessage(serviceName, requestPubKey, priv);
 };
 
-helpers.getAuthServer = function(copayerId, cb) {
+helpers.getAuthServer = function(serviceName, copayerId, cb) {
+  var Server = Services[serviceName].Server;
+
   var verifyStub = sinon.stub(Server.prototype, '_verifySignature');
   verifyStub.returns(true);
 
   var opts = {
-    blockchainExplorer: blockchainExplorer,
+    blockchainExplorer: helpers.getBlockchainExplorer(serviceName),
     request: sinon.stub(),
-    storage: storage
+    storage: helpers.getStorage(serviceName)
   };
 
   Server.getInstanceWithAuth(opts, testConfig, {
@@ -158,13 +166,17 @@ helpers._generateCopayersTestData = function(n) {
   console.log('];');
 };
 
-helpers.getSignedCopayerOpts = function(opts) {
+helpers.getSignedCopayerOpts = function(serviceName, opts) {
+  var Server = Services[serviceName].Server;
+
   var hash = Server._getCopayerHash(opts.name, opts.xPubKey, opts.requestPubKey);
-  opts.copayerSignature = helpers.signMessage(hash, TestData.keyPair.priv);
+  opts.copayerSignature = helpers.signMessage(serviceName, hash, TestData.keyPair.priv);
   return opts;
 };
 
-helpers.createAndJoinWallet = function(m, n, opts, cb) {
+helpers.createAndJoinWallet = function(serviceName, m, n, opts, cb) {
+  var Server = Services[serviceName].Server;
+
   if (lodash.isFunction(opts)) {
     cb = opts;
     opts = {};
@@ -172,8 +184,8 @@ helpers.createAndJoinWallet = function(m, n, opts, cb) {
   opts = opts || {};
 
   var serverOpts = {
-    blockchainExplorer: blockchainExplorer,
-    storage: storage,
+    blockchainExplorer: helpers.getBlockchainExplorer(serviceName),
+    storage: helpers.getStorage(serviceName),
     request: sinon.stub()
   };
 
@@ -200,7 +212,7 @@ helpers.createAndJoinWallet = function(m, n, opts, cb) {
 
       async.each(lodash.range(n), function(i, cb) {
         var copayerData = TestData.copayers[i + offset];
-        var copayerOpts = helpers.getSignedCopayerOpts({
+        var copayerOpts = helpers.getSignedCopayerOpts(serviceName, {
           walletId: walletId,
           name: 'copayer ' + (i + 1),
           xPubKey: (lodash.isBoolean(opts.supportBIP44AndP2PKH) && !opts.supportBIP44AndP2PKH) ? copayerData.xPubKey_45H : copayerData.xPubKey_44H_0H_0H,
@@ -222,7 +234,7 @@ helpers.createAndJoinWallet = function(m, n, opts, cb) {
           return cb('Could not generate wallet');
         }
 
-        helpers.getAuthServer(copayerIds[0], function(s) {
+        helpers.getAuthServer(serviceName, copayerIds[0], function(s) {
           s.getWallet({}, function(err, w) {
             cb(s, w);
           });
@@ -237,15 +249,15 @@ helpers.randomTXID = function() {
   return Hash.sha256(new Buffer(Math.random() * 100000)).toString('hex');;
 };
 
-helpers.toAtomic = function(standards) {
+helpers.toAtomic = function(serviceName, standards) {
   if (lodash.isArray(standards)) {
     return lodash.map(standards, helpers.toAtomic);
   } else {
-    return Utils.strip(Unit.fromStandardUnit(standards).toAtomicUnit());
+    return Services[serviceName].Common.Utils.strip(Unit.fromStandardUnit(standards).toAtomicUnit());
   }
 };
 
-helpers._parseAmount = function(str) {
+helpers._parseAmount = function(serviceName, str) {
   var result = {
     amount: +0,
     confirmations: lodash.random(6, 100),
@@ -266,13 +278,13 @@ helpers._parseAmount = function(str) {
   switch (match[3]) {
     default:
     case 'BTC':
-      result.amount = Utils.strip(+match[2] * 1e8);
+      result.amount = Services[serviceName].Common.Utils.strip(+match[2] * 1e8);
       break;
     case 'bit':
-      result.amount = Utils.strip(+match[2] * 1e2);
+      result.amount = Services[serviceName].Common.Utils.strip(+match[2] * 1e2);
       break
     case 'satoshi':
-      result.amount = Utils.strip(+match[2]);
+      result.amount = Services[serviceName].Common.Utils.strip(+match[2]);
       break;
   };
 
@@ -280,6 +292,8 @@ helpers._parseAmount = function(str) {
 };
 
 helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
+  var serviceName = helpers._getServiceName(server);
+
   if (lodash.isFunction(opts)) {
     cb = opts;
     opts = {};
@@ -300,7 +314,7 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
       addresses.should.not.be.empty;
 
       var utxos = lodash.compact(lodash.map([].concat(amounts), function(amount, i) {
-        var parsed = helpers._parseAmount(amount);
+        var parsed = helpers._parseAmount(serviceName, amount);
 
         if (parsed.amount <= 0) return null;
 
@@ -335,7 +349,7 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
         helpers._utxos = utxos;
       }
 
-      blockchainExplorer.getUtxos = function(addresses, cb) {
+      helpers.getBlockchainExplorer(serviceName).getUtxos = function(addresses, cb) {
         var selected = lodash.filter(helpers._utxos, function(utxo) {
           return lodash.includes(addresses, utxo.address);
         });
@@ -350,14 +364,14 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
   });
 };
 
-helpers.stubBroadcast = function(thirdPartyBroadcast) {
-  blockchainExplorer.broadcast = sinon.stub().callsArgWith(1, null, '112233');
-  blockchainExplorer.getTransaction = sinon.stub().callsArgWith(1, null, null);
+helpers.stubBroadcast = function(serviceName, thirdPartyBroadcast) {
+  helpers.getBlockchainExplorer(serviceName).broadcast = sinon.stub().callsArgWith(1, null, '112233');
+  helpers.getBlockchainExplorer(serviceName).getTransaction = sinon.stub().callsArgWith(1, null, null);
 };
 
-helpers.stubHistory = function(txs) {
+helpers.stubHistory = function(serviceName, txs) {
   var totalItems = txs.length;
-  blockchainExplorer.getTransactions = function(addresses, from, to, cb) {
+  helpers.getBlockchainExplorer(serviceName).getTransactions = function(addresses, from, to, cb) {
     var MAX_BATCH_SIZE = 100;
     var nbTxs = txs.length;
 
@@ -381,8 +395,8 @@ helpers.stubHistory = function(txs) {
   };
 };
 
-helpers.stubFeeLevels = function(levels) {
-  blockchainExplorer.estimateFee = function(nbBlocks, cb) {
+helpers.stubFeeLevels = function(serviceName, levels) {
+  helpers.getBlockchainExplorer(serviceName).estimateFee = function(nbBlocks, cb) {
     var result = lodash.fromPairs(lodash.map(lodash.pick(levels, nbBlocks), function(fee, n) {
       return [+n, fee > 0 ? fee / 1e8 : fee];
     }));
@@ -390,8 +404,8 @@ helpers.stubFeeLevels = function(levels) {
   };
 };
 
-helpers.stubAddressActivity = function(activeAddresses) {
-  blockchainExplorer.getAddressActivity = function(address, cb) {
+helpers.stubAddressActivity = function(serviceName, activeAddresses) {
+  helpers.getBlockchainExplorer(serviceName).getAddressActivity = function(address, cb) {
     return cb(null, lodash.includes(activeAddresses, address));
   };
 };
@@ -422,9 +436,9 @@ helpers.clientSign = function(txp, derivedXPrivKey) {
   return signatures;
 };
 
-helpers.getProposalSignatureOpts = function(txp, signingKey) {
+helpers.getProposalSignatureOpts = function(serviceName, txp, signingKey) {
   var raw = txp.getRawTx();
-  var proposalSignature = helpers.signMessage(raw, signingKey);
+  var proposalSignature = helpers.signMessage(serviceName, raw, signingKey);
 
   return {
     txProposalId: txp.id,
@@ -448,9 +462,10 @@ helpers.createAddresses = function(server, wallet, main, change, cb) {
 };
 
 helpers.createAndPublishTx = function(server, txOpts, signingKey, cb) {
+  var serviceName = helpers._getServiceName(server);
   server.createTx(txOpts, function(err, txp) {
     should.not.exist(err);
-    var publishOpts = helpers.getProposalSignatureOpts(txp, signingKey);
+    var publishOpts = helpers.getProposalSignatureOpts(serviceName, txp, signingKey);
     server.publishTx(publishOpts, function(err) {
       should.not.exist(err);
       return cb(txp);

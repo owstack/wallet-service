@@ -5,7 +5,8 @@ var sinon = require('sinon');
 var should = chai.should();
 
 var Service = require('../../');
-var WalletService = Service.BTC.WalletService;
+var serviceName = 'BTC';
+var WalletService = Service[serviceName].WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
@@ -33,7 +34,7 @@ describe('Blockchain monitor', function() {
   var server, wallet;
 
   before(function(done) {
-    helpers.before(done);
+    helpers.before(serviceName, done);
   });
 
   after(function(done) {
@@ -41,12 +42,12 @@ describe('Blockchain monitor', function() {
   });
 
   beforeEach(function(done) {
-    helpers.beforeEach(function(err, res) {
+    helpers.beforeEach(serviceName, function(err, res) {
       storage = res.storage;
       blockchainExplorer = res.blockchainExplorer;
       blockchainExplorer.initSocket = sinon.stub().returns(socket);
 
-      helpers.createAndJoinWallet(2, 3, function(s, w) {
+      helpers.createAndJoinWallet(serviceName, 2, 3, function(s, w) {
         server = s;
         wallet = w;
 

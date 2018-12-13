@@ -5,7 +5,8 @@ var sinon = require('sinon');
 var should = chai.should();
 
 var Service = require('../../');
-var WalletService = Service.BTC.WalletService;
+var serviceName = 'BTC';
+var WalletService = Service[serviceName].WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
@@ -23,7 +24,7 @@ describe('Email notifications', function() {
   var server, wallet, mailerStub, emailService;
 
   beforeEach(function(done) {
-    helpers.before(done);
+    helpers.before(serviceName, done);
   });
 
   afterEach(function(done) {
@@ -32,14 +33,14 @@ describe('Email notifications', function() {
 
   describe('Shared wallet', function() {
     beforeEach(function(done) {
-      helpers.beforeEach(function(err, res) {
-        helpers.createAndJoinWallet(2, 3, function(s, w) {
+      helpers.beforeEach(serviceName, function(err, res) {
+        helpers.createAndJoinWallet(serviceName, 2, 3, function(s, w) {
           server = s;
           wallet = w;
 
           var i = 0;
           async.eachSeries(w.copayers, function(copayer, next) {
-            helpers.getAuthServer(copayer.id, function(server) {
+            helpers.getAuthServer(serviceName, copayer.id, function(server) {
               server.savePreferences({
                 email: 'copayer' + (++i) + '@domain.com',
                 unit: 'bit',
@@ -70,7 +71,7 @@ describe('Email notifications', function() {
 
             emailService.start({
               messageBroker: server.getMessageBroker(),
-              storage: helpers.getStorage()
+              storage: helpers.getStorage(serviceName)
             }, function(err) {
               should.not.exist(err);
               done();
@@ -180,7 +181,7 @@ describe('Email notifications', function() {
             txp = t;
             async.eachSeries(lodash.range(2), function(i, next) {
               var copayer = TestData.copayers[i];
-              helpers.getAuthServer(copayer.id44, function(server) {
+              helpers.getAuthServer(serviceName, copayer.id44, function(server) {
                 var signatures = helpers.clientSign(txp, copayer.xPrivKey_44H_0H_0H);
                 server.signTx({
                   txProposalId: txp.id,
@@ -193,7 +194,7 @@ describe('Email notifications', function() {
             }, next);
           },
           function(next) {
-            helpers.stubBroadcast();
+            helpers.stubBroadcast(serviceName);
             server.broadcastTx({
               txProposalId: txp.id,
             }, next);
@@ -246,7 +247,7 @@ describe('Email notifications', function() {
             txpId = txp.id;
             async.eachSeries(lodash.range(1, 3), function(i, next) {
               var copayer = TestData.copayers[i];
-              helpers.getAuthServer(copayer.id44, function(server) {
+              helpers.getAuthServer(serviceName, copayer.id44, function(server) {
                 server.rejectTx({
                   txProposalId: txp.id,
                 }, next);
@@ -428,7 +429,7 @@ describe('Email notifications', function() {
       emailService2.start({
         lock: emailService.lock, // Use same locker service
         messageBroker: server.getMessageBroker(),
-        storage: helpers.getStorage()
+        storage: helpers.getStorage(serviceName)
       }, function(err) {
         helpers.stubUtxos(server, wallet, 1, function() {
           var txOpts = {
@@ -456,14 +457,14 @@ describe('Email notifications', function() {
 
   describe('1-of-N wallet', function() {
     beforeEach(function(done) {
-      helpers.beforeEach(function(res) {
-        helpers.createAndJoinWallet(1, 2, function(s, w) {
+      helpers.beforeEach(serviceName, function(res) {
+        helpers.createAndJoinWallet(serviceName, 1, 2, function(s, w) {
           server = s;
           wallet = w;
 
           var i = 0;
           async.eachSeries(w.copayers, function(copayer, next) {
-            helpers.getAuthServer(copayer.id, function(server) {
+            helpers.getAuthServer(serviceName, copayer.id, function(server) {
               server.savePreferences({
                 email: 'copayer' + (++i) + '@domain.com',
                 unit: 'bit',
@@ -494,7 +495,7 @@ describe('Email notifications', function() {
 
             emailService.start({
               messageBroker: server.getMessageBroker(),
-              storage: helpers.getStorage()
+              storage: helpers.getStorage(serviceName)
             }, function(err) {
               should.not.exist(err);
               done();

@@ -5,7 +5,8 @@ var sinon = require('sinon');
 var should = chai.should();
 
 var Service = require('../../');
-var WalletService = Service.BTC.WalletService;
+var serviceName = 'BTC';
+var WalletService = Service[serviceName].WalletService;
 
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
@@ -25,7 +26,7 @@ describe('Push notifications', function() {
   var server, wallet, requestStub, pushNotificationsService, walletId;
 
   beforeEach(function(done) {
-    helpers.before(done);
+    helpers.before(serviceName, done);
   });
 
   afterEach(function(done) {
@@ -34,14 +35,14 @@ describe('Push notifications', function() {
 
   describe('Single wallet', function() {
     beforeEach(function(done) {
-      helpers.beforeEach(function(res) {
-        helpers.createAndJoinWallet(1, 1, function(s, w) {
+      helpers.beforeEach(serviceName, function(res) {
+        helpers.createAndJoinWallet(serviceName, 1, 1, function(s, w) {
           server = s;
           wallet = w;
 
           var i = 0;
           async.eachSeries(w.copayers, function(copayer, next) {
-            helpers.getAuthServer(copayer.id, function(server) {
+            helpers.getAuthServer(serviceName, copayer.id, function(server) {
               async.parallel([
                 function(done) {
                   server.savePreferences({
@@ -79,7 +80,7 @@ describe('Push notifications', function() {
             });
             pushNotificationsService.start({
               messageBroker: server.getMessageBroker(),
-              storage: helpers.getStorage(),
+              storage: helpers.getStorage(serviceName),
               request: requestStub
             }, function(err) {
               should.not.exist(err);
@@ -189,13 +190,13 @@ describe('Push notifications', function() {
 
   describe('Shared wallet', function() {
     beforeEach(function(done) {
-      helpers.beforeEach(function(res) {
-        helpers.createAndJoinWallet(2, 3, function(s, w) {
+      helpers.beforeEach(serviceName, function(res) {
+        helpers.createAndJoinWallet(serviceName, 2, 3, function(s, w) {
           server = s;
           wallet = w;
           var i = 0;
           async.eachSeries(w.copayers, function(copayer, next) {
-            helpers.getAuthServer(copayer.id, function(server) {
+            helpers.getAuthServer(serviceName, copayer.id, function(server) {
               async.parallel([
 
                 function(done) {
@@ -234,7 +235,7 @@ describe('Push notifications', function() {
             });
             pushNotificationsService.start({
               messageBroker: server.getMessageBroker(),
-              storage: helpers.getStorage(),
+              storage: helpers.getStorage(serviceName),
               request: requestStub
             }, function(err) {
               should.not.exist(err);
@@ -372,7 +373,7 @@ describe('Push notifications', function() {
             txpId = txp.id;
             async.eachSeries(lodash.range(1, 3), function(i, next) {
               var copayer = TestData.copayers[i];
-              helpers.getAuthServer(copayer.id44, function(server) {
+              helpers.getAuthServer(serviceName, copayer.id44, function(server) {
                 server.rejectTx({
                   txProposalId: txp.id,
                 }, next);
@@ -416,7 +417,7 @@ describe('Push notifications', function() {
             txp = t;
             async.eachSeries(lodash.range(1, 3), function(i, next) {
               var copayer = TestData.copayers[i];
-              helpers.getAuthServer(copayer.id44, function(s) {
+              helpers.getAuthServer(serviceName, copayer.id44, function(s) {
                 server = s;
                 var signatures = helpers.clientSign(txp, copayer.xPrivKey_44H_0H_0H);
                 server.signTx({
@@ -430,7 +431,7 @@ describe('Push notifications', function() {
             }, next);
           },
           function(next) {
-            helpers.stubBroadcast();
+            helpers.stubBroadcast(serviceName);
             server.broadcastTx({
               txProposalId: txp.id,
             }, next);
@@ -458,9 +459,9 @@ describe('Push notifications', function() {
 
   describe('joinWallet', function() {
     beforeEach(function(done) {
-      helpers.beforeEach(function(res) {
+      helpers.beforeEach(serviceName, function(res) {
         new Server({
-          storage: helpers.getStorage()
+          storage: helpers.getStorage(serviceName)
           }, testConfig, function(s) {
           server = s;
 
@@ -504,7 +505,7 @@ describe('Push notifications', function() {
 
     it('should notify copayers when a new copayer just joined into your wallet except the one who joined', function(done) {
       async.eachSeries(lodash.range(3), function(i, next) {
-        var copayerOpts = helpers.getSignedCopayerOpts({
+        var copayerOpts = helpers.getSignedCopayerOpts(serviceName, {
           walletId: walletId,
           name: 'copayer ' + (i + 1),
           xPubKey: TestData.copayers[i].xPubKey_44H_0H_0H,
@@ -515,7 +516,7 @@ describe('Push notifications', function() {
         server.joinWallet(copayerOpts, function(err, res) {
           if (err) return next(err);
 
-          helpers.getAuthServer(res.copayerId, function(server) {
+          helpers.getAuthServer(serviceName, res.copayerId, function(server) {
             server.pushNotificationsSubscribe({
               token: 'token:' + copayerOpts.name,
               packageName: 'com.wallet',

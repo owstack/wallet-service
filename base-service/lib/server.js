@@ -79,6 +79,17 @@ WalletService.getServiceVersion = function() {
 };
 
 /**
+ * Gets information about this wallet service instance.
+ */
+WalletService.prototype.getServiceInfo = function() {
+  return {
+    coin: this.COIN,
+    name: this.ctx.Networks.livenet.name,
+    version: WalletService.getServiceVersion()
+  };
+};
+
+/**
  * Initializes this instance.
  * @param {Object} opts - Options, most used for testing.
  * @param {Storage} [opts.storage] - A Storage instance.

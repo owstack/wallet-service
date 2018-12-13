@@ -5,7 +5,8 @@ var sinon = require('sinon');
 var should = chai.should();
 
 var Service = require('../../');
-var WalletService = Service.BTC.WalletService;
+var serviceName = 'BTC';
+var WalletService = Service[serviceName].WalletService;
 
 var async = require('async');
 var FiatRateService = WalletService.FiatRateService;
@@ -20,7 +21,7 @@ describe('Fiat rate service', function() {
   var service, request;
 
   before(function(done) {
-    helpers.before(done);
+    helpers.before(serviceName, done);
   });
 
   after(function(done) {
@@ -28,12 +29,12 @@ describe('Fiat rate service', function() {
   });
 
   beforeEach(function(done) {
-    helpers.beforeEach(function() {
+    helpers.beforeEach(serviceName, function() {
       service = new FiatRateService(testConfig);
       request = sinon.stub();
       request.get = sinon.stub();
       service.init({
-        storage: helpers.getStorage(),
+        storage: helpers.getStorage(serviceName),
         request: request
       }, function(err) {
         should.not.exist(err);
