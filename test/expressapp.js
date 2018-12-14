@@ -38,7 +38,7 @@ describe('ExpressApp', function() {
         var app = new ExpressApp(testConfig);
         httpServer = http.Server(app.app);
 
-        app.start(function(err) {
+        app.start(null, function(err) {
           should.not.exist(err);
           httpServer.listen(testPort);
           done();

@@ -26,7 +26,7 @@ switch (cmd) {
 };
 
 function help() {
-  console.log('usage: service [create | clean]');
+  console.log('usage: services [create | clean]');
 };
 
 function createServices() {

@@ -100,7 +100,7 @@ describe('Node Service', function() {
   describe('#_startWalletService', function() {
     it('error from express', function(done) {
       var orig_ExpressAppPrototypeStart = ExpressApp.prototype.start;
-      ExpressApp.prototype.start = sinon.stub().callsArgWith(0, new Error('test'));
+      ExpressApp.prototype.start = sinon.stub().callsArgWith(1, new Error('test'));
       var opts = {
         wsPort: 3232
       };

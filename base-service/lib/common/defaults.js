@@ -18,7 +18,7 @@ Defaults.RateLimit = {
     delayAfter: 10, // begin slowing down responses after the 3rd request 
     delayMs: 3000, // slow down subsequent responses by 3 seconds per request 
     max: 20, // start blocking after 20 request
-    message: "Too many wallets created from this IP, please try again after an hour"
+    message: 'Too many wallets created from this IP, please try again after an hour'
   },
   // otherPosts: {
   //   windowMs: 60 * 60 * 1000, // 1 hour window 

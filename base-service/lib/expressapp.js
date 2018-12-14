@@ -54,12 +54,13 @@ class ExpressApp {
 /**
  * Start the express server.
  */
-ExpressApp.prototype.start = function(cb) {
+ExpressApp.prototype.start = function(opts, cb) {
   var self = this;
+  self.opts = lodash.cloneDeep(opts) || {};
 
-  this.app.use(compression());
+  self.app.use(compression());
 
-  this.app.use(function(req, res, next) {
+  self.app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'x-signature,x-identity,x-session,x-client-version,x-service,x-wallet-id,X-Requested-With,Content-Type,Authorization');
@@ -75,11 +76,11 @@ ExpressApp.prototype.start = function(cb) {
     next();
   };
 
-  this.app.use(allowCORS);
-  this.app.enable('trust proxy');
+  self.app.use(allowCORS);
+  self.app.enable('trust proxy');
 
   // Handle `abort`, see https://nodejs.org/api/http.html#http_event_abort
-  this.app.use(function(req, res, next) {
+  self.app.use(function(req, res, next) {
     req.on('abort', function() {
       log.warn('Request aborted by the client');
     });
@@ -88,12 +89,12 @@ ExpressApp.prototype.start = function(cb) {
 
   var POST_LIMIT = 1024 * 100 /* Max POST 100 kb */ ;
 
-  this.app.use(bodyParser.json({
+  self.app.use(bodyParser.json({
     limit: POST_LIMIT
   }));
   
-  if (this.config.log) {
-    log.level = (this.config.log.disable == true ? 'silent' : this.config.log.level || 'info');
+  if (self.config.log) {
+    log.level = (self.config.log.disable == true ? 'silent' : self.config.log.level || 'info');
   } else {
     log.level = 'info';
   }
@@ -117,7 +118,7 @@ ExpressApp.prototype.start = function(cb) {
         return req.path.indexOf('/notifications/') >= 0;
       }
     };
-    this.app.use(morgan(logFormat, logOpts));
+    self.app.use(morgan(logFormat, logOpts));
   }
 
   var router = express.Router();
@@ -271,13 +272,15 @@ ExpressApp.prototype.start = function(cb) {
    * Inspect the request header for the requested service and return
    * a reference to the service object.
    */
-  function resolveServer(req, res, cb, auth, opts) {
+  function resolveServer(req, res, cb, auth, resolverOpts) {
     $.checkArgument(req && res && cb);
 
-    opts = opts || {};
+    var opts = resolverOpts || {};
     opts.serviceOpts = {
       clientVersion: req.header('x-client-version')
     };
+
+    lodash.defaults(opts.serviceOpts, self.opts);
 
     var service = req.header('x-service');
     log.info(service + ' request ' + req.url);
@@ -339,7 +342,7 @@ ExpressApp.prototype.start = function(cb) {
 
   var createWalletLimiter;
 
-  if (Defaults.RateLimit.createWallet && !this.config.ignoreRateLimiter) {
+  if (Defaults.RateLimit.createWallet && !self.config.ignoreRateLimiter) {
     log.info('', 'Limiting wallet creation per IP: %d req/h', (Defaults.RateLimit.createWallet.max / Defaults.RateLimit.createWallet.windowMs * 60 * 60 * 1000).toFixed(2))
     createWalletLimiter = new RateLimit(Defaults.RateLimit.createWallet);
     // router.use(/\/v\d+\/wallets\/$/, createWalletLimiter)
@@ -810,7 +813,7 @@ ExpressApp.prototype.start = function(cb) {
     });
   });
 
-  this.app.use(this.config.basePath || DEFAULT_BASE_PATH, router);
+  self.app.use(self.config.basePath || DEFAULT_BASE_PATH, router);
   return cb();
 };
 

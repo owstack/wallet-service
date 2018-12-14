@@ -60,7 +60,7 @@ WS.prototype.start = function() {
       socket.setTimeout(300 * 1000);
     })
 
-    expressApp.start(function(err) {
+    expressApp.start(null, function(err) {
       if (err) {
         log.error('Could not start Wallet Service instance', err);
         return;

@@ -95,7 +95,7 @@ Service.prototype._startWalletService = function(config, next) {
     self.server = http.Server(expressApp.app);
   }
 
-  expressApp.start(function(err) {
+  expressApp.start(null, function(err) {
     if (err) {
       return next(err);
     }
