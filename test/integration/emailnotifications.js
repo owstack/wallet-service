@@ -14,6 +14,7 @@ var Constants = owsCommon.Constants;
 var EmailService = WalletService.EmailService;
 var helpers = require('./helpers');
 var log = require('npmlog');
+var testConfig = require('../testconfig');
 var TestData = require('../testdata');
 var lodash = owsCommon.deps.lodash;
 
@@ -57,7 +58,7 @@ describe('Email notifications', function() {
             publicTxUrlTemplate[Constants.LIVENET] = 'https://explorer.openwalletstack.com/tx/{{txid}}';
             publicTxUrlTemplate[Constants.TESTNET] = 'https://test-explorer.openwalletstack.com/tx/{{txid}}';
 
-            emailService = new EmailService({
+            var config = {
               lockOpts: {},
               mailer: mailerStub,
               emailOpts: {
@@ -67,7 +68,10 @@ describe('Email notifications', function() {
                 publicTxUrlTemplate: publicTxUrlTemplate
               },
               BTC: {}
-            });
+            };
+            lodash.defaults(config, testConfig);
+
+            emailService = new EmailService(config);
 
             emailService.start({
               messageBroker: server.getMessageBroker(),

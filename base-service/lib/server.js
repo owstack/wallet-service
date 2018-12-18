@@ -57,6 +57,14 @@ class WalletService {
   }
 };
 
+WalletService.prototype.setLog = function() {
+  if (this.config.log) {
+    log.level = (this.config.log.disable == true ? 'silent' : this.config.log.level || 'info');
+  } else {
+    log.level = 'info';
+  }
+};
+
 WalletService.prototype.checkRequired = function(obj, args, cb) {
   var missing = this.ctx.Utils.getMissingFields(obj, args);
   if (lodash.isEmpty(missing)) {
@@ -109,6 +117,8 @@ WalletService.prototype.initialize = function(opts, config, cb) {
   self.config = config || baseConfig;
   self.notifyTicker = 0;
   self._setClientVersion(opts.clientVersion);
+
+  self.setLog();
 
   if (opts.request) {
     request = opts.request;

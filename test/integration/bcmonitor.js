@@ -12,6 +12,7 @@ var owsCommon = require('@owstack/ows-common');
 var BlockchainMonitor = WalletService.BlockchainMonitor;
 var helpers = require('./helpers');
 var log = require('npmlog');
+var testConfig = require('../testconfig');
 var TestData = require('../testdata');
 var lodash = owsCommon.deps.lodash;
 
@@ -54,13 +55,16 @@ describe('Blockchain monitor', function() {
         blockchainExplorers['testnet'] = blockchainExplorer;
         blockchainExplorers['livenet'] = blockchainExplorer;
 
-        var bcmonitor = new BlockchainMonitor({
+        var config = {
           lockOpts: {},
           BTC: {
             messageBroker: server.getMessageBroker(),
             blockchainExplorers: blockchainExplorers
           }
-        });
+        };
+        lodash.defaults(config, testConfig);
+
+        var bcmonitor = new BlockchainMonitor(config);
 
         bcmonitor.start({
           storage: storage

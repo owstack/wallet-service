@@ -14,6 +14,7 @@ var Constants = require('./common/constants');
 var Defaults = require('./common/defaults');
 var express = require('express');
 var log = require('npmlog');
+var morgan = require('morgan');
 var RateLimit = require('express-rate-limit');
 var Stats = require('./stats');
 var lodash = owsCommon.deps.lodash;
@@ -103,7 +104,10 @@ ExpressApp.prototype.start = function(opts, cb) {
   }
 
   if (log.level != 'silent') {
-    var morgan = require('morgan');
+    morgan.token('network', function getId(req) {
+      return req.header('x-service')
+    });
+
     morgan.token('walletId', function getId(req) {
       return req.walletId
     });
@@ -112,7 +116,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       return req.copayerId
     });
 
-    var logFormat = ':remote-addr :date[iso] ":method :url" :status :res[content-length] :response-time ":user-agent" :walletId :copayerId';
+    var logFormat = ':remote-addr :date[iso] :network ":method :url" :status :res[content-length] :response-time ":user-agent" :walletId :copayerId';
     var logOpts = {
       skip: function(req, res) {
         if (res.statusCode != 200) {

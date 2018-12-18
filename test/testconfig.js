@@ -7,7 +7,7 @@ var config = {
 
   // Log levels; debug, warn, info, error
   log: {
-    disable: false,
+    disable: true,
     level: 'info'
   },
 
