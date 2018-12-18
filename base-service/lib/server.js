@@ -3731,7 +3731,7 @@ WalletService.prototype.getFiatRate = function(opts, cb) {
     return;
   }
 
-  self.fiatRateService.getRate(opts, function(err, rate) {
+  fiatRateService.getRate(opts, function(err, rate) {
     if (err) {
       return cb(err);
     }

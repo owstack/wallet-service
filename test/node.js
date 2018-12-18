@@ -105,7 +105,9 @@ describe('Node Service', function() {
         wsPort: 3232
       };
       var service = new Node(testConfig, opts);
-      var config = {};
+      var config = {
+        basePath: 'ws/api'
+      };
       service._startWalletService(config, function(err) {
         err.message.should.equal('test');
         ExpressApp.prototype.start = orig_ExpressAppPrototypeStart;
@@ -120,7 +122,9 @@ describe('Node Service', function() {
         wsPort: 3232
       };
       var service = new Node(testConfig, opts);
-      var config = {};
+      var config = {
+        basePath: 'ws/api'
+      };
       service._startWalletService(config, function(err) {
         err.message.should.equal('test');
         httpServerStub.restore();
@@ -138,7 +142,9 @@ describe('Node Service', function() {
       };
       var service = new Node(testConfig, opts);
       service._readHttpsOptions = sinon.stub().returns(httpsOptions);
-      var config = {};
+      var config = {
+        basePath: 'ws/api'
+      };
       service._startWalletService(config, function(err) {
         service._readHttpsOptions.callCount.should.equal(1);
         listen.callCount.should.equal(1);

@@ -24,6 +24,7 @@ Utils.prototype.formatAmount = function(atomic, code, opts) {
 };
 
 Utils.prototype.formatAmountInStandard = function(atomic) {
+  $.shouldBeNumber(atomic);
   return this.ctx.Unit(atomic, 'atomic').toString('standard');
 };
 

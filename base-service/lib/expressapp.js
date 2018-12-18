@@ -22,8 +22,6 @@ var $ = require('preconditions').singleton();
 log.disableColor();
 log.debug = log.verbose;
 
-var DEFAULT_BASE_PATH = '/ws/api';
-
 /**
  * Constructor
  *
@@ -47,6 +45,11 @@ class ExpressApp {
     $.checkArgument(config, 'No configuration provided for Express app');
 
     this.config = config || baseConfig;
+
+    if (!this.config.basePath) {
+      throw 'Cannot start Express server, \'no basePath\' configuration found';
+    }
+
     this.app = express();
   }
 };
@@ -56,7 +59,7 @@ class ExpressApp {
  */
 ExpressApp.prototype.start = function(opts, cb) {
   var self = this;
-  self.opts = lodash.cloneDeep(opts) || {};
+  self.opts = opts || {};
 
   self.app.use(compression());
 
@@ -460,12 +463,6 @@ ExpressApp.prototype.start = function(opts, cb) {
   });
 
   router.post('/v1/txproposals/', function(req, res) {
-    var Errors = require('./errors/errordefinitions');
-    var err = Errors.UPGRADE_NEEDED;
-    return returnError(err, res, req);
-  });
-
-  router.post('/v1/txproposals/', function(req, res) {
     getServerWithAuth(req, res, function(server) {
       server.createTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
@@ -813,7 +810,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     });
   });
 
-  self.app.use(self.config.basePath || DEFAULT_BASE_PATH, router);
+  self.app.use(self.config.basePath, router);
   return cb();
 };
 
