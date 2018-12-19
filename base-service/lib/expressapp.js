@@ -290,7 +290,6 @@ ExpressApp.prototype.start = function(opts, cb) {
     lodash.defaults(opts.serviceOpts, self.opts);
 
     var service = req.header('x-service');
-    log.info(service + ' request ' + req.url);
     switch (service) {
       case Constants.SERVICE_BITCOIN:      return resolveBtcServer(req, res, cb, auth, opts);
       case Constants.SERVICE_BITCOIN_CASH: return resolveBchServer(req, res, cb, auth, opts);
