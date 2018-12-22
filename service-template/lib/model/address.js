@@ -6,9 +6,11 @@ var BaseWalletService = require('../../../base-service').WalletService;
 var BaseAddress = BaseWalletService.Model.Address;
 
 var Address = cLib.Address;
+var Networks = cLib.Networks;
 
 var context = {
-	Address: Address
+	Address: Address,
+	Networks: Networks
 };
 
 class CAddress extends BaseAddress {
