@@ -12,8 +12,7 @@ var btcLib = require('@owstack/btc-lib');
 var Networks = btcLib.Networks;
 var TxProposal = WalletService.Model.TxProposal;
 
-var LIVENET = Networks.livenet.code;
-var TESTNET = Networks.testnet.code;
+var LIVENET = Networks.livenet;
 
 describe('TxProposal', function() {
 
@@ -23,7 +22,7 @@ describe('TxProposal', function() {
       should.exist(txp);
       txp.outputs.length.should.equal(2);
       txp.amount.should.equal(30000000);
-      txp.network.should.equal(LIVENET);
+      txp.networkName.should.equal(LIVENET.name);
     });
   });
 
@@ -142,7 +141,7 @@ var aTXP = function(type) {
     "id": "75c34f49-1ed6-255f-e9fd-0c71ae75ed1e",
     "walletId": "1",
     "creatorId": "1",
-    "network": LIVENET,
+    "networkName": LIVENET.name,
     "amount": 30000000,
     "message": 'some message',
     "proposalSignature": '7035022100896aeb8db75fec22fddb5facf791927a996eb3aee23ee6deaa15471ea46047de02204c0c33f42a9d3ff93d62738712a8c8a5ecd21b45393fdd144e7b01b5a186f1f9',

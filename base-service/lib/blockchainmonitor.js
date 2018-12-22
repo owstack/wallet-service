@@ -22,9 +22,8 @@ class BlockchainMonitor {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet.code;
-    this.TESTNET = this.ctx.Networks.testnet.code;
-    this.COIN = this.ctx.Networks.coin;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     this.config = config || baseConfig;
     this.setLog();
@@ -47,31 +46,32 @@ BlockchainMonitor.prototype.start = function(opts, cb) {
     function(done) {
       self.explorers = {};
 
-      lodash.forEach([Constants.LIVENET, Constants.TESTNET], function(network) {
+      lodash.forEach([self.LIVENET, self.TESTNET], function(network) {
         var explorer;
-        if (self.config[self.COIN].blockchainExplorers &&
-          self.config[self.COIN].blockchainExplorers[network]) {
 
-          explorer = self.config[self.COIN].blockchainExplorers[network];
+        if (self.config[network.currency].blockchainExplorers &&
+          self.config[network.currency].blockchainExplorers[network.alias]) {
+
+          explorer = self.config[network.currency].blockchainExplorers[network.alias];
 
         } else {
-          var provider = lodash.get(self.config[self.COIN], 'blockchainExplorerOpts.defaultProvider');
+          var provider = lodash.get(self.config[network.currency], 'blockchainExplorerOpts.defaultProvider');
 
           if (provider &&
-            self.config[self.COIN].blockchainExplorerOpts &&
-            self.config[self.COIN].blockchainExplorerOpts[provider] && 
-            self.config[self.COIN].blockchainExplorerOpts[provider][network]) {
+            self.config[network.currency].blockchainExplorerOpts &&
+            self.config[network.currency].blockchainExplorerOpts[provider] && 
+            self.config[network.currency].blockchainExplorerOpts[provider][network.alias]) {
 
             var explorer = new self.ctx.BlockchainExplorer({
               provider: provider,
-              network: network
+              network: network.alias
             }, self.config);
           }
         }
 
         if (explorer) {
-          self._initExplorer(network, explorer);
-          self.explorers[network] = explorer;
+          self._initExplorer(network.alias, explorer);
+          self.explorers[network.alias] = explorer;
         }
       });
       done();
@@ -101,7 +101,7 @@ BlockchainMonitor.prototype.start = function(opts, cb) {
   });
 };
 
-BlockchainMonitor.prototype._initExplorer = function(network, explorer) {
+BlockchainMonitor.prototype._initExplorer = function(networkAlias, explorer) {
   var self = this;
 
   var socket = explorer.initSocket();
@@ -114,19 +114,23 @@ BlockchainMonitor.prototype._initExplorer = function(network, explorer) {
     log.error('Error connecting to ' + explorer.getConnectionInfo());
   });
   socket.on('tx', lodash.bind(self._handleIncomingTx, self));
-  socket.on('block', lodash.bind(self._handleNewBlock, self, network));
+  socket.on('block', lodash.bind(self._handleNewBlock, self, networkAlias));
 };
 
 BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, processIt) {
   var self = this;
-  if (!data || !data.txid) return;
+  if (!data || !data.txid) {
+    return;
+  }
 
   self.storage.fetchTxByHash(data.txid, function(err, txp) {
     if (err) {
       log.error('Could not fetch tx from the db');
       return;
     }
-    if (!txp || txp.status != 'accepted') return;
+    if (!txp || txp.status != 'accepted') {
+      return;
+    }
 
     var walletId = txp.walletId;
 
@@ -154,12 +158,7 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
           type: 'NewOutgoingTxByThirdParty',
           data: args,
           walletId: walletId,
-          targetNetwork: {
-            coin: self.COIN,
-            defaultUnit: self.ctx.Unit().standardsName(),
-            livenet: self.LIVENET,
-            testnet: self.TESTNET
-          }
+          networkName: txp.networkName
         });
         self._storeAndBroadcastNotification(notification);
       });
@@ -170,7 +169,9 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
 BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
   var self = this;
 
-  if (!data || !data.vout) return;
+  if (!data || !data.vout) {
+    return;
+  }
 
   var outs = lodash.compact(lodash.map(data.vout, function(v) {
     var addr = lodash.keys(v)[0];
@@ -180,52 +181,75 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
       amount: +v[addr]
     };
   }));
-  if (lodash.isEmpty(outs)) return;
+  if (lodash.isEmpty(outs)) {
+    return;
+  }
 
-  async.each(outs, function(out, next) {
-    self.storage.fetchAddress(out.address, function(err, address) {
-      if (err) {
-        log.error('Could not fetch addresses from the db');
-        return next(err);
-      }
-      if (!address || address.isChange) return next();
+  async.each(outs, function(out, nextOut) {
+    var address;
+    var walletId;
+    var wallet;
 
-      var walletId = address.walletId;
-      log.info('Incoming tx for wallet ' + walletId + ' [' + out.amount + ' ' + self.ctx.Unit().atomicsName() + ' -> ' + out.address + ']');
+    async.series([function(next) {
+      self.storage.fetchAddress(out.address, function(err, addr) {
+        if (err) {
+          log.error('Could not fetch addresses from the db');
+          return nextOut(err);
+        }
+        if (!addr || addr.isChange) {
+          return nextOut();
+        }
 
+        address = addr;
+        walletId = address.walletId;
+        next();
+      });
+
+    }, function(next) {
+        self.storage.fetchWallet(walletId, function(err, w) {
+          if (err) {
+            return cb(err);
+          }
+
+          wallet = w;
+          log.info('Incoming tx for wallet ' + wallet.id + ' [' + out.amount + ' ' + self.ctx.Unit().atomicsName() + ' -> ' + out.address + ']');
+          next();
+        });
+
+    }, function(next) {
       var fromTs = Date.now() - 24 * 3600 * 1000;
+
       self.storage.fetchNotifications(walletId, null, fromTs, function(err, notifications) {
-        if (err) return next(err);
+        if (err) {
+          return nextOut(err);
+        }
         var alreadyNotified = lodash.some(notifications, function(n) {
           return n.type == 'NewIncomingTx' && n.data && n.data.txid == data.txid;
         });
         if (alreadyNotified) {
           log.info('The incoming tx ' + data.txid + ' was already notified');
-          return next();
+          return nextOut();
         }
 
         var notification = Notification.create({
           type: 'NewIncomingTx',
+          walletId: walletId,
+          networkName: wallet.networkName,
           data: {
             txid: data.txid,
             address: out.address,
             amount: out.amount,
-          },
-          walletId: walletId,
-          targetNetwork: {
-            coin: self.COIN,
-            defaultUnit: self.ctx.Unit().standardsName(),
-            livenet: self.LIVENET,
-            testnet: self.TESTNET
           }
         });
+
         self.storage.softResetTxHistoryCache(walletId, function() {
           self._updateActiveAddresses(address, function() {
-            self._storeAndBroadcastNotification(notification, next);
+            self._storeAndBroadcastNotification(notification, nextOut);
           });
         });
       });
-    });
+    }]);
+
   }, function(err) {
     return;
   });
@@ -247,22 +271,17 @@ BlockchainMonitor.prototype._handleIncomingTx = function(data) {
   this._handleIncomingPayments(data);
 };
 
-BlockchainMonitor.prototype._notifyNewBlock = function(network, hash) {
+BlockchainMonitor.prototype._notifyNewBlock = function(networkAlias, hash) {
   var self = this;
+  var network = (networkAlias == Constants.LIVENET ? self.LIVENET : self.TESTNET);
 
-  log.info('New ' + network + ' block: ' + hash);
+  log.info('New ' + networkAlias + ' block: ' + hash);
   var notification = Notification.create({
     type: 'NewBlock',
-    walletId: network, // use network name as wallet id for global notifications
+    walletId: network.name, // use network name as wallet id for global notifications
+    networkName: network.name,
     data: {
-      hash: hash,
-      network: network,
-    },
-    targetNetwork: {
-      coin: self.COIN,
-      defaultUnit: self.ctx.Unit().standardsName(),
-      livenet: self.LIVENET,
-      testnet: self.TESTNET
+      hash: hash
     }
   });
 
@@ -273,30 +292,27 @@ BlockchainMonitor.prototype._notifyNewBlock = function(network, hash) {
   });
 };
 
-BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
+BlockchainMonitor.prototype._handleTxConfirmations = function(networkAlias, hash) {
   var self = this;
+  var network = (networkAlias == Constants.LIVENET ? self.LIVENET : self.TESTNET);
 
   function processTriggeredSubs(subs, cb) {
     async.each(subs, function(sub) {
       log.info('New tx confirmation ' + sub.txid);
       sub.isActive = false;
       self.storage.storeTxConfirmationSub(sub, function(err) {
-        if (err) return cb(err);
+        if (err) {
+          return cb(err);
+        }
 
         var notification = Notification.create({
           type: 'TxConfirmation',
           walletId: sub.walletId,
           creatorId: sub.copayerId,
+          networkName: network.name,
           data: {
-            txid: sub.txid,
-            network: network,
+            txid: sub.txid
             // TODO: amount
-          },
-          targetNetwork: {
-            coin: self.COIN,
-            defaultUnit: self.ctx.Unit().standardsName(),
-            livenet: self.LIVENET,
-            testnet: self.TESTNET
           }
         });
         self._storeAndBroadcastNotification(notification, cb);
@@ -305,7 +321,9 @@ BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
   };
 
   var explorer = self.explorers[network];
-  if (!explorer) return;
+  if (!explorer) {
+    return;
+  }
 
   explorer.getTxidsInBlock(hash, function(err, txids) {
     if (err) {
@@ -314,8 +332,12 @@ BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
     }
 
     self.storage.fetchActiveTxConfirmationSubs(null, function(err, subs) {
-      if (err) return;
-      if (lodash.isEmpty(subs)) return;
+      if (err) {
+        return;
+      }
+      if (lodash.isEmpty(subs)) {
+        return;
+      }
       var indexedSubs = lodash.keyBy(subs, 'txid');
       var triggered = [];
       lodash.each(txids, function(txid) {
@@ -331,9 +353,9 @@ BlockchainMonitor.prototype._handleTxConfirmations = function(network, hash) {
   });
 };
 
-BlockchainMonitor.prototype._handleNewBlock = function(network, hash) {
-  this._notifyNewBlock(network, hash);
-  this._handleTxConfirmations(network, hash);
+BlockchainMonitor.prototype._handleNewBlock = function(networkAlias, hash) {
+  this._notifyNewBlock(networkAlias, hash);
+  this._handleTxConfirmations(networkAlias, hash);
 };
 
 BlockchainMonitor.prototype._storeAndBroadcastNotification = function(notification, cb) {

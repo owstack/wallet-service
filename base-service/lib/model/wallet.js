@@ -17,10 +17,14 @@ class Wallet {
 };
 
 Wallet.create = function(context, opts) {
-  var x = new Wallet(context);
-
   $.shouldBeNumber(opts.m);
   $.shouldBeNumber(opts.n);
+  $.checkArgument(opts.networkName);
+
+  var ctx = context;
+  var network = ctx.Networks.get(opts.networkName);
+
+  var x = new Wallet(context);
 
   x.version = '1.0.0';
   x.createdOn = Math.floor(Date.now() / 1000);
@@ -34,10 +38,9 @@ Wallet.create = function(context, opts) {
   x.addressIndex = 0;
   x.copayers = [];
   x.pubKey = opts.pubKey;
-  x.network = opts.network;
+  x.networkName = network.name;
   x.derivationStrategy = opts.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
   x.addressType = opts.addressType || Constants.SCRIPT_TYPES.P2SH;
-
   x.addressManager = AddressManager.create({
     derivationStrategy: x.derivationStrategy,
   });
@@ -47,11 +50,14 @@ Wallet.create = function(context, opts) {
 };
 
 Wallet.fromObj = function(context, obj) {
-  var ctx = context;
-  var x = new Wallet(ctx);
-
   $.shouldBeNumber(obj.m);
   $.shouldBeNumber(obj.n);
+  $.checkArgument(obj.networkName);
+
+  var ctx = context;
+  var network = ctx.Networks.get(obj.networkName);
+
+  var x = new Wallet(ctx);
 
   x.version = obj.version;
   x.createdOn = obj.createdOn;
@@ -66,7 +72,7 @@ Wallet.fromObj = function(context, obj) {
     return ctx.Copayer.fromObj(copayer);
   });
   x.pubKey = obj.pubKey;
-  x.network = obj.network;
+  x.networkName = network.name;
   x.derivationStrategy = obj.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
   x.addressType = obj.addressType || Constants.SCRIPT_TYPES.P2SH;
   x.addressManager = AddressManager.fromObj(obj.addressManager);
@@ -107,7 +113,6 @@ Wallet.prototype._updatePublicKeyRing = function() {
 };
 
 Wallet.prototype.addCopayer = function(copayer) {
-
   this.copayers.push(copayer);
   if (this.copayers.length < this.n) return;
 
@@ -136,10 +141,6 @@ Wallet.prototype.getCopayer = function(copayerId) {
   });
 };
 
-Wallet.prototype.getNetworkName = function() {
-  return this.network;
-};
-
 Wallet.prototype.isComplete = function() {
   return this.status == 'complete';
 };
@@ -153,7 +154,7 @@ Wallet.prototype.createAddress = function(isChange) {
 
   var self = this;
   var path = this.addressManager.getNewAddressPath(isChange);
-  var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.network, isChange);
+  var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.networkName, isChange);
   return address;
 };
 

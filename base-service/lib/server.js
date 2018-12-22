@@ -46,9 +46,8 @@ class WalletService {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet.code;
-    this.TESTNET = this.ctx.Networks.testnet.code;
-    this.COIN = this.ctx.Networks.coin;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     this.atomicsName = this.ctx.Unit().atomicsName();
     this.utils = new this.ctx.Utils();
@@ -91,9 +90,14 @@ WalletService.getServiceVersion = function() {
  */
 WalletService.prototype.getServiceInfo = function() {
   return {
-    coin: this.COIN,
-    name: this.ctx.Networks.livenet.name,
-    version: WalletService.getServiceVersion()
+    version: WalletService.getServiceVersion(),
+    currency: this.ctx.Networks.livenet.currency, // Currency same for livenet and testnet
+    livenet: {
+      description: this.ctx.Networks.livenet.description
+    },
+    testnet: {
+      description: this.ctx.Networks.testnet.description
+    }
   };
 };
 
@@ -212,10 +216,11 @@ WalletService.prototype.handleIncomingNotification = function(notification, cb) 
   var self = this;
   cb = cb || function() {};
 
-  if (!notification || notification.type != 'NewBlock' || !MessageBroker.isNotificationForMe(notification, self.COIN)) {
+  if (!notification || notification.type != 'NewBlock' || 
+    !MessageBroker.isNotificationForMe(notification, [self.LIVENET.name, self.TESTNET.name])) {
     return cb();
   }
-  WalletService._clearBlockchainHeightCache(notification.data.network, notification.targetNetwork);
+  WalletService._clearBlockchainHeightCache(notification.networkName);
   return cb();
 };
 
@@ -413,7 +418,7 @@ WalletService.prototype.getMessageBroker = function() {
  * @param {number} opts.n - Total copayers.
  * @param {string} opts.pubKey - Public key to verify copayers joining have access to the wallet secret.
  * @param {string} opts.singleAddress[=false] - The wallet will only ever have one address.
- * @param {string} opts.network[=self.LIVENET] - The network for this wallet.
+ * @param {string} opts.networkName[=self.LIVENET.name] - The network for this wallet.
  * @param {string} opts.supportBIP44AndP2PKH[=true] - Client supports BIP44 & P2PKH for new wallets.
  */
 WalletService.prototype.createWallet = function(opts, cb) {
@@ -431,8 +436,8 @@ WalletService.prototype.createWallet = function(opts, cb) {
     return cb(new ClientError('Invalid combination of required copayers / total copayers'));
   }
 
-  opts.network = opts.network || self.LIVENET;
-  if (!lodash.includes([self.LIVENET, self.TESTNET], opts.network)) {
+  opts.networkName = opts.networkName || self.LIVENET.name;
+  if (!lodash.includes([self.LIVENET.name, self.TESTNET.name], opts.networkName)) {
     return cb(new ClientError('Invalid network'));
   }
 
@@ -467,7 +472,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
         name: opts.name,
         m: opts.m,
         n: opts.n,
-        network: opts.network,
+        networkName: opts.networkName,
         pubKey: pubKey.toString(),
         singleAddress: !!opts.singleAddress,
         derivationStrategy: derivationStrategy,
@@ -475,7 +480,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
       });
 
       self.storage.storeWallet(wallet, function(err) {
-        log.debug('Wallet created', wallet.id, opts.network);
+        log.debug('Wallet created', wallet.id, opts.networkName);
         newWallet = wallet;
         return acb(err);
       });
@@ -557,8 +562,8 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
     }
 
     // Is identifier a txid form an incomming tx?
-    async.detectSeries(lodash.values([self.LIVENET, self.TESTNET]), function(network, nextNetwork) {
-      var bc = self._getBlockchainExplorer(network);
+    async.detectSeries(lodash.values([self.LIVENET, self.TESTNET]), function(networkName, nextNetwork) {
+      var bc = self._getBlockchainExplorer(networkName);
       if (!bc) {
         return nextNetwork(false);
       }
@@ -724,23 +729,24 @@ WalletService.prototype._notify = function(type, data, opts, cb) {
 
   $.checkState(walletId);
 
-  var notification = Model.Notification.create({
-    type: type,
-    data: data,
-    ticker: self.notifyTicker++,
-    creatorId: opts.isGlobal ? null : copayerId,
-    walletId: walletId,
-    targetNetwork: {
-      coin: self.COIN,
-      defaultUnit: self.ctx.Unit().standardsName(),
-      livenet: self.LIVENET,
-      testnet: self.TESTNET
+  self.storage.fetchWallet(walletId, function(err, wallet) {
+    if (err) {
+      return cb(err);
     }
-  });
 
-  self.storage.storeNotification(walletId, notification, function(err) {
-    messageBroker.send(notification);
-    return cb();
+    var notification = Model.Notification.create({
+      type: type,
+      data: data,
+      ticker: self.notifyTicker++,
+      creatorId: opts.isGlobal ? null : copayerId,
+      walletId: walletId,
+      networkName: opts.isGlobal && !wallet ? walletId : wallet.networkName,
+    });
+
+    self.storage.storeNotification(walletId, notification, function(err) {
+      messageBroker.send(notification);
+      return cb();
+    });
   });
 };
 
@@ -807,7 +813,7 @@ WalletService.prototype._addCopayerToWallet = function(wallet, opts, cb) {
         function(next) {
           if (wallet.isComplete() && wallet.isShared()) {
             self._notify('WalletComplete', {
-              walletId: opts.walletId,
+              walletId: opts.walletId
             }, {
               isGlobal: true
             }, next);
@@ -1096,7 +1102,7 @@ WalletService.prototype._canCreateAddress = function(ignoreMaxGap, cb) {
       hasActivity: true
     })) return cb(null, true);
 
-    var bc = self._getBlockchainExplorer(latestAddresses[0].network);
+    var bc = self._getBlockchainExplorer(latestAddresses[0].networkName);
     if (!bc) {
       return cb(new Error('Could not get blockchain explorer instance'));
     }
@@ -1142,7 +1148,6 @@ WalletService.prototype.createAddress = function(opts, cb) {
 
   function createNewAddress(wallet, cb) {
     var address = wallet.createAddress(false);
-
     self.storage.storeAddressAndWallet(wallet, address, function(err) {
       if (err) {
         return cb(err);
@@ -1248,31 +1253,29 @@ WalletService.prototype.verifyMessageSignature = function(opts, cb) {
   });
 };
 
-WalletService.prototype._getBlockchainExplorer = function(network) {
+WalletService.prototype._getBlockchainExplorer = function(networkName) {
   var self = this;
   if (self.blockchainExplorer) {
     return self.blockchainExplorer;
   }
 
   // Use network alias to lookup configuration.
-  if (!lodash.includes([Constants.LIVENET, Constants.TESTNET], network)) {
-    network = this.ctx.Networks.get(network).alias;
-  }
+  var network = self.ctx.Networks.get(networkName);
 
   var config = {};
   var provider;
 
-  if (self.config[self.COIN].blockchainExplorerOpts) {
+  if (self.config[network.currency].blockchainExplorerOpts) {
     // TODO: provider should be configurable
-    provider = self.config[self.COIN].blockchainExplorerOpts.defaultProvider;
-    if (self.config[self.COIN].blockchainExplorerOpts[provider][network]) {
-      config = self.config[self.COIN].blockchainExplorerOpts[provider][network];
+    provider = self.config[network.currency].blockchainExplorerOpts.defaultProvider;
+    if (self.config[network.currency].blockchainExplorerOpts[provider][network.alias]) {
+      config = self.config[network.currency].blockchainExplorerOpts[provider][network.alias];
     }
   }
 
   var opts = {};
   opts.provider = provider;
-  opts.network = network;
+  opts.networkAlias = network.alias;
   opts.userAgent = WalletService.getServiceVersion();
 
   var bc;
@@ -1290,7 +1293,7 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
   if (addresses.length == 0) {
     return cb(null, []);
   }
-  var networkName = self.ctx.Address(addresses[0]).toObject().network;
+  var networkName = self.ctx.Address(addresses[0]).toObject().networkName;
 
   var bc = self._getBlockchainExplorer(networkName);
   if (!bc) {
@@ -1671,7 +1674,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
 
         var txp = new self.ctx.TxProposal({
           walletId: self.walletId,
-          network: wallet.network,
+          networkName: wallet.networkName,
           walletM: wallet.m,
           walletN: wallet.n,
           feePerKb: feePerKb,
@@ -1725,10 +1728,10 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
   });
 };
 
-WalletService.prototype._sampleFeeLevels = function(network, points, cb) {
+WalletService.prototype._sampleFeeLevels = function(networkName, points, cb) {
   var self = this;
 
-  var bc = self._getBlockchainExplorer(network);
+  var bc = self._getBlockchainExplorer(networkName);
   if (!bc) {
     return cb(new Error('Could not get blockchain explorer instance'));
   }
@@ -1749,8 +1752,8 @@ WalletService.prototype._sampleFeeLevels = function(network, points, cb) {
     }));
 
     if (failed.length) {
-      var logger = network == self.LIVENET ? log.warn : log.debug;
-      logger('Could not compute fee estimation in ' + network + ': ' + failed.join(', ') + ' blocks.');
+      var logger = networkName == self.LIVENET ? log.warn : log.debug;
+      logger('Could not compute fee estimation in ' + networkName + ': ' + failed.join(', ') + ' blocks.');
     }
 
     return cb(null, levels);
@@ -1760,7 +1763,7 @@ WalletService.prototype._sampleFeeLevels = function(network, points, cb) {
 /**
  * Returns fee levels for the current state of the network.
  * @param {Object} opts
- * @param {string} [opts.network = self.LIVENET] - The network to estimate fee levels from.
+ * @param {string} [opts.networkName = self.LIVENET.name] - The network to estimate fee levels from.
  * @returns {Object} feeLevels - A list of fee levels & associated amount per kB in atomic units.
  */
 WalletService.prototype.getFeeLevels = function(opts, cb) {
@@ -1796,12 +1799,12 @@ WalletService.prototype.getFeeLevels = function(opts, cb) {
     return result;
   };
 
-  var network = opts.network || self.LIVENET;
-  if (network != self.LIVENET && network != self.TESTNET) {
+  var networkName = opts.networkName || self.LIVENET.name;
+  if (!lodash.includes([self.LIVENET.name, self.TESTNET.name], networkName)) {
     return cb(new ClientError('Invalid network'));
   }
 
-  self._sampleFeeLevels(network, samplePoints(), function(err, feeSamples) {
+  self._sampleFeeLevels(networkName, samplePoints(), function(err, feeSamples) {
     var values = lodash.map(self.ctx.Defaults.FEE_LEVELS, function(level) {
       var result = {
         level: level.name,
@@ -2193,7 +2196,9 @@ WalletService.prototype._validateOutputs = function(opts, wallet, cb) {
     } catch (ex) {
       return Errors.INVALID_ADDRESS;
     }
-    if (toAddress.network != wallet.getNetworkName()) {
+
+    var network = self.ctx.Networks.get(wallet.networkName);
+    if (toAddress.network != network) {
       return Errors.INCORRECT_ADDRESS_NETWORK;
     }
 
@@ -2296,7 +2301,7 @@ WalletService.prototype._getFeePerKb = function(wallet, opts, cb) {
     return cb(null, opts.feePerKb);
   }
   self.getFeeLevels({
-    network: wallet.network
+    networkName: wallet.networkName
   }, function(err, levels) {
     if (err) {
       return cb(err);
@@ -2743,8 +2748,8 @@ WalletService.prototype.removePendingTx = function(opts, cb) {
   });
 };
 
-WalletService.prototype._broadcastRawTx = function(network, raw, cb) {
-  var bc = this._getBlockchainExplorer(network);
+WalletService.prototype._broadcastRawTx = function(networkName, raw, cb) {
+  var bc = this._getBlockchainExplorer(networkName);
   if (!bc) {
     return cb(new Error('Could not get blockchain explorer instance'));
   }
@@ -2759,22 +2764,23 @@ WalletService.prototype._broadcastRawTx = function(network, raw, cb) {
 /**
  * Broadcast a raw transaction.
  * @param {Object} opts
- * @param {string} [opts.network = self.LIVENET] - The network for this transaction.
+ * @param {string} [opts.networkName = self.LIVENET.name] - The network for this transaction.
  * @param {string} opts.rawTx - Raw tx data.
  */
 WalletService.prototype.broadcastRawTx = function(opts, cb) {
   var self = this;
 
-  if (!self.checkRequired(opts, ['network', 'rawTx'], cb)) {
+  if (!self.checkRequired(opts, ['networkName', 'rawTx'], cb)) {
     return;
   }
 
-  var network = opts.network || self.LIVENET;
-  if (network != self.LIVENET && network != self.TESTNET) {
+  var networkName = opts.networkName || self.LIVENET.name;
+
+  if (!lodash.includes([self.LIVENET.name, self.TESTNET.name], opts.networkName)) {
     return cb(new ClientError('Invalid network'));
   }
 
-  self._broadcastRawTx(network, opts.rawTx, cb);
+  self._broadcastRawTx(networkName, opts.rawTx, cb);
 };
 
 
@@ -2782,7 +2788,7 @@ WalletService.prototype._checkTxInBlockchain = function(txp, cb) {
   if (!txp.txid) {
     return cb();
   }
-  var bc = this._getBlockchainExplorer(txp.getNetworkName());
+  var bc = this._getBlockchainExplorer(txp.networkName);
   if (!bc) {
     return cb(new Error('Could not get blockchain explorer instance'));
   }
@@ -2857,7 +2863,7 @@ WalletService.prototype.signTx = function(opts, cb) {
 
           function(next) {
             self._notifyTxProposalAction('TxProposalAcceptedBy', txp, {
-              copayerId: self.copayerId,
+              copayerId: self.copayerId
             }, next);
           },
           function(next) {
@@ -2938,7 +2944,7 @@ WalletService.prototype.broadcastTx = function(opts, cb) {
       } catch (ex) {
         return cb(ex);
       }
-      self._broadcastRawTx(txp.getNetworkName(), raw, function(err, txid) {
+      self._broadcastRawTx(txp.networkName, raw, function(err, txid) {
         if (err) {
           var broadcastErr = err;
           // Check if tx already in blockchain
@@ -3107,7 +3113,9 @@ WalletService.prototype.getNotifications = function(opts, cb) {
       return cb(err);
     }
 
-    async.map([wallet.network, self.walletId], function(walletId, next) {
+    // Wallet id = network name for global notifications.
+    // See BlockchainMonitor.prototype._notifyNewBlock().
+    async.map([wallet.networkName, self.walletId], function(walletId, next) {
       self.storage.fetchNotifications(walletId, opts.notificationId, opts.minTs || 0, next);
     }, function(err, res) {
       if (err) {
@@ -3175,38 +3183,30 @@ WalletService.clearBlockheightCache = function() {
   WalletService._cachedBlockheight = null;
 };
 
-WalletService._initBlockchainHeightCache = function(networks) {
+WalletService._initBlockchainHeightCache = function(networkName) {
   if (!WalletService._cachedBlockheight) {
     WalletService._cachedBlockheight = {};
   }
 
-  lodash.forEach(networks, function(n) {
-    if (!WalletService._cachedBlockheight[n]) {
-      WalletService._cachedBlockheight[n] = {};
-    }
-  });
-};
-
-WalletService._clearBlockchainHeightCache = function(network, targetNetwork) {
-  WalletService._initBlockchainHeightCache([targetNetwork.livenet, targetNetwork.testnet]);
-
-  if (!lodash.includes([targetNetwork.livenet, targetNetwork.testnet], network)) {
-    log.error('Incorrect network in new block: ' + network);
-    return;
+  if (!WalletService._cachedBlockheight[networkName]) {
+    WalletService._cachedBlockheight[networkName] = {};
   }
-
-  WalletService._cachedBlockheight[network].current = null;
 };
 
-WalletService.prototype._getBlockchainHeight = function(network, cb) {
+WalletService._clearBlockchainHeightCache = function(networkName) {
+  WalletService._initBlockchainHeightCache(networkName);
+  WalletService._cachedBlockheight[networkName].current = null;
+};
+
+WalletService.prototype._getBlockchainHeight = function(networkName, cb) {
   var self = this;
 
   var now = Date.now();
-  WalletService._initBlockchainHeightCache([self.LIVENET, self.TESTNET]);
-  var cache = WalletService._cachedBlockheight[network];
+  WalletService._initBlockchainHeightCache(networkName);
+  var cache = WalletService._cachedBlockheight[networkName];
 
   function fetchFromBlockchain(cb) {
-    var bc = self._getBlockchainExplorer(network);
+    var bc = self._getBlockchainExplorer(networkName);
     if (!bc) {
       return cb(new Error('Could not get blockchain explorer instance'));
     }
@@ -3384,7 +3384,9 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
   function getNormalizedTxs(addresses, from, to, cb) {
     var txs, fromCache, totalItems;
     var useCache = addresses.length >= self.ctx.Defaults.HISTORY_CACHE_ADDRESS_THRESOLD;
-    var network = self.ctx.Address(addresses[0].address).toObject().network;
+
+    var a = self.ctx.Address(addresses[0].address).toObject();
+    var network = self.ctx.Networks.get(a.network);  // ctx.Address network is a network alias
 
     async.series([
 
@@ -3413,7 +3415,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
         }
 
         var addressStrs = lodash.map(addresses, 'address');
-        var bc = self._getBlockchainExplorer(network);
+        var bc = self._getBlockchainExplorer(network.name);
         if (!bc) {
           return cb(new Error('Could not get blockchain explorer instance'));
         }
@@ -3455,7 +3457,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
         }
 
         // Fix tx confirmations for cached txs
-        self._getBlockchainHeight(network, function(err, height) {
+        self._getBlockchainHeight(network.name, function(err, height) {
           if (err || !height) {
             return next(err);
           }
@@ -3488,7 +3490,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
     }
 
     self.getFeeLevels({
-      network: wallet.network
+      networkName: wallet.networkName
     }, function(err, levels) {
       if (err) {
         log.warn('Could not fetch fee levels', err);
@@ -3596,8 +3598,8 @@ WalletService.prototype.scan = function(opts, cb) {
 
   opts = opts || {};
 
-  function checkActivity(address, network, cb) {
-    var bc = self._getBlockchainExplorer(network);
+  function checkActivity(address, networkName, cb) {
+    var bc = self._getBlockchainExplorer(networkName);
     if (!bc) {
       return cb(new Error('Could not get blockchain explorer instance'));
     }
@@ -3613,7 +3615,7 @@ WalletService.prototype.scan = function(opts, cb) {
       return inactiveCounter < gap;
     }, function(next) {
       var address = derivator.derive();
-      checkActivity(address.address, address.network, function(err, activity) {
+      checkActivity(address.address, address.networkName, function(err, activity) {
         if (err) {
           return next(err);
         }
@@ -3698,7 +3700,7 @@ WalletService.prototype.startScan = function(opts, cb) {
 
   function scanFinished(err) {
     var data = {
-      result: err ? 'error' : 'success',
+      result: err ? 'error' : 'success'
     };
     if (err) {
       data.error = err;

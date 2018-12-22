@@ -58,6 +58,7 @@ describe('Storage', function() {
         name: 'my wallet',
         m: 2,
         n: 3,
+        networkName: 'btc'
       });
       should.exist(wallet);
       storage.storeWallet(wallet, function(err) {
@@ -90,6 +91,7 @@ describe('Storage', function() {
         name: 'my wallet',
         m: 2,
         n: 3,
+        networkName: 'btc'
       });
       lodash.each(lodash.range(3), function(i) {
         var copayer = Copayer.create({
@@ -133,6 +135,7 @@ describe('Storage', function() {
         name: 'my wallet',
         m: 2,
         n: 3,
+        networkName: 'btc'
       });
       lodash.each(lodash.range(3), function(i) {
         var copayer = Copayer.create({

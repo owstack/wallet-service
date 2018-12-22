@@ -33,7 +33,8 @@ class Service extends EventEmitter {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.COIN = this.ctx.Networks.coin;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     EventEmitter.call(this);
 
@@ -129,7 +130,8 @@ Service.prototype.start = function(done) {
     },
     function(next) {
       // Email Service
-      if (self.config[self.COIN].emailOpts) {
+      if (self.config[self.LIVENET.currency].emailOpts ||
+        self.config[self.TESTNET.currency].emailOpts) {
         var emailService = new self.ctx.EmailService(self.config);
         emailService.start(null, next);
       } else {

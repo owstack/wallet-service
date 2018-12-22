@@ -49,7 +49,8 @@ class PushNotificationsService {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.COIN = this.ctx.Networks.coin;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     this.config = config || baseConfig;
     this.setLog();
@@ -129,7 +130,7 @@ PushNotificationsService.prototype._sendPushNotifications = function(notificatio
   var self = this;
   cb = cb || function() {};
 
-  if (!MessageBroker.isNotificationForMe(notification, self.COIN)) {
+  if (!MessageBroker.isNotificationForMe(notification, [self.LIVENET.name, self.TESTNET.name])) {
     return cb();
   }
 
@@ -277,7 +278,7 @@ PushNotificationsService.prototype._getRecipientsList = function(notification, n
           return {
             copayerId: copayer.id,
             language: p.language || self.defaultLanguage,
-            unit: p.unit || notification.targetNetwork.defaultUnit
+            unit: p.unit || self.ctx.Unit().standardsName()
           }
         }
       }));

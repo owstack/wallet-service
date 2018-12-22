@@ -16,15 +16,15 @@ class Explorer {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet.alias;
-    this.TESTNET = this.ctx.Networks.testnet.alias;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     $.checkArgument(opts);
-    $.checkArgument(lodash.includes([this.LIVENET, this.TESTNET], opts.network));
+    $.checkArgument(lodash.includes([this.LIVENET.name, this.TESTNET.name], opts.networkName));
     $.checkArgument(opts.url);
 
     this.apiPrefix = opts.apiPrefix || '/explorer-api';
-    this.network = opts.network || this.LIVENET;
+    this.networkName = opts.networkName || this.LIVENET.name;
     this.hosts = opts.url;
     this.userAgent = opts.userAgent || 'ws';
   }
@@ -50,7 +50,7 @@ Explorer.prototype._doRequest = function(args, cb) {
 };
 
 Explorer.prototype.getConnectionInfo = function() {
-  return 'Explorer (' + this.network + ') @ ' + this.hosts;
+  return 'Explorer (' + this.networkName + ') @ ' + this.hosts;
 };
 
 /**
@@ -211,7 +211,6 @@ Explorer.prototype.getTxidsInBlock = function(blockHash, cb) {
 };
 
 Explorer.prototype.initSocket = function() {
-
   // sockets always use the first server on the pull
   var socket = io.connect(lodash.head([].concat(this.hosts)), {
     'reconnection': true,

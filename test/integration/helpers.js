@@ -14,7 +14,6 @@ var Services = {
 
 var owsCommon = require('@owstack/ows-common');
 var btcLib = require('@owstack/btc-lib');
-var Networks = btcLib.Networks;
 var keyLib = require('@owstack/key-lib');
 var async = require('async');
 var Constants = owsCommon.Constants;
@@ -88,7 +87,7 @@ helpers.getBlockchainExplorer = function(serviceName) {
 };
 
 helpers._getServiceName = function(server) {
-  return server.getServiceInfo().coin;
+  return server.getServiceInfo().currency;
 };
 
 helpers.getStorage = function(serviceName) {
@@ -358,7 +357,7 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
 
       return next();
     },
-  ], function(err) {
+  ], function(err) {    
     should.not.exist(err);
     return cb(helpers._utxos);
   });
@@ -415,7 +414,7 @@ helpers.clientSign = function(txp, derivedXPrivKey) {
   var privs = [];
   var derived = {};
 
-  var xpriv = new HDPrivateKey(derivedXPrivKey, txp.network);
+  var xpriv = new HDPrivateKey(derivedXPrivKey, txp.networkName);
   lodash.each(txp.inputs, function(i) {
     if (!derived[i.path]) {
       derived[i.path] = xpriv.deriveChild(i.path).privateKey;
@@ -464,7 +463,6 @@ helpers.createAddresses = function(server, wallet, main, change, cb) {
 helpers.createAndPublishTx = function(server, txOpts, signingKey, cb) {
   var serviceName = helpers._getServiceName(server);
   server.createTx(txOpts, function(err, txp) {
-    should.not.exist(err);
     var publishOpts = helpers.getProposalSignatureOpts(serviceName, txp, signingKey);
     server.publishTx(publishOpts, function(err) {
       should.not.exist(err);

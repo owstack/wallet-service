@@ -20,6 +20,7 @@ Address.create = function(context, opts) {
   // order to instance this base service; e.g., btc-service.
   var ctx = context;
 
+  var networkName = ctx.Address(opts.address).toObject().network;
   var x = new Address(context);
 
   x.version = '1.0.0';
@@ -29,7 +30,7 @@ Address.create = function(context, opts) {
   x.isChange = opts.isChange;
   x.path = opts.path;
   x.publicKeys = opts.publicKeys;
-  x.network = ctx.Address(x.address).toObject().network;
+  x.networkName = networkName;
   x.type = opts.type || Constants.SCRIPT_TYPES.P2SH;
   x.hasActivity = undefined;
   return x;
@@ -44,7 +45,7 @@ Address.fromObj = function(context, obj) {
   x.createdOn = obj.createdOn;
   x.address = obj.address;
   x.walletId = obj.walletId;
-  x.network = obj.network;
+  x.networkName = obj.networkName;
   x.isChange = obj.isChange;
   x.path = obj.path;
   x.publicKeys = obj.publicKeys;
@@ -53,7 +54,7 @@ Address.fromObj = function(context, obj) {
   return x;
 };
 
-Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, network) {
+Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, networkName) {
   var self = this;
   $.checkArgument(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), scriptType));
 
@@ -63,13 +64,15 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
   });
 
   var address;
+  var network = self.ctx.Networks.get(networkName);
+
   switch (scriptType) {
     case Constants.SCRIPT_TYPES.P2SH:
-      address = self.ctx.Address.createMultisig(publicKeys, m, network);
+      address = self.ctx.Address.createMultisig(publicKeys, m, network.alias);
       break;
     case Constants.SCRIPT_TYPES.P2PKH:
       $.checkState(lodash.isArray(publicKeys) && publicKeys.length == 1);
-      address = self.ctx.Address.fromPublicKey(publicKeys[0], network);
+      address = self.ctx.Address.fromPublicKey(publicKeys[0], network.alias);
       break;
   }
 
@@ -80,9 +83,9 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
   };
 };
 
-Address.prototype.derive = function(walletId, scriptType, publicKeyRing, path, m, network, isChange) {
+Address.prototype.derive = function(walletId, scriptType, publicKeyRing, path, m, networkName, isChange) {
   var self = this;
-  var raw = self._deriveAddress(scriptType, publicKeyRing, path, m, network);
+  var raw = self._deriveAddress(scriptType, publicKeyRing, path, m, networkName);
   return Address.create(self.ctx, lodash.extend(raw, {
     walletId: walletId,
     type: scriptType,

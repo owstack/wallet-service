@@ -104,7 +104,7 @@ ExpressApp.prototype.start = function(opts, cb) {
   }
 
   if (log.level != 'silent') {
-    morgan.token('network', function getId(req) {
+    morgan.token('service', function getId(req) {
       return req.header('x-service')
     });
 
@@ -116,7 +116,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       return req.copayerId
     });
 
-    var logFormat = ':remote-addr :date[iso] :network ":method :url" :status :res[content-length] :response-time ":user-agent" :walletId :copayerId';
+    var logFormat = ':remote-addr :date[iso] :service ":method :url" :status :res[content-length] :response-time ":user-agent" :walletId :copayerId';
     var logOpts = {
       skip: function(req, res) {
         if (res.statusCode != 200) {
@@ -657,7 +657,7 @@ ExpressApp.prototype.start = function(opts, cb) {
 
   router.get('/v1/stats/', function(req, res) {
     var opts = {};
-    if (req.query.network) opts.network = req.query.network;
+    if (req.query.network) opts.networkName = req.query.network;
     if (req.query.from) opts.from = req.query.from;
     if (req.query.to) opts.to = req.query.to;
 

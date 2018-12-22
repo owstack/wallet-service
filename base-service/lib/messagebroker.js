@@ -1,8 +1,10 @@
 'use strict';
 
+var owsCommon = require('@owstack/ows-common');
 var baseConfig = require('../../config');
 var EventEmitter = require('events').EventEmitter;
 var log = require('npmlog');
+var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
@@ -16,14 +18,14 @@ class MessageBroker extends EventEmitter {
 
     if (config.messageBrokerServer) {
       var url = config.messageBrokerServer.url;
-      this.remote = true;
-      this.mq = require('socket.io-client').connect(url);
-      this.mq.on('connect', function() {});
-      this.mq.on('connect_error', function() {
+      self.remote = true;
+      self.mq = require('socket.io-client').connect(url);
+      self.mq.on('connect', function() {});
+      self.mq.on('connect_error', function() {
         log.warn('Error connecting to message broker server @ ' + url);
       });
 
-      this.mq.on('msg', function(data) {
+      self.mq.on('msg', function(data) {
         self.emit('msg', data);
       });
 
@@ -32,8 +34,11 @@ class MessageBroker extends EventEmitter {
   }
 };
 
-MessageBroker.isNotificationForMe = function(notification, coin) {
-  return notification.targetNetwork.coin == coin;
+MessageBroker.isNotificationForMe = function(notification, networkNames) {
+  if (!lodash.isArray(networkNames)) {
+    networkNames = [networkNames];
+  }
+  return lodash.includes(networkNames, notification.networkName);
 };
 
 MessageBroker.prototype.send = function(data) {

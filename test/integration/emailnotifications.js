@@ -102,7 +102,6 @@ describe('Email notifications', function() {
           }],
           feePerKb: 100e2
         };
-
         helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function(tx) {
           setTimeout(function() {
             var calls = mailerStub.sendMail.getCalls();

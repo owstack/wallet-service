@@ -21,8 +21,8 @@ class TxProposal {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet.code;
-    this.TESTNET = this.ctx.Networks.testnet.code;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
     this.atomicsName = this.ctx.Unit().atomicsName();
 
     opts = opts || {};
@@ -62,13 +62,15 @@ class TxProposal {
     $.checkState(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), this.addressType));
 
     this.customData = opts.customData;
-
     this.amount = this.getTotalAmount();
+
+    var address;
     try {
-      this.network = opts.network || this.ctx.Address(this.outputs[0].toAddress).toObject().network;
+      address = this.ctx.Address(this.outputs[0].toAddress).toObject();
     } catch (ex) {}
 
-    $.checkState(lodash.includes(lodash.values([this.LIVENET, this.TESTNET]), this.network));
+    this.networkName = opts.networkName || address.network;
+    $.checkState(lodash.includes(lodash.values([this.LIVENET.name, this.TESTNET.name]), this.networkName));
 
     this.setInputs(opts.inputs);
     this.fee = opts.fee;
@@ -85,7 +87,7 @@ TxProposal.fromObj = function(context, obj) {
   x.id = obj.id;
   x.walletId = obj.walletId;
   x.creatorId = obj.creatorId;
-  x.network = obj.network;
+  x.networkName = obj.networkName;
   x.outputs = obj.outputs;
   x.amount = obj.amount;
   x.message = obj.message;
@@ -224,10 +226,6 @@ TxProposal.prototype.getTx = function() {
   });
 
   return t;
-};
-
-TxProposal.prototype.getNetworkName = function() {
-  return this.network;
 };
 
 TxProposal.prototype.getRawTx = function() {

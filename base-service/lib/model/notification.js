@@ -42,7 +42,7 @@ Notification.create = function(opts) {
   x.data = opts.data;
   x.walletId = opts.walletId;
   x.creatorId = opts.creatorId;
-  x.targetNetwork = opts.targetNetwork;
+  x.networkName = opts.networkName;
 
   return x;
 };
@@ -57,7 +57,7 @@ Notification.fromObj = function(obj) {
   x.data = obj.data;
   x.walletId = obj.walletId;
   x.creatorId = obj.creatorId;
-  x.targetNetwork = obj.targetNetwork;
+  x.networkName = obj.networkName;
 
   return x;
 };

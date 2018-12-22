@@ -12,8 +12,8 @@ var btcLib = require('@owstack/btc-lib');
 
 var Networks = btcLib.Networks;
 var Unit = btcLib.Unit;
-var LIVENET = Networks.livenet.code;
-var TESTNET = Networks.testnet.code;
+var LIVENET = Networks.livenet;
+var TESTNET = Networks.testnet;
 
 var owsCommon = require('@owstack/ows-common');
 var keyLib = require('@owstack/key-lib');
@@ -1207,7 +1207,7 @@ describe('Wallet service', function() {
           should.not.exist(err);
           should.exist(address);
           address.walletId.should.equal(wallet.id);
-          address.network.should.equal(LIVENET);
+          address.networkName.should.equal(LIVENET.name);
           address.address.should.equal('3BVJZ4CYzeTtawDtgwHvWV5jbvnXtYe97i');
           address.isChange.should.be.false;
           address.path.should.equal('m/2147483647/0/0');
@@ -1271,7 +1271,7 @@ describe('Wallet service', function() {
           should.not.exist(err);
           should.exist(address);
           address.walletId.should.equal(wallet.id);
-          address.network.should.equal(LIVENET);
+          address.networkName.should.equal(LIVENET.name);
           address.address.should.equal('36q2G5FMGvJbPgAVEaiyAsFGmpkhPKwk2r');
           address.isChange.should.be.false;
           address.path.should.equal('m/0/0');
@@ -1338,7 +1338,7 @@ describe('Wallet service', function() {
           should.not.exist(err);
           should.exist(address);
           address.walletId.should.equal(wallet.id);
-          address.network.should.equal(LIVENET);
+          address.networkName.should.equal(LIVENET.name);
           address.address.should.equal('1L3z9LPd861FWQhf3vDn89Fnc9dkdBo2CG');
           address.isChange.should.be.false;
           address.path.should.equal('m/0/0');
@@ -3471,7 +3471,6 @@ describe('Wallet service', function() {
             should.exist(tx);
             should.not.exist(tx.changeAddress);
             tx.amount.should.equal(3e8 - tx.fee);
-
             var t = tx.getTx();
             t.getFee().should.equal(tx.fee);
             should.not.exist(t.getChangeOutput());
@@ -5296,7 +5295,7 @@ describe('Wallet service', function() {
     it('should broadcast a raw tx', function(done) {
       helpers.stubBroadcast(serviceName);
       server.broadcastRawTx({
-        network: TESTNET,
+        networkName: TESTNET.name,
         rawTx: 'raw tx',
       }, function(err, txid) {
         should.not.exist(err);
@@ -5872,14 +5871,14 @@ describe('Wallet service', function() {
 
     it('should pull new block notifications along with wallet notifications in the last 60 seconds', function(done) {
       // Simulate new block notification
-      server.walletId = LIVENET;
+      server.walletId = LIVENET.name;
       server._notify('NewBlock', {
         hash: 'dummy hash',
       }, {
         isGlobal: true
       }, function(err) {
         should.not.exist(err);
-        server.walletId = TESTNET;
+        server.walletId = TESTNET.name;
         server._notify('NewBlock', {
           hash: 'dummy hash',
         }, {
@@ -6848,7 +6847,7 @@ describe('Wallet service', function() {
 
           blockchainExplorer.getBlockchainHeight = sinon.stub().callsArgWith(0, null, 2000);
           server._notify('NewBlock', {
-            network: LIVENET,
+            networkName: LIVENET.name,
             hash: 'dummy hash',
           }, {
             isGlobal: true

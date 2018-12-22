@@ -100,5 +100,6 @@ var testWallet = {
   }],
   version: '1.0.0',
   pubKey: '{"x":"6092daeed8ecb2212869395770e956ffc9bf453f803e700f64ffa70c97a00d80","y":"ba5e7082351115af6f8a9eb218979c7ed1f8aa94214f627ae624ab00048b8650","compressed":true}',
-  isTestnet: false
+  isTestnet: false,
+  networkName: 'btc'
 };

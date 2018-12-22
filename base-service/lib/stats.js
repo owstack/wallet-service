@@ -25,11 +25,11 @@ class Stats {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet.code;
+    this.LIVENET = this.ctx.Networks.livenet;
 
     opts = opts || {};
 
-    this.network = opts.network || this.LIVENET;
+    this.networkName = opts.networkName || this.LIVENET.name;
     this.from = moment(opts.from || INITIAL_DATE);
     this.to = moment(opts.to);
     this.fromTs = this.from.startOf('day').valueOf();
@@ -106,7 +106,7 @@ Stats.prototype._getNewWallets = function(cb) {
       day.setSeconds(0);
       var key = {
         day: +day,
-        network: this.network,
+        networkName: this.networkName
       };
       var value = {
         count: 1
@@ -142,10 +142,10 @@ Stats.prototype._getNewWallets = function(cb) {
   function queryStats(cb) {
     self.db.collection('stats_wallets')
       .find({
-        '_id.network': self.network,
+        '_id.networkName': self.networkName,
         '_id.day': {
           $gte: self.fromTs,
-          $lte: self.toTs,
+          $lte: self.toTs
         },
       })
       .sort({
@@ -160,7 +160,7 @@ Stats.prototype._getNewWallets = function(cb) {
           var day = moment(record._id.day).format('YYYYMMDD');
           return {
             day: day,
-            count: record.value.count,
+            count: record.value.count
           };
         });
         return cb(null, stats);
@@ -222,7 +222,7 @@ Stats.prototype._getTxProposals = function(cb) {
       day.setSeconds(0);
       var key = {
         day: +day,
-        network: this.network,
+        networkName: this.networkName,
       };
       var value = {
         count: 1,
@@ -263,7 +263,7 @@ Stats.prototype._getTxProposals = function(cb) {
   function queryStats(cb) {
     self.db.collection('stats_txps')
       .find({
-        '_id.network': self.network,
+        '_id.networkName': self.networkName,
         '_id.day': {
           $gte: self.fromTs,
           $lte: self.toTs,

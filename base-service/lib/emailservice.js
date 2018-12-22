@@ -62,7 +62,8 @@ class EmailService {
     this.ctx = context;
 
     // Set some frequently used contant values based on context.
-    this.COIN = this.ctx.Networks.coin;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     this.config = config || baseConfig;
     this.setLog();
@@ -194,16 +195,25 @@ EmailService.prototype._getRecipientsList = function(notification, emailType, cb
   var self = this;
 
   self.storage.fetchPreferences(notification.walletId, null, function(err, preferences) {
-    if (err) return cb(err);
-    if (lodash.isEmpty(preferences)) return cb(null, []);
+    if (err) {
+      return cb(err);
+    }
+    if (lodash.isEmpty(preferences)) {
+      return cb(null, []);
+    }
 
     var usedEmails = {};
     var recipients = lodash.compact(lodash.map(preferences, function(p) {
-      if (!p.email || usedEmails[p.email]) return;
-
+      if (!p.email || usedEmails[p.email]) {
+        return;
+      }
       usedEmails[p.email] = true;
-      if (notification.creatorId == p.copayerId && !emailType.notifyDoer) return;
-      if (notification.creatorId != p.copayerId && !emailType.notifyOthers) return;
+
+      if ((notification.creatorId == p.copayerId && !emailType.notifyDoer) ||
+        (notification.creatorId != p.copayerId && !emailType.notifyOthers)) {
+        return;
+      }
+
       if (!lodash.includes(self.availableLanguages, p.language)) {
         if (p.language) {
           log.warn('Language for email "' + p.language + '" not available.');
@@ -215,7 +225,7 @@ EmailService.prototype._getRecipientsList = function(notification, emailType, cb
         copayerId: p.copayerId,
         emailAddress: p.email,
         language: p.language,
-        unit: p.unit || notification.targetNetwork.defaultUnit
+        unit: p.unit || self.ctx.Unit().standardsName()
       };
     }));
 
@@ -237,7 +247,9 @@ EmailService.prototype._getDataForTemplate = function(notification, recipient, c
     }
   }
   self.storage.fetchWallet(notification.walletId, function(err, wallet) {
-    if (err) return cb(err);
+    if (err) {
+      return cb(err);
+    }
     data.walletId = wallet.id;
     data.walletName = wallet.name;
     data.walletM = wallet.m;
@@ -260,16 +272,14 @@ EmailService.prototype._getDataForTemplate = function(notification, recipient, c
     }
 
     if (lodash.includes(['NewIncomingTx', 'NewOutgoingTx'], notification.type) && data.txid) {
-      var networkAlias;
-      switch (wallet.network) {
-        case notification.targetNetwork.livenet: networkAlias = Constants.LIVENET; break;
-        case notification.targetNetwork.testnet: networkAlias = Constants.TESTNET; break;
-        default:
-          var err = 'Network mismatch. Expected ' + wallet.network + ' to be one of [' + notification.targetNetwork.livenet + ',' + notification.targetNetwork.testnet + ']';
-          return cb(err);
+      if (wallet.networkName != notification.networkName) {
+        var err = 'Network mismatch. Expected ' + wallet.networkName + ' to be' + notification.networkName;
+        return cb(err);
       }
 
-      var urlTemplate = self.publicTxUrlTemplate[networkAlias];
+      var network = self.ctx.Networks.get(wallet.networkName);
+
+      var urlTemplate = self.publicTxUrlTemplate[network.alias];
       if (urlTemplate) {
         try {
           data.urlForTx = Mustache.render(urlTemplate, data);
@@ -351,27 +361,39 @@ EmailService.prototype.sendEmail = function(notification, cb) {
   var self = this;
   cb = cb || function() {};
 
-  if (!MessageBroker.isNotificationForMe(notification, self.COIN)) {
+  if (!MessageBroker.isNotificationForMe(notification, [self.LIVENET.name, self.TESTNET.name])) {
     return cb();
   }
 
   var emailType = EMAIL_TYPES[notification.type];
-  if (!emailType) return cb();
+  if (!emailType) {
+    return cb();
+  }
 
   self._checkShouldSendEmail(notification, function(err, should) {
-    if (err) return cb(err);
-    if (!should) return cb();
+    if (err) {
+      return cb(err);
+    }
+    if (!should) {
+      return cb();
+    }
 
     self._getRecipientsList(notification, emailType, function(err, recipientsList) {
-      if (lodash.isEmpty(recipientsList)) return cb();
+      if (lodash.isEmpty(recipientsList)) {
+        return cb();
+      }
 
       // TODO: Optimize so one process does not have to wait until all others are done
       // Instead set a flag somewhere in the db to indicate that this process is free
       // to serve another request.
       self.lock.runLocked('email-' + notification.id, cb, function(cb) {
         self.storage.fetchEmailByNotification(notification.id, function(err, email) {
-          if (err) return cb(err);
-          if (email) return cb();
+          if (err) {
+            return cb(err);
+          }
+          if (email) {
+            return cb();
+          }
 
           async.waterfall([
 
