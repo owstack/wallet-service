@@ -18,12 +18,12 @@ class TxProposal {
   constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet;
-    this.TESTNET = this.ctx.Networks.testnet;
-    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.LIVENET = this.Networks.livenet;
+    this.TESTNET = this.Networks.testnet;
+    this.atomicsName = this.Unit().atomicsName();
 
     opts = opts || {};
 
@@ -66,7 +66,7 @@ class TxProposal {
 
     var address;
     try {
-      address = this.ctx.Address(this.outputs[0].toAddress).toObject();
+      address = this.Address(this.outputs[0].toAddress).toObject();
     } catch (ex) {}
 
     this.networkName = opts.networkName || address.network;
@@ -144,7 +144,7 @@ TxProposal.prototype._updateStatus = function() {
 TxProposal.prototype._buildTx = function() {
   var self = this;
 
-  var t = new self.ctx.Transaction();
+  var t = new self.Transaction();
 
   $.checkState(lodash.includes(lodash.values(Constants.SCRIPT_TYPES), self.addressType));
 
@@ -166,7 +166,7 @@ TxProposal.prototype._buildTx = function() {
       var arg = {};
       arg.script = o.script;
       arg[self.atomicsName] = o.amount;
-      t.addOutput(new self.ctx.Transaction.Output(arg));
+      t.addOutput(new self.Transaction.Output(arg));
     } else {
       t.to(o.toAddress, o.amount);
     }
@@ -196,7 +196,7 @@ TxProposal.prototype._buildTx = function() {
   var totalOutputs = lodash.sumBy(t.outputs, self.atomicsName);
 
   $.checkState(totalInputs > 0 && totalOutputs > 0 && totalInputs >= totalOutputs);
-  $.checkState(totalInputs - totalOutputs <= this.ctx.Defaults.MAX_TX_FEE);
+  $.checkState(totalInputs - totalOutputs <= this.Defaults.MAX_TX_FEE);
 
   return t;
 };

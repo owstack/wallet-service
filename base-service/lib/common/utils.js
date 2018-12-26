@@ -11,21 +11,21 @@ class Utils {
   constructor(context) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.atomicsName = this.Unit().atomicsName();
   }
 };
 
 Utils.prototype.formatAmount = function(atomic, code, opts) {
   $.shouldBeNumber(atomic);
-  return this.ctx.Unit(atomic, 'atomic').toString(code, opts);
+  return this.Unit(atomic, 'atomic').toString(code, opts);
 };
 
 Utils.prototype.formatAmountInStandard = function(atomic) {
   $.shouldBeNumber(atomic);
-  return this.ctx.Unit(atomic, 'atomic').toString('standard');
+  return this.Unit(atomic, 'atomic').toString('standard');
 };
 
 Utils.prototype.formatUtxos = function(utxos) {

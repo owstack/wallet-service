@@ -11,10 +11,10 @@ class Service {
 	constructor(context, config) {
 	  // Context defines the coin network and is set by the implementing service in
 	  // order to instance this base service; e.g., btc-service.
-	  this.ctx = context;
+    context.inject(this);
 
 	  this.config = config || baseConfig;
-		this.blockchainmonitor = new this.ctx.BlockchainMonitor(this.config);
+		this.blockchainmonitor = new this.BlockchainMonitor(this.config);
 	}
 };
 

@@ -46,11 +46,11 @@ class PushNotificationsService {
   constructor(context, config) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet;
-    this.TESTNET = this.ctx.Networks.testnet;
+    this.LIVENET = this.Networks.livenet;
+    this.TESTNET = this.Networks.testnet;
 
     this.config = config || baseConfig;
     this.setLog();
@@ -108,7 +108,7 @@ PushNotificationsService.prototype.start = function(opts, cb) {
         self.storage = opts.storage;
         done();
       } else {
-        self.storage = new self.ctx.Storage();
+        self.storage = new self.Storage();
         self.storage.connect(self.config.storageOpts, done);
       }
     },
@@ -278,7 +278,7 @@ PushNotificationsService.prototype._getRecipientsList = function(notification, n
           return {
             copayerId: copayer.id,
             language: p.language || self.defaultLanguage,
-            unit: p.unit || self.ctx.Unit().standardsName()
+            unit: p.unit || self.Unit().standardsName()
           }
         }
       }));
@@ -334,7 +334,7 @@ PushNotificationsService.prototype._getDataForTemplate = function(notification, 
   if (data.amount) {
     try {
       var unit = recipient.unit;
-      data.amount = new self.ctx.Utils().formatAmount(+data.amount, unit);
+      data.amount = new self.Utils().formatAmount(+data.amount, unit);
     } catch (ex) {
       return cb(new Error('Could not format amount', ex));
     }

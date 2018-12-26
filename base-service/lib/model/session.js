@@ -6,7 +6,7 @@ class Session {
   constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     opts = opts || {};
 
@@ -44,7 +44,7 @@ Session.prototype.toObject = function() {
 
 Session.prototype.isValid = function() {
   var now = Math.floor(Date.now() / 1000);
-  return (now - this.updatedOn) <= this.ctx.Defaults.SESSION_EXPIRATION;
+  return (now - this.updatedOn) <= this.Defaults.SESSION_EXPIRATION;
 };
 
 Session.prototype.touch = function() {

@@ -64,7 +64,7 @@ describe('ExpressApp', function() {
           var requestOptions = {
             url: testHost + ':' + testPort + testConfig.basePath + '/v1/version',
             headers: {
-              'x-service': 'BTC'
+              'x-service': 'bitcoin'
             }
           };
 
@@ -114,7 +114,7 @@ describe('ExpressApp', function() {
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
-              'x-service': 'BTC'
+              'x-service': 'bitcoin'
             }
           };
 
@@ -143,7 +143,7 @@ describe('ExpressApp', function() {
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
-              'x-service': 'BTC'
+              'x-service': 'bitcoin'
             }
           };
 
@@ -176,7 +176,7 @@ describe('ExpressApp', function() {
             headers: {
               'x-identity': 'identity',
               'x-signature': 'signature',
-              'x-service': 'BTC'
+              'x-service': 'bitcoin'
             }
           };
 
@@ -209,7 +209,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'BTC'
+                'x-service': 'bitcoin'
               }
             };
 
@@ -260,7 +260,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'BTC'
+                'x-service': 'bitcoin'
               }
             };
 
@@ -284,7 +284,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'BTC'
+                'x-service': 'bitcoin'
               }
             };
 
@@ -308,7 +308,7 @@ describe('ExpressApp', function() {
               headers: {
                 'x-identity': 'identity',
                 'x-signature': 'signature',
-                'x-service': 'BTC'
+                'x-service': 'bitcoin'
               }
             };
             request(requestOptions, function(err, res, body) {

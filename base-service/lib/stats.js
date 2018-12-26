@@ -22,10 +22,10 @@ class Stats {
   constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet;
+    this.LIVENET = this.Networks.livenet;
 
     opts = opts || {};
 

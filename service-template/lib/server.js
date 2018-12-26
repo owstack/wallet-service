@@ -1,11 +1,12 @@
 'use strict';
 
 var cLib = require('../cLib');
+var owsCommon = require('@owstack/ows-common');
+var Context = owsCommon.util.Context;
 
 var BaseWalletService = require('../../base-service').WalletService;
 var BaseServer = BaseWalletService.Server;
 
-var owsCommon = require('@owstack/ows-common');
 var Common = require('./common');
 var Model = require('./model');
 var Address = cLib.Address;
@@ -21,7 +22,7 @@ var Unit = cLib.Unit;
 var Utils = Common.Utils;
 var Wallet = Model.Wallet;
 
-var context = {
+var context = new Context({
 	Address: Address,
 	BlockchainExplorer: BlockchainExplorer,
 	Copayer: Copayer,
@@ -34,7 +35,7 @@ var context = {
 	Unit: Unit,
 	Utils: Utils,
 	Wallet: Wallet
-};
+});
 
 class CServer extends BaseServer {
 	constructor(opts, config, cb) {

@@ -12,7 +12,7 @@ class Copayer {
   constructor(context) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
   }
 };
 
@@ -89,7 +89,7 @@ Copayer.prototype.createAddress = function(wallet, isChange) {
   $.checkState(wallet.isComplete());
 
   var path = this.addressManager.getNewAddressPath(isChange);
-  var address = new this.ctx.Address().derive(wallet.id, wallet.addressType, wallet.publicKeyRing, path, wallet.m, wallet.networkName, isChange);
+  var address = new this.Address().derive(wallet.id, wallet.addressType, wallet.publicKeyRing, path, wallet.m, wallet.networkName, isChange);
   return address;
 };
 

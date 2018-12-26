@@ -13,11 +13,11 @@ class Explorer {
   constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet;
-    this.TESTNET = this.ctx.Networks.testnet;
+    this.LIVENET = this.Networks.livenet;
+    this.TESTNET = this.Networks.testnet;
 
     $.checkArgument(opts);
     $.checkArgument(lodash.includes([this.LIVENET.name, this.TESTNET.name], opts.networkName));

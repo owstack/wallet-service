@@ -2,12 +2,15 @@
 
 'use strict';
 
+var owsCommon = require('@owstack/ows-common');
+var Context = owsCommon.util.Context;
+
 var BaseBlockchainMonitor = require('../../base-service').BlockchainMonitor;
 var BlockchainMonitor = require('../lib/blockchainmonitor');
 
-var context = {
+var context = new Context({
 	BlockchainMonitor: BlockchainMonitor
-};
+});
 
 class CBlockchainMonitor extends BaseBlockchainMonitor {
 	constructor(config) {

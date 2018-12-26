@@ -11,17 +11,14 @@ class Address {
   constructor(context) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
   }
 };
 
 Address.create = function(context, opts) {
-  // Context defines the coin network and is set by the implementing service in
-  // order to instance this base service; e.g., btc-service.
-  var ctx = context;
-
-  var networkName = ctx.Address(opts.address).toObject().network;
   var x = new Address(context);
+
+  var networkName = x.Address(opts.address).toObject().network;
 
   x.version = '1.0.0';
   x.createdOn = Math.floor(Date.now() / 1000);
@@ -64,15 +61,15 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
   });
 
   var address;
-  var network = self.ctx.Networks.get(networkName);
+  var network = self.Networks.get(networkName);
 
   switch (scriptType) {
     case Constants.SCRIPT_TYPES.P2SH:
-      address = self.ctx.Address.createMultisig(publicKeys, m, network.alias);
+      address = self.Address.createMultisig(publicKeys, m, network.alias);
       break;
     case Constants.SCRIPT_TYPES.P2PKH:
       $.checkState(lodash.isArray(publicKeys) && publicKeys.length == 1);
-      address = self.ctx.Address.fromPublicKey(publicKeys[0], network.alias);
+      address = self.Address.fromPublicKey(publicKeys[0], network.alias);
       break;
   }
 
@@ -80,13 +77,14 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
     address: address.toString(),
     path: path,
     publicKeys: lodash.invokeMap(publicKeys, 'toString'),
+    networkName: networkName
   };
 };
 
 Address.prototype.derive = function(walletId, scriptType, publicKeyRing, path, m, networkName, isChange) {
   var self = this;
   var raw = self._deriveAddress(scriptType, publicKeyRing, path, m, networkName);
-  return Address.create(self.ctx, lodash.extend(raw, {
+  return Address.create(self.context(), lodash.extend(raw, {
     walletId: walletId,
     type: scriptType,
     isChange: isChange,

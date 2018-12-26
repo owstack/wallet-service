@@ -9,10 +9,10 @@ class Service {
 	constructor(context, config) {
 	  // Context defines the coin network and is set by the implementing service in
 	  // order to instance this base service; e.g., btc-service.
-	  this.ctx = context;
+    context.inject(this);
 
 	  this.config = config || baseConfig;
-		this.pushNotificationsService = new this.ctx.PushNotificationsService(this.config);
+		this.pushNotificationsService = new this.PushNotificationsService(this.config);
 	}
 };
 

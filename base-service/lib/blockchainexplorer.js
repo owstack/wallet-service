@@ -12,15 +12,15 @@ class BlockchainExplorer {
   constructor(context, opts, config) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet;
+    this.LIVENET = this.Networks.livenet;
 
     this.config = config || baseConfig;
 ;
     var networkName = opts.networkName || this.LIVENET.name;
-    var network = this.ctx.Networks.get(networkName);
+    var network = this.Networks.get(networkName);
 
     var providers = this.config[network.currency].blockchainExplorerOpts;
     var provider = opts.provider || providers.defaultProvider;
@@ -30,11 +30,11 @@ class BlockchainExplorer {
 
     var url = this.config[network.currency].url || providers[provider][network.alias].url;
     var apiPrefix = this.config[network.currency].apiPrefix || providers[provider][network.alias].apiPrefix;
-    var userAgent = this.ctx.Server.getServiceVersion();
+    var userAgent = this.Server.getServiceVersion();
 
     switch (provider) {
       case 'explorer':
-        return new this.ctx.Explorer({
+        return new this.Explorer({
           networkName: networkName,
           url: url,
           apiPrefix: apiPrefix,

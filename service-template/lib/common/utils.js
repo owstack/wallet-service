@@ -1,15 +1,17 @@
 'use strict';
 
 var cLib = require('../../cLib');
+var owsCommon = require('@owstack/ows-common');
+var Context = owsCommon.util.Context;
 
 var BaseWalletService = require('../../../base-service').WalletService;
 var BaseUtils = BaseWalletService.Common.Utils;
 
 var Unit = cLib.Unit;
 
-var context = {
+var context = new Context({
 	Unit: Unit
-};
+});
 
 class CUtils extends BaseUtils {
 	constructor() {

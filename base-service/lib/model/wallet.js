@@ -12,7 +12,7 @@ class Wallet {
   constructor(context) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    this.ctx = context;
+    context.inject(this);
   }
 };
 
@@ -20,9 +20,6 @@ Wallet.create = function(context, opts) {
   $.shouldBeNumber(opts.m);
   $.shouldBeNumber(opts.n);
   $.checkArgument(opts.networkName);
-
-  var ctx = context;
-  var network = ctx.Networks.get(opts.networkName);
 
   var x = new Wallet(context);
 
@@ -38,7 +35,7 @@ Wallet.create = function(context, opts) {
   x.addressIndex = 0;
   x.copayers = [];
   x.pubKey = opts.pubKey;
-  x.networkName = network.name;
+  x.networkName = opts.networkName;
   x.derivationStrategy = opts.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
   x.addressType = opts.addressType || Constants.SCRIPT_TYPES.P2SH;
   x.addressManager = AddressManager.create({
@@ -54,10 +51,7 @@ Wallet.fromObj = function(context, obj) {
   $.shouldBeNumber(obj.n);
   $.checkArgument(obj.networkName);
 
-  var ctx = context;
-  var network = ctx.Networks.get(obj.networkName);
-
-  var x = new Wallet(ctx);
+  var x = new Wallet(context);
 
   x.version = obj.version;
   x.createdOn = obj.createdOn;
@@ -69,10 +63,10 @@ Wallet.fromObj = function(context, obj) {
   x.status = obj.status;
   x.publicKeyRing = obj.publicKeyRing;
   x.copayers = lodash.map(obj.copayers, function(copayer) {
-    return ctx.Copayer.fromObj(copayer);
+    return x.Copayer.fromObj(copayer);
   });
   x.pubKey = obj.pubKey;
-  x.networkName = network.name;
+  x.networkName = obj.networkName;
   x.derivationStrategy = obj.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
   x.addressType = obj.addressType || Constants.SCRIPT_TYPES.P2SH;
   x.addressManager = AddressManager.fromObj(obj.addressManager);
@@ -154,7 +148,7 @@ Wallet.prototype.createAddress = function(isChange) {
 
   var self = this;
   var path = this.addressManager.getNewAddressPath(isChange);
-  var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.networkName, isChange);
+  var address = new self.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.networkName, isChange);
   return address;
 };
 

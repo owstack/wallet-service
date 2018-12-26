@@ -1,6 +1,8 @@
 'use strict';
 
 var cLib = require('../cLib');
+var owsCommon = require('@owstack/ows-common');
+var Context = owsCommon.util.Context;
 
 var BaseWalletService = require('../../base-service').WalletService;
 var BasePushNotificationsService = BaseWalletService.PushNotificationsService;
@@ -11,12 +13,12 @@ var Storage = require('./storage');
 var Unit = cLib.Unit;
 var Utils = Common.Utils;
 
-var context = {
+var context = new Context({
 	Networks: Networks,
 	Storage: Storage,
 	Unit: Unit,
 	Utils: Utils
-};
+});
 
 class CPushNotificationsService extends BasePushNotificationsService {
 	constructor(config) {
