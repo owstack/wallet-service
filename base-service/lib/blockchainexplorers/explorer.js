@@ -16,8 +16,8 @@ class Explorer {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
-    this.TESTNET = this.Networks.testnet;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     $.checkArgument(opts);
     $.checkArgument(lodash.includes([this.LIVENET.name, this.TESTNET.name], opts.networkName));

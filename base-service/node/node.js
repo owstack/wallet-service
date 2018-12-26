@@ -33,8 +33,8 @@ class Service extends EventEmitter {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
-    this.TESTNET = this.Networks.testnet;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     EventEmitter.call(this);
 
@@ -125,14 +125,14 @@ Service.prototype.start = function(done) {
   async.series([
     function(next) {
       // Blockchain Monitor
-      var blockchainMonitor = new self.BlockchainMonitor(self.config);
+      var blockchainMonitor = new self.ctx.BlockchainMonitor(self.config);
       blockchainMonitor.start(null, next);
     },
     function(next) {
       // Email Service
       if (self.config[self.LIVENET.currency].emailOpts ||
         self.config[self.TESTNET.currency].emailOpts) {
-        var emailService = new self.EmailService(self.config);
+        var emailService = new self.ctx.EmailService(self.config);
         emailService.start(null, next);
       } else {
         setImmediate(next);

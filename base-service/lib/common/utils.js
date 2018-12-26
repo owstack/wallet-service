@@ -14,18 +14,18 @@ class Utils {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.atomicsName = this.Unit().atomicsName();
+    this.atomicsName = this.ctx.Unit().atomicsName();
   }
 };
 
 Utils.prototype.formatAmount = function(atomic, code, opts) {
   $.shouldBeNumber(atomic);
-  return this.Unit(atomic, 'atomic').toString(code, opts);
+  return this.ctx.Unit(atomic, 'atomic').toString(code, opts);
 };
 
 Utils.prototype.formatAmountInStandard = function(atomic) {
   $.shouldBeNumber(atomic);
-  return this.Unit(atomic, 'atomic').toString('standard');
+  return this.ctx.Unit(atomic, 'atomic').toString('standard');
 };
 
 Utils.prototype.formatUtxos = function(utxos) {

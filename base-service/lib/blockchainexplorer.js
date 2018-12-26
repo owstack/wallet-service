@@ -15,12 +15,12 @@ class BlockchainExplorer {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
+    this.LIVENET = this.ctx.Networks.livenet;
 
     this.config = config || baseConfig;
 ;
     var networkName = opts.networkName || this.LIVENET.name;
-    var network = this.Networks.get(networkName);
+    var network = this.ctx.Networks.get(networkName);
 
     var providers = this.config[network.currency].blockchainExplorerOpts;
     var provider = opts.provider || providers.defaultProvider;
@@ -30,11 +30,11 @@ class BlockchainExplorer {
 
     var url = this.config[network.currency].url || providers[provider][network.alias].url;
     var apiPrefix = this.config[network.currency].apiPrefix || providers[provider][network.alias].apiPrefix;
-    var userAgent = this.Server.getServiceVersion();
+    var userAgent = this.ctx.Server.getServiceVersion();
 
     switch (provider) {
       case 'explorer':
-        return new this.Explorer({
+        return new this.ctx.Explorer({
           networkName: networkName,
           url: url,
           apiPrefix: apiPrefix,

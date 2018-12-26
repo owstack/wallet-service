@@ -46,11 +46,11 @@ class WalletService {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
-    this.TESTNET = this.Networks.testnet;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
-    this.atomicsName = this.Unit().atomicsName();
-    this.utils = new this.Utils();
+    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.utils = new this.ctx.Utils();
 
     this.initialize(opts, config, cb);
   }
@@ -65,7 +65,7 @@ WalletService.prototype.setLog = function() {
 };
 
 WalletService.prototype.checkRequired = function(obj, args, cb) {
-  var missing = this.Utils.getMissingFields(obj, args);
+  var missing = this.ctx.Utils.getMissingFields(obj, args);
   if (lodash.isEmpty(missing)) {
     return true;
   }
@@ -91,12 +91,12 @@ WalletService.getServiceVersion = function() {
 WalletService.prototype.getServiceInfo = function() {
   return {
     version: WalletService.getServiceVersion(),
-    currency: this.Networks.livenet.currency, // Currency same for livenet and testnet
+    currency: this.ctx.Networks.livenet.currency, // Currency same for livenet and testnet
     livenet: {
-      description: this.Networks.livenet.description
+      description: this.ctx.Networks.livenet.description
     },
     testnet: {
-      description: this.Networks.testnet.description
+      description: this.ctx.Networks.testnet.description
     }
   };
 };
@@ -134,7 +134,7 @@ WalletService.prototype.initialize = function(opts, config, cb) {
         self.storage = opts.storage;
         return cb();
       } else {
-        var newStorage = new self.Storage();
+        var newStorage = new self.ctx.Storage();
         newStorage.connect(self.config.storageOpts, function(err) {
           if (err) {
             return cb(err);
@@ -365,7 +365,7 @@ WalletService.prototype.login = function(opts, cb) {
     },
     function(next) {
       if (!session || !session.isValid()) {
-        session = new self.Session({
+        session = new self.ctx.Session({
           copayerId: self.copayerId,
           walletId: self.walletId,
         });
@@ -432,7 +432,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
   if (lodash.isEmpty(opts.name)) {
     return cb(new ClientError('Invalid wallet name'));
   }
-  if (!self.Wallet.verifyCopayerLimits(opts.m, opts.n)) {
+  if (!self.ctx.Wallet.verifyCopayerLimits(opts.m, opts.n)) {
     return cb(new ClientError('Invalid combination of required copayers / total copayers'));
   }
 
@@ -467,7 +467,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
       });
     },
     function(acb) {
-      var wallet = self.Wallet.create({
+      var wallet = self.ctx.Wallet.create({
         id: opts.id,
         name: opts.name,
         m: opts.m,
@@ -676,7 +676,7 @@ WalletService.prototype.getStatus = function(opts, cb) {
  * @param pubKeys
  */
 WalletService.prototype._verifySignature = function(text, signature, pubkey) {
-  return this.Utils.verifyMessage(text, signature, pubkey);
+  return this.ctx.Utils.verifyMessage(text, signature, pubkey);
 };
 
 /**
@@ -687,7 +687,7 @@ WalletService.prototype._verifySignature = function(text, signature, pubkey) {
  */
 WalletService.prototype._verifyRequestPubKey = function(requestPubKey, signature, xPubKey) {
   var pub = (new HDPublicKey(xPubKey)).deriveChild(Constants.PATHS.REQUEST_KEY_AUTH).publicKey;
-  return this.Utils.verifyMessage(requestPubKey, signature, pub.toString());
+  return this.ctx.Utils.verifyMessage(requestPubKey, signature, pub.toString());
 };
 
 /**
@@ -771,7 +771,7 @@ WalletService.prototype._notifyTxProposalAction = function(type, txp, extraArgs,
 WalletService.prototype._addCopayerToWallet = function(wallet, opts, cb) {
   var self = this;
 
-  var copayer = self.Copayer.create({
+  var copayer = self.ctx.Copayer.create({
     name: opts.name,
     copayerIndex: wallet.copayers.length,
     xPubKey: opts.xPubKey,
@@ -888,7 +888,7 @@ WalletService.prototype.addAccess = function(opts, cb) {
         return cb(Errors.NOT_AUTHORIZED);
       }
 
-      if (copayer.requestPubKeys.length > self.Defaults.MAX_KEYS) {
+      if (copayer.requestPubKeys.length > self.ctx.Defaults.MAX_KEYS) {
         return cb(Errors.TOO_MANY_KEYS);
       }
 
@@ -908,7 +908,7 @@ WalletService.prototype._setClientVersion = function(version) {
 
 WalletService.prototype._parseClientVersion = function() {
   if (lodash.isUndefined(this.parsedClientVersion)) {
-    this.parsedClientVersion = this.Utils.parseVersion(this.clientVersion);
+    this.parsedClientVersion = this.ctx.Utils.parseVersion(this.clientVersion);
   }
   return this.parsedClientVersion;
 };
@@ -1028,7 +1028,7 @@ WalletService.prototype.savePreferences = function(opts, cb) {
   }, {
     name: 'unit',
     isValid: function(value) {
-      return lodash.isString(value) && lodash.includes(self.Unit().getCodes(), value);
+      return lodash.isString(value) && lodash.includes(self.ctx.Unit().getCodes(), value);
     },
   }];
 
@@ -1097,8 +1097,8 @@ WalletService.prototype._canCreateAddress = function(ignoreMaxGap, cb) {
     }
     var latestAddresses = lodash.takeRight(lodash.reject(addresses, {
       isChange: true
-    }), self.Defaults.MAX_MAIN_ADDRESS_GAP);
-    if (latestAddresses.length < self.Defaults.MAX_MAIN_ADDRESS_GAP || lodash.some(latestAddresses, {
+    }), self.ctx.Defaults.MAX_MAIN_ADDRESS_GAP);
+    if (latestAddresses.length < self.ctx.Defaults.MAX_MAIN_ADDRESS_GAP || lodash.some(latestAddresses, {
       hasActivity: true
     })) return cb(null, true);
 
@@ -1260,7 +1260,7 @@ WalletService.prototype._getBlockchainExplorer = function(networkName) {
   }
 
   // Use network alias to lookup configuration.
-  var network = self.Networks.get(networkName);
+  var network = self.ctx.Networks.get(networkName);
 
   var config = {};
   var provider;
@@ -1280,7 +1280,7 @@ WalletService.prototype._getBlockchainExplorer = function(networkName) {
 
   var bc;
   try {
-    bc = new self.BlockchainExplorer(opts, self.config);
+    bc = new self.ctx.BlockchainExplorer(opts, self.config);
   } catch (ex) {
     log.warn('Could not instantiate blockchain explorer', ex);
   }
@@ -1293,7 +1293,7 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
   if (addresses.length == 0) {
     return cb(null, []);
   }
-  var networkName = self.Address(addresses[0]).toObject().networkName;
+  var networkName = self.ctx.Address(addresses[0]).toObject().networkName;
 
   var bc = self._getBlockchainExplorer(networkName);
   if (!bc) {
@@ -1309,7 +1309,7 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
       var u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', self.atomicsName, 'confirmations']);
       u.confirmations = u.confirmations || 0;
       u.locked = false;
-      u[self.atomicsName] = lodash.isNumber(u[self.atomicsName]) ? +u[self.atomicsName] : self.Utils.strip(u.amount * 1e8);
+      u[self.atomicsName] = lodash.isNumber(u[self.atomicsName]) ? +u[self.atomicsName] : self.ctx.Utils.strip(u.amount * 1e8);
       delete u.amount;
       return u;
     });
@@ -1559,7 +1559,7 @@ WalletService.prototype.getBalance = function(opts, cb) {
     if (err) {
       return cb(err);
     }
-    if (nbAddresses < self.Defaults.TWO_STEP_BALANCE_THRESHOLD) {
+    if (nbAddresses < self.ctx.Defaults.TWO_STEP_BALANCE_THRESHOLD) {
       return self._getBalanceOneStep(opts, cb);
     }
     self._getActiveAddresses(function(err, activeAddresses) {
@@ -1620,14 +1620,14 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
   }
 
   if (opts.feeLevel) {
-    if (!lodash.some(self.Defaults.FEE_LEVELS, {
+    if (!lodash.some(self.ctx.Defaults.FEE_LEVELS, {
       name: opts.feeLevel
     }))
-      return cb(new ClientError('Invalid fee level. Valid values are ' + lodash.map(self.Defaults.FEE_LEVELS, 'name').join(', ')));
+      return cb(new ClientError('Invalid fee level. Valid values are ' + lodash.map(self.ctx.Defaults.FEE_LEVELS, 'name').join(', ')));
   }
 
   if (lodash.isNumber(opts.feePerKb)) {
-    if (opts.feePerKb < self.Defaults.MIN_FEE_PER_KB || opts.feePerKb > self.Defaults.MAX_FEE_PER_KB) {
+    if (opts.feePerKb < self.ctx.Defaults.MIN_FEE_PER_KB || opts.feePerKb > self.ctx.Defaults.MAX_FEE_PER_KB) {
       return cb(new ClientError('Invalid fee per KB'));
     }
   }
@@ -1672,7 +1672,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
 
         info.feePerKb = feePerKb;
 
-        var txp = new self.TxProposal({
+        var txp = new self.ctx.TxProposal({
           walletId: self.walletId,
           networkName: wallet.networkName,
           walletM: wallet.m,
@@ -1695,7 +1695,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
 
         lodash.each(inputs, function(input, i) {
           var sizeInKb = (baseTxpSize + (i + 1) * sizePerInput) / 1000.;
-          if (sizeInKb > self.Defaults.MAX_TX_SIZE_IN_KB) {
+          if (sizeInKb > self.ctx.Defaults.MAX_TX_SIZE_IN_KB) {
             info.utxosAboveMaxSize = inputs.length - i;
             info.amountAboveMaxSize = lodash.sumBy(lodash.slice(inputs, i), self.atomicsName);
             return false;
@@ -1710,7 +1710,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         var fee = txp.getEstimatedFee();
         var amount = lodash.sumBy(txp.inputs, self.atomicsName) - fee;
 
-        if (amount < self.Defaults.MIN_OUTPUT_AMOUNT) {
+        if (amount < self.ctx.Defaults.MIN_OUTPUT_AMOUNT) {
           return cb(null, info);
         }
 
@@ -1748,7 +1748,7 @@ WalletService.prototype._sampleFeeLevels = function(networkName, points, cb) {
         failed.push(p);
       }
 
-      return [p, self.Utils.strip(feePerKb * 1e8)];
+      return [p, self.ctx.Utils.strip(feePerKb * 1e8)];
     }));
 
     if (failed.length) {
@@ -1772,9 +1772,9 @@ WalletService.prototype.getFeeLevels = function(opts, cb) {
   opts = opts || {};
 
   function samplePoints() {
-    var definedPoints = lodash.uniq(lodash.map(self.Defaults.FEE_LEVELS, 'nbBlocks'));
+    var definedPoints = lodash.uniq(lodash.map(self.ctx.Defaults.FEE_LEVELS, 'nbBlocks'));
     return lodash.uniq(lodash.flatten(lodash.map(definedPoints, function(p) {
-      return lodash.range(p, p + self.Defaults.FEE_LEVELS_FALLBACK + 1);
+      return lodash.range(p, p + self.ctx.Defaults.FEE_LEVELS_FALLBACK + 1);
     })));
   };
 
@@ -1805,7 +1805,7 @@ WalletService.prototype.getFeeLevels = function(opts, cb) {
   }
 
   self._sampleFeeLevels(networkName, samplePoints(), function(err, feeSamples) {
-    var values = lodash.map(self.Defaults.FEE_LEVELS, function(level) {
+    var values = lodash.map(self.ctx.Defaults.FEE_LEVELS, function(level) {
       var result = {
         level: level.name,
       };
@@ -1813,7 +1813,7 @@ WalletService.prototype.getFeeLevels = function(opts, cb) {
         result.feePerKb = level.defaultValue;
         result.nbBlocks = null;
       } else {
-        var feeLevel = getFeeLevel(feeSamples, level, level.nbBlocks, self.Defaults.FEE_LEVELS_FALLBACK);
+        var feeLevel = getFeeLevel(feeSamples, level, level.nbBlocks, self.ctx.Defaults.FEE_LEVELS_FALLBACK);
         result.feePerKb = +(feeLevel.feePerKb * (level.multiplier || 1)).toFixed(0);
         result.nbBlocks = feeLevel.nbBlocks;
       }
@@ -1843,7 +1843,7 @@ WalletService.prototype._checkTx = function(txp) {
     disableLargeFees: true,
   };
 
-  if (txp.getEstimatedSize() / 1000 > self.Defaults.MAX_TX_SIZE_IN_KB) {
+  if (txp.getEstimatedSize() / 1000 > self.ctx.Defaults.MAX_TX_SIZE_IN_KB) {
     return Errors.TX_MAX_SIZE_EXCEEDED;
   }
 
@@ -1933,7 +1933,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       return cb(Errors.INSUFFICIENT_FUNDS_FOR_FEE);
     }
 
-    var bigInputThreshold = txpAmount * self.Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR + (baseTxpFee + feePerInput);
+    var bigInputThreshold = txpAmount * self.ctx.Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR + (baseTxpFee + feePerInput);
     log.debug('Big input threshold ' + self.utils.formatAmountInStandard(bigInputThreshold));
 
     var partitions = lodash.partition(utxos, function(utxo) {
@@ -1969,30 +1969,30 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       var txpSize = baseTxpSize + selected.length * sizePerInput;
       fee = Math.round(baseTxpFee + selected.length * feePerInput);
 
-      log.debug('Tx size: ' + self.Utils.formatSize(txpSize) + ', Tx fee: ' + self.utils.formatAmountInStandard(fee));
+      log.debug('Tx size: ' + self.ctx.Utils.formatSize(txpSize) + ', Tx fee: ' + self.utils.formatAmountInStandard(fee));
 
       var feeVsAmountRatio = fee / txpAmount;
       var amountVsUtxoRatio = netInputAmount / txpAmount;
 
-      log.debug('Fee/Tx amount: ' + self.Utils.formatRatio(feeVsAmountRatio) + ' (max: ' + self.Utils.formatRatio(self.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) + ')');
-      log.debug('Tx amount/Input amount:' + self.Utils.formatRatio(amountVsUtxoRatio) + ' (min: ' + self.Utils.formatRatio(self.Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR) + ')');
+      log.debug('Fee/Tx amount: ' + self.ctx.Utils.formatRatio(feeVsAmountRatio) + ' (max: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) + ')');
+      log.debug('Tx amount/Input amount:' + self.ctx.Utils.formatRatio(amountVsUtxoRatio) + ' (min: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR) + ')');
 
-      if (txpSize / 1000. > self.Defaults.MAX_TX_SIZE_IN_KB) {
-        log.debug('Breaking because tx size (' + self.Utils.formatSize(txpSize) + ') is too big (max: ' + self.Utils.formatSize(self.Defaults.MAX_TX_SIZE_IN_KB * 1000.) + ')');
+      if (txpSize / 1000. > self.ctx.Defaults.MAX_TX_SIZE_IN_KB) {
+        log.debug('Breaking because tx size (' + self.ctx.Utils.formatSize(txpSize) + ') is too big (max: ' + self.ctx.Utils.formatSize(self.ctx.Defaults.MAX_TX_SIZE_IN_KB * 1000.) + ')');
         error = Errors.TX_MAX_SIZE_EXCEEDED;
         return false;
       }
 
       if (!lodash.isEmpty(bigInputs)) {
-        if (amountVsUtxoRatio < self.Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR) {
+        if (amountVsUtxoRatio < self.ctx.Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR) {
           log.debug('Breaking because utxo is too small compared to tx amount');
           return false;
         }
 
-        if (feeVsAmountRatio > self.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) {
+        if (feeVsAmountRatio > self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR) {
           var feeVsSingleInputFeeRatio = fee / (baseTxpFee + feePerInput);
-          log.debug('Fee/Single-input fee: ' + self.Utils.formatRatio(feeVsSingleInputFeeRatio) + ' (max: ' + self.Utils.formatRatio(self.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) + ')' + ' loses wrt single-input tx: ' + self.utils.formatAmountInStandard((selected.length - 1) * feePerInput));
-          if (feeVsSingleInputFeeRatio > self.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) {
+          log.debug('Fee/Single-input fee: ' + self.ctx.Utils.formatRatio(feeVsSingleInputFeeRatio) + ' (max: ' + self.ctx.Utils.formatRatio(self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) + ')' + ' loses wrt single-input tx: ' + self.utils.formatAmountInStandard((selected.length - 1) * feePerInput));
+          if (feeVsSingleInputFeeRatio > self.ctx.Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR) {
             log.debug('Breaking because fee is too significant compared to tx amount and it is too expensive compared to using single input');
             return false;
           }
@@ -2004,7 +2004,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         var changeAmount = Math.round(total - txpAmount - fee);
         log.debug('Tx change: ', self.utils.formatAmountInStandard(changeAmount));
 
-        var dustThreshold = Math.max(self.Defaults.MIN_OUTPUT_AMOUNT, self.Transaction.DUST_AMOUNT);
+        var dustThreshold = Math.max(self.ctx.Defaults.MIN_OUTPUT_AMOUNT, self.ctx.Transaction.DUST_AMOUNT);
         if (changeAmount > 0 && changeAmount <= dustThreshold) {
           log.debug('Change below dust threshold (' + self.utils.formatAmountInStandard(dustThreshold) + '). Incrementing fee to remove change.');
           // Remove dust change by incrementing fee
@@ -2142,7 +2142,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
 WalletService.prototype._canCreateTx = function(cb) {
   var self = this;
-  self.storage.fetchLastTxs(self.walletId, self.copayerId, 5 + self.Defaults.BACKOFF_OFFSET, function(err, txs) {
+  self.storage.fetchLastTxs(self.walletId, self.copayerId, 5 + self.ctx.Defaults.BACKOFF_OFFSET, function(err, txs) {
     if (err) {
       return cb(err);
     }
@@ -2155,7 +2155,7 @@ WalletService.prototype._canCreateTx = function(cb) {
       status: 'rejected'
     });
 
-    var exceededRejections = lastRejections.length - self.Defaults.BACKOFF_OFFSET;
+    var exceededRejections = lastRejections.length - self.ctx.Defaults.BACKOFF_OFFSET;
     if (exceededRejections <= 0) {
       return cb(null, true);
     }
@@ -2164,7 +2164,7 @@ WalletService.prototype._canCreateTx = function(cb) {
     var lastTxTs = txs[0].createdOn;
     var now = Math.floor(Date.now() / 1000);
     var timeSinceLastRejection = now - lastTxTs;
-    var backoffTime = self.Defaults.BACKOFF_TIME;
+    var backoffTime = self.ctx.Defaults.BACKOFF_TIME;
 
     if (timeSinceLastRejection <= backoffTime) {
       log.debug('Not allowing to create TX: timeSinceLastRejection/backoffTime', timeSinceLastRejection, backoffTime);
@@ -2176,7 +2176,7 @@ WalletService.prototype._canCreateTx = function(cb) {
 
 WalletService.prototype._validateOutputs = function(opts, wallet, cb) {
   var self = this;
-  var dustThreshold = Math.max(self.Defaults.MIN_OUTPUT_AMOUNT, self.Transaction.DUST_AMOUNT);
+  var dustThreshold = Math.max(self.ctx.Defaults.MIN_OUTPUT_AMOUNT, self.ctx.Transaction.DUST_AMOUNT);
 
   if (lodash.isEmpty(opts.outputs)) {
     return new ClientError('No outputs were specified');
@@ -2192,12 +2192,12 @@ WalletService.prototype._validateOutputs = function(opts, wallet, cb) {
 
     var toAddress = {};
     try {
-      toAddress = new self.Address(output.toAddress);
+      toAddress = new self.ctx.Address(output.toAddress);
     } catch (ex) {
       return Errors.INVALID_ADDRESS;
     }
 
-    var network = self.Networks.get(wallet.networkName);
+    var network = self.ctx.Networks.get(wallet.networkName);
     if (toAddress.network != network) {
       return Errors.INCORRECT_ADDRESS_NETWORK;
     }
@@ -2231,13 +2231,13 @@ WalletService.prototype._validateAndSanitizeTxOpts = function(wallet, opts, cb) 
       }
 
       if (opts.feeLevel) {
-        if (!lodash.some(self.Defaults.FEE_LEVELS, {name: opts.feeLevel})) {
-          return next(new ClientError('Invalid fee level. Valid values are ' + lodash.map(self.Defaults.FEE_LEVELS, 'name').join(', ')));
+        if (!lodash.some(self.ctx.Defaults.FEE_LEVELS, {name: opts.feeLevel})) {
+          return next(new ClientError('Invalid fee level. Valid values are ' + lodash.map(self.ctx.Defaults.FEE_LEVELS, 'name').join(', ')));
         }
       }
 
       if (lodash.isNumber(opts.feePerKb)) {
-        if (opts.feePerKb < self.Defaults.MIN_FEE_PER_KB || opts.feePerKb > self.Defaults.MAX_FEE_PER_KB) {
+        if (opts.feePerKb < self.ctx.Defaults.MIN_FEE_PER_KB || opts.feePerKb > self.ctx.Defaults.MAX_FEE_PER_KB) {
           return next(new ClientError('Invalid fee per KB'));
         }
       }
@@ -2269,7 +2269,7 @@ WalletService.prototype._validateAndSanitizeTxOpts = function(wallet, opts, cb) 
       }
 
       self.getSendMaxInfo({
-        feePerKb: opts.feePerKb || self.Defaults.DEFAULT_FEE_PER_KB,
+        feePerKb: opts.feePerKb || self.ctx.Defaults.DEFAULT_FEE_PER_KB,
         excludeUnconfirmedUtxos: !!opts.excludeUnconfirmedUtxos,
         returnInputs: true,
       }, function(err, info) {
@@ -2453,7 +2453,7 @@ WalletService.prototype.createTx = function(opts, cb) {
               noShuffleOutputs: opts.noShuffleOutputs
             };
 
-            txp = new self.TxProposal(txOpts);
+            txp = new self.ctx.TxProposal(txOpts);
             next();
           },
           function(next) {
@@ -2487,7 +2487,7 @@ WalletService.prototype.createTx = function(opts, cb) {
 
 WalletService.prototype._verifyRequestPubKey = function(requestPubKey, signature, xPubKey) {
   var pub = (new HDPublicKey(xPubKey)).deriveChild(Constants.PATHS.REQUEST_KEY_AUTH).publicKey;
-  return this.Utils.verifyMessage(requestPubKey, signature, pub.toString());
+  return this.ctx.Utils.verifyMessage(requestPubKey, signature, pub.toString());
 };
 
 /**
@@ -2691,7 +2691,7 @@ WalletService.prototype.getRemainingDeleteLockTime = function(txp) {
   var self = this;
   var now = Math.floor(Date.now() / 1000);
 
-  var lockTimeRemaining = txp.createdOn + self.Defaults.DELETE_LOCKTIME - now;
+  var lockTimeRemaining = txp.createdOn + self.ctx.Defaults.DELETE_LOCKTIME - now;
   if (lockTimeRemaining < 0) {
     return 0;
   }
@@ -3221,7 +3221,7 @@ WalletService.prototype._getBlockchainHeight = function(networkName, cb) {
     });
   };
 
-  if (!cache.current || (now - cache.updatedOn) > self.Defaults.BLOCKHEIGHT_CACHE_TIME * 1000) {
+  if (!cache.current || (now - cache.updatedOn) > self.ctx.Defaults.BLOCKHEIGHT_CACHE_TIME * 1000) {
     return fetchFromBlockchain(cb);
   }
 
@@ -3242,8 +3242,8 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
   var self = this;
 
   opts = opts || {};
-  opts.limit = (lodash.isUndefined(opts.limit) ? self.Defaults.HISTORY_LIMIT : opts.limit);
-  if (opts.limit > self.Defaults.HISTORY_LIMIT) {
+  opts.limit = (lodash.isUndefined(opts.limit) ? self.ctx.Defaults.HISTORY_LIMIT : opts.limit);
+  if (opts.limit > self.ctx.Defaults.HISTORY_LIMIT) {
     return cb(Errors.HISTORY_LIMIT_EXCEEDED);
   }
 
@@ -3384,10 +3384,10 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
 
   function getNormalizedTxs(addresses, from, to, cb) {
     var txs, fromCache, totalItems;
-    var useCache = addresses.length >= self.Defaults.HISTORY_CACHE_ADDRESS_THRESOLD;
+    var useCache = addresses.length >= self.ctx.Defaults.HISTORY_CACHE_ADDRESS_THRESOLD;
 
-    var a = self.Address(addresses[0].address).toObject();
-    var network = self.Networks.get(a.network);  // ctx.Address network is a network alias
+    var a = self.ctx.Address(addresses[0].address).toObject();
+    var network = self.ctx.Networks.get(a.network);  // ctx.Address network is a network alias
 
     async.series([
 
@@ -3436,7 +3436,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
         }
 
         var txsToCache = lodash.filter(txs, function(i) {
-          return i.confirmations >= self.Defaults.CONFIRMATIONS_TO_START_CACHING;
+          return i.confirmations >= self.ctx.Defaults.CONFIRMATIONS_TO_START_CACHING;
         }).reverse();
 
         if (!txsToCache.length) {
@@ -3610,7 +3610,7 @@ WalletService.prototype.scan = function(opts, cb) {
   function scanBranch(derivator, cb) {
     var inactiveCounter = 0;
     var allAddresses = [];
-    var gap = self.Defaults.SCAN_ADDRESS_GAP;
+    var gap = self.ctx.Defaults.SCAN_ADDRESS_GAP;
 
     async.whilst(function() {
       return inactiveCounter < gap;

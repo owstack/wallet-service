@@ -22,8 +22,8 @@ class BlockchainMonitor {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
-    this.TESTNET = this.Networks.testnet;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     this.config = config || baseConfig;
     this.setLog();
@@ -62,7 +62,7 @@ BlockchainMonitor.prototype.start = function(opts, cb) {
             self.config[network.currency].blockchainExplorerOpts[provider] && 
             self.config[network.currency].blockchainExplorerOpts[provider][network.alias]) {
 
-            var explorer = new self.BlockchainExplorer({
+            var explorer = new self.ctx.BlockchainExplorer({
               provider: provider,
               network: network.alias
             }, self.config);
@@ -135,11 +135,11 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
     var walletId = txp.walletId;
 
     if (!processIt) {
-      log.info('Detected broadcast ' + data.txid + ' of an accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.Unit().atomicsName() + ']');
+      log.info('Detected broadcast ' + data.txid + ' of an accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.ctx.Unit().atomicsName() + ']');
       return setTimeout(self._handleThirdPartyBroadcasts.bind(self, data, true), 20 * 1000);
     }
 
-    log.info('Processing accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.Unit().atomicsName() + ']');
+    log.info('Processing accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.ctx.Unit().atomicsName() + ']');
 
     txp.setBroadcasted();
 
@@ -212,7 +212,7 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
           }
 
           wallet = w;
-          log.info('Incoming tx for wallet ' + wallet.id + ' [' + out.amount + ' ' + self.Unit().atomicsName() + ' -> ' + out.address + ']');
+          log.info('Incoming tx for wallet ' + wallet.id + ' [' + out.amount + ' ' + self.ctx.Unit().atomicsName() + ' -> ' + out.address + ']');
           next();
         });
 

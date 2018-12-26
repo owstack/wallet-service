@@ -18,7 +18,7 @@ class Address {
 Address.create = function(context, opts) {
   var x = new Address(context);
 
-  var networkName = x.Address(opts.address).toObject().network;
+  var networkName = x.ctx.Address(opts.address).toObject().network;
 
   x.version = '1.0.0';
   x.createdOn = Math.floor(Date.now() / 1000);
@@ -61,15 +61,15 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
   });
 
   var address;
-  var network = self.Networks.get(networkName);
+  var network = self.ctx.Networks.get(networkName);
 
   switch (scriptType) {
     case Constants.SCRIPT_TYPES.P2SH:
-      address = self.Address.createMultisig(publicKeys, m, network.alias);
+      address = self.ctx.Address.createMultisig(publicKeys, m, network.alias);
       break;
     case Constants.SCRIPT_TYPES.P2PKH:
       $.checkState(lodash.isArray(publicKeys) && publicKeys.length == 1);
-      address = self.Address.fromPublicKey(publicKeys[0], network.alias);
+      address = self.ctx.Address.fromPublicKey(publicKeys[0], network.alias);
       break;
   }
 

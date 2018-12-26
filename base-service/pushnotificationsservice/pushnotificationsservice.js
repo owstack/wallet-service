@@ -12,7 +12,7 @@ class Service {
     context.inject(this);
 
 	  this.config = config || baseConfig;
-		this.pushNotificationsService = new this.PushNotificationsService(this.config);
+		this.pushNotificationsService = new this.ctx.PushNotificationsService(this.config);
 	}
 };
 

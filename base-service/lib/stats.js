@@ -25,7 +25,7 @@ class Stats {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
+    this.LIVENET = this.ctx.Networks.livenet;
 
     opts = opts || {};
 

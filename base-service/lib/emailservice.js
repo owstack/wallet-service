@@ -62,8 +62,8 @@ class EmailService {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.LIVENET = this.Networks.livenet;
-    this.TESTNET = this.Networks.testnet;
+    this.LIVENET = this.ctx.Networks.livenet;
+    this.TESTNET = this.ctx.Networks.testnet;
 
     this.config = config || baseConfig;
     this.setLog();
@@ -117,7 +117,7 @@ EmailService.prototype.start = function(opts, cb) {
         self.storage = opts.storage;
         done();
       } else {
-        self.storage = new self.Storage();
+        self.storage = new self.ctx.Storage();
         self.storage.connect(self.config.storageOpts, done);
       }
     },
@@ -225,7 +225,7 @@ EmailService.prototype._getRecipientsList = function(notification, emailType, cb
         copayerId: p.copayerId,
         emailAddress: p.email,
         language: p.language,
-        unit: p.unit || self.Unit().standardsName()
+        unit: p.unit || self.ctx.Unit().standardsName()
       };
     }));
 
@@ -241,7 +241,7 @@ EmailService.prototype._getDataForTemplate = function(notification, recipient, c
   if (data.amount) {
     try {
       var unit = recipient.unit;
-      data.amount = new self.Utils().formatAmount(+data.amount, unit);
+      data.amount = new self.ctx.Utils().formatAmount(+data.amount, unit);
     } catch (ex) {
       return cb(new Error('Could not format amount', ex));
     }
@@ -277,7 +277,7 @@ EmailService.prototype._getDataForTemplate = function(notification, recipient, c
         return cb(err);
       }
 
-      var network = self.Networks.get(wallet.networkName);
+      var network = self.ctx.Networks.get(wallet.networkName);
 
       var urlTemplate = self.publicTxUrlTemplate[network.alias];
       if (urlTemplate) {

@@ -12,7 +12,7 @@ class Service {
     context.inject(this);
 
 	  this.config = config || baseConfig;
-		this.emailService = new this.EmailService(this.config);
+		this.emailService = new this.ctx.EmailService(this.config);
 	}
 };
 

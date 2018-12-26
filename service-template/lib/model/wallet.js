@@ -9,12 +9,10 @@ var BaseWallet = BaseWalletService.Model.Wallet;
 
 var Address = require('./address');
 var Copayer = require('./copayer');
-var Networks = cLib.Networks;
 
 var context = new Context({
 	Address: Address,
-	Copayer: Copayer,
-	Networks: Networks
+	Copayer: Copayer
 });
 
 class CWallet extends BaseWallet {

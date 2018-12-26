@@ -14,7 +14,7 @@ class Service {
     context.inject(this);
 
 	  this.config = config || baseConfig;
-		this.blockchainmonitor = new this.BlockchainMonitor(this.config);
+		this.blockchainmonitor = new this.ctx.BlockchainMonitor(this.config);
 	}
 };
 

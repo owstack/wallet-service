@@ -1,6 +1,8 @@
 'use strict';
 
+var owsCommon = require('@owstack/ows-common');
 var Uuid = require('uuid');
+var lodash = owsCommon.deps.lodash;
 
 class Session {
   constructor(context, opts) {
@@ -39,12 +41,14 @@ Session.fromObj = function(context, obj) {
 };
 
 Session.prototype.toObject = function() {
-  return this;
+  var x = lodash.cloneDeep(this);
+  delete x.ctx; // Remove the injected context.
+  return x;
 };
 
 Session.prototype.isValid = function() {
   var now = Math.floor(Date.now() / 1000);
-  return (now - this.updatedOn) <= this.Defaults.SESSION_EXPIRATION;
+  return (now - this.updatedOn) <= this.ctx.Defaults.SESSION_EXPIRATION;
 };
 
 Session.prototype.touch = function() {

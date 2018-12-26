@@ -63,7 +63,7 @@ Wallet.fromObj = function(context, obj) {
   x.status = obj.status;
   x.publicKeyRing = obj.publicKeyRing;
   x.copayers = lodash.map(obj.copayers, function(copayer) {
-    return x.Copayer.fromObj(copayer);
+    return x.ctx.Copayer.fromObj(copayer);
   });
   x.pubKey = obj.pubKey;
   x.networkName = obj.networkName;
@@ -78,6 +78,7 @@ Wallet.fromObj = function(context, obj) {
 Wallet.prototype.toObject = function() {
   var x = lodash.cloneDeep(this);
   x.isShared = this.isShared();
+  delete x.ctx; // Remove the injected context.
   return x;
 };
 
@@ -148,7 +149,7 @@ Wallet.prototype.createAddress = function(isChange) {
 
   var self = this;
   var path = this.addressManager.getNewAddressPath(isChange);
-  var address = new self.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.networkName, isChange);
+  var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.networkName, isChange);
   return address;
 };
 
