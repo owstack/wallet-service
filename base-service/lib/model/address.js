@@ -7,6 +7,19 @@ var HDPublicKey = keyLib.HDPublicKey;
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
+var FIELDS = [
+  'version',
+  'createdOn',
+  'address',
+  'walletId',
+  'isChange',
+  'path',
+  'publicKeys',
+  'networkName',
+  'type',
+  'hasActivity'
+];
+
 class Address {
   constructor(context) {
     // Context defines the coin network and is set by the implementing service in
@@ -16,19 +29,18 @@ class Address {
 };
 
 Address.create = function(context, opts) {
+  // Context defines the coin network and is set by the implementing service in
+  // order to instance this base service; e.g., btc-service.
   var x = new Address(context);
 
-  var networkName = x.ctx.Address(opts.address).toObject().network;
+  lodash.each(FIELDS, function(k) {
+    x[k] = opts[k];
+  });
 
   x.version = '1.0.0';
   x.createdOn = Math.floor(Date.now() / 1000);
-  x.address = opts.address;
-  x.walletId = opts.walletId;
-  x.isChange = opts.isChange;
-  x.path = opts.path;
-  x.publicKeys = opts.publicKeys;
-  x.networkName = networkName;
-  x.type = opts.type || Constants.SCRIPT_TYPES.P2SH;
+  x.networkName = x.ctx.Address(opts.address).toObject().network;
+  x.type = x.type || Constants.SCRIPT_TYPES.P2SH;
   x.hasActivity = undefined;
   return x;
 };
@@ -38,16 +50,21 @@ Address.fromObj = function(context, obj) {
   // order to instance this base service; e.g., btc-service.
   var x = new Address(context);
 
-  x.version = obj.version;
-  x.createdOn = obj.createdOn;
-  x.address = obj.address;
-  x.walletId = obj.walletId;
-  x.networkName = obj.networkName;
-  x.isChange = obj.isChange;
-  x.path = obj.path;
-  x.publicKeys = obj.publicKeys;
-  x.type = obj.type || Constants.SCRIPT_TYPES.P2SH;
-  x.hasActivity = obj.hasActivity;
+  lodash.each(FIELDS, function(k) {
+    x[k] = obj[k];
+  });
+
+  x.type = x.type || Constants.SCRIPT_TYPES.P2SH;
+  return x;
+};
+
+Address.prototype.toObject = function() {
+  var self = this;
+
+  var x = {};
+  lodash.each(FIELDS, function(k) {
+    x[k] = self[k];
+  });
   return x;
 };
 
@@ -84,11 +101,12 @@ Address.prototype._deriveAddress = function(scriptType, publicKeyRing, path, m, 
 Address.prototype.derive = function(walletId, scriptType, publicKeyRing, path, m, networkName, isChange) {
   var self = this;
   var raw = self._deriveAddress(scriptType, publicKeyRing, path, m, networkName);
-  return Address.create(self.context(), lodash.extend(raw, {
+  var address = Address.create(self.getContext(), lodash.extend(raw, {
     walletId: walletId,
     type: scriptType,
     isChange: isChange,
   }));
+  return address.toObject();
 };
 
 module.exports = Address;

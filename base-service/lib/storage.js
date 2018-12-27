@@ -553,7 +553,12 @@ Storage.prototype.storeAddressAndWallet = function(wallet, addresses, cb) {
     if (lodash.isEmpty(addresses)) {
       return cb();
     }
-    self.db.collection(collections.ADDRESSES).insert(addresses, {
+
+    var addrs = lodash.map(addresses, function(address) {
+      return (address.toObject ? address.toObject() : address);
+    });
+
+    self.db.collection(collections.ADDRESSES).insert(addrs, {
       w: 1
     }, cb);
   };

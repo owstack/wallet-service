@@ -8,6 +8,25 @@ var Uuid = require('uuid');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
+var FIELDS = [
+  'version',
+  'createdOn',
+  'id',
+  'name',
+  'm',
+  'n',
+  'singleAddress',
+  'status',
+  'publicKeyRing',
+  'copayers',
+  'pubKey',
+  'networkName',
+  'derivationStrategy',
+  'addressType',
+  'addressManager',
+  'scanStatus'
+];
+
 class Wallet {
   constructor(context) {
     // Context defines the coin network and is set by the implementing service in
@@ -53,32 +72,31 @@ Wallet.fromObj = function(context, obj) {
 
   var x = new Wallet(context);
 
-  x.version = obj.version;
-  x.createdOn = obj.createdOn;
-  x.id = obj.id;
-  x.name = obj.name;
-  x.m = obj.m;
-  x.n = obj.n;
+  lodash.each(FIELDS, function(k) {
+    x[k] = obj[k];
+  });
+
   x.singleAddress = !!obj.singleAddress;
-  x.status = obj.status;
-  x.publicKeyRing = obj.publicKeyRing;
   x.copayers = lodash.map(obj.copayers, function(copayer) {
     return x.ctx.Copayer.fromObj(copayer);
   });
-  x.pubKey = obj.pubKey;
-  x.networkName = obj.networkName;
-  x.derivationStrategy = obj.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
-  x.addressType = obj.addressType || Constants.SCRIPT_TYPES.P2SH;
+  x.derivationStrategy = x.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
+  x.addressType = x.addressType || Constants.SCRIPT_TYPES.P2SH;
   x.addressManager = AddressManager.fromObj(obj.addressManager);
-  x.scanStatus = obj.scanStatus;
 
   return x;
 };
 
 Wallet.prototype.toObject = function() {
-  var x = lodash.cloneDeep(this);
+  var self = this;
+
+  var x = {};
+  lodash.each(FIELDS, function(k) {
+    x[k] = self[k];
+  });
+
   x.isShared = this.isShared();
-  delete x.ctx; // Remove the injected context.
+
   return x;
 };
 

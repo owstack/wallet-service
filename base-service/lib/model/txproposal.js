@@ -14,6 +14,40 @@ var $ = require('preconditions').singleton();
 log.debug = log.verbose;
 log.disableColor();
 
+var FIELDS = [
+  'version',
+  'createdOn',
+  'id',
+  'walletId',
+  'creatorId',
+  'networkName',
+  'outputs',
+  'amount',
+  'message',
+  'payProUrl',
+  'changeAddress',
+  'inputs',
+  'walletM',
+  'walletN',
+  'requiredSignatures',
+  'requiredRejections',
+  'status',
+  'txid',
+  'broadcastedOn',
+  'inputPaths',
+  'actions',
+  'outputOrder',
+  'fee',
+  'feeLevel',
+  'feePerKb',
+  'excludeUnconfirmedUtxos',
+  'addressType',
+  'customData',
+  'proposalSignature',
+  'proposalSignaturePubKey',
+  'proposalSignaturePubKeySig'
+];
+
 class TxProposal {
   constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
@@ -82,48 +116,26 @@ TxProposal.fromObj = function(context, obj) {
   // order to instance this base service; e.g., btc-service.
   var x = new TxProposal(context, {fromObj: true});
 
-  x.version = obj.version;
-  x.createdOn = obj.createdOn;
-  x.id = obj.id;
-  x.walletId = obj.walletId;
-  x.creatorId = obj.creatorId;
-  x.networkName = obj.networkName;
-  x.outputs = obj.outputs;
-  x.amount = obj.amount;
-  x.message = obj.message;
-  x.payProUrl = obj.payProUrl;
-  x.changeAddress = obj.changeAddress;
-  x.inputs = obj.inputs;
-  x.walletM = obj.walletM;
-  x.walletN = obj.walletN;
-  x.requiredSignatures = obj.requiredSignatures;
-  x.requiredRejections = obj.requiredRejections;
-  x.status = obj.status;
-  x.txid = obj.txid;
-  x.broadcastedOn = obj.broadcastedOn;
-  x.inputPaths = obj.inputPaths;
+  lodash.each(FIELDS, function(k) {
+    x[k] = obj[k];
+  });
+
   x.actions = lodash.map(obj.actions, function(action) {
     return TxProposalAction.fromObj(action);
   });
-  x.outputOrder = obj.outputOrder;
-  x.fee = obj.fee;
-  x.feeLevel = obj.feeLevel;
-  x.feePerKb = obj.feePerKb;
-  x.excludeUnconfirmedUtxos = obj.excludeUnconfirmedUtxos;
-  x.addressType = obj.addressType;
-  x.customData = obj.customData;
-
-  x.proposalSignature = obj.proposalSignature;
-  x.proposalSignaturePubKey = obj.proposalSignaturePubKey;
-  x.proposalSignaturePubKeySig = obj.proposalSignaturePubKeySig;
 
   return x;
 };
 
 TxProposal.prototype.toObject = function() {
-  var x = lodash.cloneDeep(this);
+  var self = this;
+
+  var x = {};
+  lodash.each(FIELDS, function(k) {
+    x[k] = self[k];
+  });
+
   x.isPending = this.isPending();
-  delete x.ctx; // Remove the injected context.
   return x;
 };
 

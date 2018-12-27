@@ -4,6 +4,15 @@ var owsCommon = require('@owstack/ows-common');
 var Uuid = require('uuid');
 var lodash = owsCommon.deps.lodash;
 
+var FIELDS = [
+  'version',
+  'createdOn',
+  'updatedOn',
+  'id',
+  'copayerId',
+  'walletId'
+];
+
 class Session {
   constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
@@ -30,19 +39,20 @@ class Session {
 Session.fromObj = function(context, obj) {
   var x = new Session(context, {fromObj: true});
 
-  x.id = obj.id;
-  x.version = obj.version;
-  x.createdOn = obj.createdOn;
-  x.updatedOn = obj.updatedOn;
-  x.copayerId = obj.copayerId;
-  x.walletId = obj.walletId;
+  lodash.each(FIELDS, function(k) {
+    x[k] = obj[k];
+  });
 
   return x;
 };
 
 Session.prototype.toObject = function() {
-  var x = lodash.cloneDeep(this);
-  delete x.ctx; // Remove the injected context.
+  var self = this;
+
+  var x = {};
+  lodash.each(FIELDS, function(k) {
+    x[k] = self[k];
+  });
   return x;
 };
 
