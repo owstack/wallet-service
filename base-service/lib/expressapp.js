@@ -358,21 +358,6 @@ ExpressApp.prototype.start = function(opts, cb) {
     };
   }
 
-  router.post('/v1/wallets/', createWalletLimiter, function(req, res) {
-    try {
-      getServer(req, res, function(server) {
-        server.createWallet(req.body, function(err, walletId) {
-          if (err) return returnError(err, res, req);
-          res.json({
-            walletId: walletId,
-          });
-        });
-      });
-    } catch (ex) {
-      return returnError(ex, res, req);
-    }
-  });
-
   router.put('/v1/copayers/:id/', function(req, res) {
     req.body.copayerId = req.params['id'];
     try {
@@ -381,6 +366,21 @@ ExpressApp.prototype.start = function(opts, cb) {
           if (err) return returnError(err, res, req);
           result.wallet = result.wallet.toObject();
           res.json(result);
+        });
+      });
+    } catch (ex) {
+      return returnError(ex, res, req);
+    }
+  });
+
+  router.post('/v1/wallets/', createWalletLimiter, function(req, res) {
+    try {
+      getServer(req, res, function(server) {
+        server.createWallet(req.body, function(err, walletId) {
+          if (err) return returnError(err, res, req);
+          res.json({
+            walletId: walletId,
+          });
         });
       });
     } catch (ex) {
@@ -410,7 +410,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       if (req.query.twoStep == '1') opts.twoStep = true;
       server.getStatus(opts, function(err, status) {
         if (err) return returnError(err, res, req);
-        status.wallet = status.wallet && status.wallet.toObject();
+        status.wallet = (status.wallet && status.wallet.toObject ? status.wallet.toObject() : status.wallet);
         status.pendingTxps = status.pendingTxps && lodash.map(status.pendingTxps, function(txp) {
           return txp.toObject();
         });
@@ -434,7 +434,7 @@ ExpressApp.prototype.start = function(opts, cb) {
         if (req.query.twoStep == '1') opts.twoStep = true;
         server.getStatus(opts, function(err, status) {
           if (err) return returnError(err, res, req);
-          status.wallet = status.wallet && status.wallet.toObject();
+          status.wallet = (status.wallet && status.wallet.toObject ? status.wallet.toObject() : status.wallet);
           status.pendingTxps = status.pendingTxps && lodash.map(status.pendingTxps, function(txp) {
             return txp.toObject();
           });
@@ -479,7 +479,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     getServerWithAuth(req, res, function(server) {
       server.createTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
-        res.json(txp.toObject());
+        res.json(txp.toObject ? txp.toObject() : txp);
       });
     });
   });
@@ -488,7 +488,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     getServerWithAuth(req, res, function(server) {
       server.createAddress(req.body, function(err, address) {
         if (err) return returnError(err, res, req);
-        res.json(address.toObject ? address.toObject() : address);
+        res.json(!!address.toObject ? address.toObject() : address);
       });
     });
   });
@@ -502,7 +502,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       server.getMainAddresses(opts, function(err, addresses) {
         if (err) return returnError(err, res, req);
         res.json(lodash.map(addresses, function(addr) {
-          return addr.toObject();
+          return (!!addr.toObject ? addr.toObject() : addr);
         }));
       });
     });

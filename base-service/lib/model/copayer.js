@@ -15,10 +15,9 @@ var FIELDS = [
   'xPubKey',
   'id',
   'name',
-  'requestPubKey',
-  'signature',
   'requestPubKeys',
-  'customData'
+  'customData',
+  'addressManager'
 ];
 
 class Copayer {
@@ -44,8 +43,6 @@ Copayer.create = function(context, opts) {
   x.xPubKey = opts.xPubKey;
   x.id = Copayer._xPubToCopayerId(x.xPubKey);
   x.name = opts.name;
-  x.requestPubKey = opts.requestPubKey;
-  x.signature = opts.signature;
   x.requestPubKeys = [{
     key: opts.requestPubKey,
     signature: opts.signature,
@@ -80,7 +77,6 @@ Copayer.fromObj = function(context, obj) {
 
 Copayer.prototype.toObject = function() {
   var self = this;
-
   var x = {};
   lodash.each(FIELDS, function(k) {
     x[k] = self[k];

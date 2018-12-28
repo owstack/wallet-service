@@ -79,7 +79,6 @@ Wallet.fromObj = function(context, obj) {
   x.singleAddress = !!obj.singleAddress;
   x.copayers = lodash.map(obj.copayers, function(copayer) {
     return x.ctx.Copayer.fromObj(copayer);
-//    return x.ctx.Copayer.fromObj(copayer).toObject(); // Return as a data object
   });
   x.derivationStrategy = x.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
   x.addressType = x.addressType || Constants.SCRIPT_TYPES.P2SH;
@@ -94,6 +93,10 @@ Wallet.prototype.toObject = function() {
   var x = {};
   lodash.each(FIELDS, function(k) {
     x[k] = self[k];
+  });
+
+  x.copayers = lodash.map(x.copayers, function(copayer) {
+    return copayer.toObject();
   });
 
   x.isShared = this.isShared();
@@ -122,13 +125,12 @@ Wallet.prototype.isShared = function() {
 
 Wallet.prototype._updatePublicKeyRing = function() {
   this.publicKeyRing = lodash.map(this.copayers, function(copayer) {
-    return lodash.pick(copayer, ['xPubKey', 'requestPubKey']);
+    return lodash.pick(copayer, ['xPubKey', 'requestPubKeys']);
   });
 };
 
 Wallet.prototype.addCopayer = function(copayer) {
   this.copayers.push(copayer);
-//  this.copayers.push(copayer.toObject());
   if (this.copayers.length < this.n) return;
 
   this.status = 'complete';

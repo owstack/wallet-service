@@ -20,6 +20,7 @@ var FIELDS = [
   'id',
   'walletId',
   'creatorId',
+  'creatorName',
   'networkName',
   'outputs',
   'amount',
@@ -135,6 +136,7 @@ TxProposal.prototype.toObject = function() {
     x[k] = self[k];
   });
 
+  x.changeAddress = (x.changeAddress && x.changeAddress.toObject ? x.changeAddress.toObject() : x.changeAddress);
   x.isPending = this.isPending();
   return x;
 };

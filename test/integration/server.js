@@ -1112,9 +1112,7 @@ describe('Wallet service', function() {
         should.exist(status.wallet.pubKey);
         should.exist(status.wallet.addressManager);
         should.exist(status.wallet.copayers[0].xPubKey);
-        should.exist(status.wallet.copayers[0].requestPubKey);
-        should.exist(status.wallet.copayers[0].signature);
-        should.exist(status.wallet.copayers[0].requestPubKey);
+        should.exist(status.wallet.copayers[0].requestPubKeys);
         should.exist(status.wallet.copayers[0].customData);
         // Do not return other copayer's custom data
         lodash.each(lodash.tail(status.wallet.copayers), function(copayer) {

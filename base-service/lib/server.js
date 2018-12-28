@@ -614,9 +614,8 @@ WalletService.prototype.getStatus = function(opts, cb) {
         if (err) {
           return next(err);
         }
-
         var walletExtendedKeys = ['publicKeyRing', 'pubKey', 'addressManager'];
-        var copayerExtendedKeys = ['xPubKey', 'requestPubKey', 'signature', 'addressManager', 'customData'];
+        var copayerExtendedKeys = ['xPubKey', 'addressManager', 'customData'];
 
         wallet.copayers = lodash.map(wallet.copayers, function(copayer) {
           if (copayer.id == self.copayerId) {
@@ -645,7 +644,7 @@ WalletService.prototype.getStatus = function(opts, cb) {
     },
     function(next) {
       self.getPendingTxs({}, function(err, pendingTxps) {
-        if (err) {
+        if (err) {          
           return next(err);
         }
         status.pendingTxps = pendingTxps;
