@@ -379,6 +379,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       getServer(req, res, function(server) {
         server.addAccess(req.body, function(err, result) {
           if (err) return returnError(err, res, req);
+          result.wallet = result.wallet.toObject();
           res.json(result);
         });
       });
@@ -393,7 +394,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       getServer(req, res, function(server) {
         server.joinWallet(req.body, function(err, result) {
           if (err) return returnError(err, res, req);
-
+          result.wallet = result.wallet.toObject();
           res.json(result);
         });
       });
@@ -407,9 +408,12 @@ ExpressApp.prototype.start = function(opts, cb) {
       var opts = {};
       if (req.query.includeExtendedInfo == '1') opts.includeExtendedInfo = true;
       if (req.query.twoStep == '1') opts.twoStep = true;
-
       server.getStatus(opts, function(err, status) {
         if (err) return returnError(err, res, req);
+        status.wallet = status.wallet && status.wallet.toObject();
+        status.pendingTxps = status.pendingTxps && lodash.map(status.pendingTxps, function(txp) {
+          return txp.toObject();
+        });
         res.json(status);
       });
     });
@@ -430,6 +434,10 @@ ExpressApp.prototype.start = function(opts, cb) {
         if (req.query.twoStep == '1') opts.twoStep = true;
         server.getStatus(opts, function(err, status) {
           if (err) return returnError(err, res, req);
+          status.wallet = status.wallet && status.wallet.toObject();
+          status.pendingTxps = status.pendingTxps && lodash.map(status.pendingTxps, function(txp) {
+            return txp.toObject();
+          });
           res.json(status);
         });
       });
@@ -460,7 +468,9 @@ ExpressApp.prototype.start = function(opts, cb) {
     getServerWithAuth(req, res, function(server) {
       server.getPendingTxs({}, function(err, pendings) {
         if (err) return returnError(err, res, req);
-        res.json(pendings);
+        res.json(lodash.map(pendings, function(pending) {
+          return pending.toObject();
+        }));
       });
     });
   });
@@ -469,7 +479,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     getServerWithAuth(req, res, function(server) {
       server.createTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
-        res.json(txp);
+        res.json(txp.toObject());
       });
     });
   });
@@ -478,7 +488,7 @@ ExpressApp.prototype.start = function(opts, cb) {
     getServerWithAuth(req, res, function(server) {
       server.createAddress(req.body, function(err, address) {
         if (err) return returnError(err, res, req);
-        res.json(address);
+        res.json(address.toObject ? address.toObject() : address);
       });
     });
   });
@@ -491,7 +501,9 @@ ExpressApp.prototype.start = function(opts, cb) {
 
       server.getMainAddresses(opts, function(err, addresses) {
         if (err) return returnError(err, res, req);
-        res.json(addresses);
+        res.json(lodash.map(addresses, function(addr) {
+          return addr.toObject();
+        }));
       });
     });
   });
@@ -566,7 +578,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       req.body.txProposalId = req.params['id'];
       server.signTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
-        res.json(txp);
+        res.json(txp.toObject());
         res.end();
       });
     });
@@ -577,7 +589,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       req.body.txProposalId = req.params['id'];
       server.publishTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
-        res.json(txp);
+        res.json(txp.toObject());
         res.end();
       });
     });
@@ -589,7 +601,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       req.body.txProposalId = req.params['id'];
       server.broadcastTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
-        res.json(txp);
+        res.json(txp.toObject());
         res.end();
       });
     });
@@ -600,7 +612,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       req.body.txProposalId = req.params['id'];
       server.rejectTx(req.body, function(err, txp) {
         if (err) return returnError(err, res, req);
-        res.json(txp);
+        res.json(txp.toObject());
         res.end();
       });
     });
@@ -624,7 +636,7 @@ ExpressApp.prototype.start = function(opts, cb) {
       req.body.txProposalId = req.params['id'];
       server.getTx(req.body, function(err, tx) {
         if (err) return returnError(err, res, req);
-        res.json(tx);
+        res.json(tx.toObject());
         res.end();
       });
     });

@@ -6,7 +6,20 @@ var Constants = owsCommon.Constants;
 var sjcl = require('sjcl');
 var util = require('util');
 var Uuid = require('uuid');
+var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
+
+var FIELDS = [
+  'version',
+  'createdOn',
+  'xPubKey',
+  'id',
+  'name',
+  'requestPubKey',
+  'signature',
+  'requestPubKeys',
+  'customData'
+];
 
 class Copayer {
   constructor(context) {
@@ -54,29 +67,24 @@ Copayer.create = function(context, opts) {
 Copayer.fromObj = function(context, obj) {
   var x = new Copayer(context);
 
-  x.version = obj.version;
-  x.createdOn = obj.createdOn;
-  x.id = obj.id;
-  x.name = obj.name;
-  x.xPubKey = obj.xPubKey;
-  x.requestPubKey = obj.requestPubKey;
-  x.signature = obj.signature;
-
-  if (parseInt(x.version) == 1) {
-    x.requestPubKeys = [{
-      key: x.requestPubKey,
-      signature: x.signature,
-    }];
-    x.version = 2;
-  } else {
-    x.requestPubKeys = obj.requestPubKeys;
-  }
+  lodash.each(FIELDS, function(k) {
+    x[k] = obj[k];
+  });
 
   if (obj.addressManager) {
     x.addressManager = AddressManager.fromObj(obj.addressManager);
   }
-  x.customData = obj.customData;
 
+  return x;
+};
+
+Copayer.prototype.toObject = function() {
+  var self = this;
+
+  var x = {};
+  lodash.each(FIELDS, function(k) {
+    x[k] = self[k];
+  });
   return x;
 };
 

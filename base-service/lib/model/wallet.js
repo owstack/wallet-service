@@ -79,6 +79,7 @@ Wallet.fromObj = function(context, obj) {
   x.singleAddress = !!obj.singleAddress;
   x.copayers = lodash.map(obj.copayers, function(copayer) {
     return x.ctx.Copayer.fromObj(copayer);
+//    return x.ctx.Copayer.fromObj(copayer).toObject(); // Return as a data object
   });
   x.derivationStrategy = x.derivationStrategy || Constants.DERIVATION_STRATEGIES.BIP45;
   x.addressType = x.addressType || Constants.SCRIPT_TYPES.P2SH;
@@ -127,6 +128,7 @@ Wallet.prototype._updatePublicKeyRing = function() {
 
 Wallet.prototype.addCopayer = function(copayer) {
   this.copayers.push(copayer);
+//  this.copayers.push(copayer.toObject());
   if (this.copayers.length < this.n) return;
 
   this.status = 'complete';
