@@ -22,6 +22,8 @@ var Unit = cLib.Unit;
 var Utils = Common.Utils;
 var Wallet = Model.Wallet;
 
+var instance;
+
 var context = new Context({
 	Address: Address,
 	BlockchainExplorer: BlockchainExplorer,
@@ -47,7 +49,14 @@ class CServer extends BaseServer {
  *
  */
 CServer.getInstance = function(opts, config, cb) {
-  new CServer(opts, config, cb);
+	if (!instance) {
+	  new CServer(opts, config, function(server) {
+	  	instance = server;
+	  	cb(server);
+	  });
+	} else {
+		cb(instance);
+	}
 };
 
 /**
@@ -55,7 +64,7 @@ CServer.getInstance = function(opts, config, cb) {
  */
 CServer.getInstanceWithAuth = function(opts, config, auth, cb) {
   try {
-    new CServer.getInstance(opts, config, function(server) {
+    CServer.getInstance(opts, config, function(server) {
 		  server.initInstanceWithAuth(auth, cb);
     });
   } catch (ex) {

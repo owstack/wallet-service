@@ -18,7 +18,7 @@ class BlockchainExplorer {
     this.LIVENET = this.ctx.Networks.livenet;
 
     this.config = config || baseConfig;
-;
+
     var networkName = opts.networkName || this.LIVENET.name;
     var network = this.ctx.Networks.get(networkName);
 
@@ -30,7 +30,6 @@ class BlockchainExplorer {
 
     var url = this.config[network.currency].url || providers[provider][network.alias].url;
     var apiPrefix = this.config[network.currency].apiPrefix || providers[provider][network.alias].apiPrefix;
-    var userAgent = this.ctx.Server.getServiceVersion();
 
     switch (provider) {
       case 'explorer':
@@ -38,7 +37,7 @@ class BlockchainExplorer {
           networkName: networkName,
           url: url,
           apiPrefix: apiPrefix,
-          userAgent: userAgent
+          userAgent: opts.userAgent
         });
       default:
         throw new Error('Provider ' + provider + ' not supported');

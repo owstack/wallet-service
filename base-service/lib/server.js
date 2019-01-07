@@ -140,11 +140,13 @@ WalletService.prototype.initialize = function(opts, config, cb) {
             return cb(err);
           }
           self.storage = newStorage;
+          self.config.storage = self.storage;
           return cb();
         });
       }
+    } else {
+      return cb();
     }
-    return cb();
   };
 
   function initBlockchainExplorer(cb) {
@@ -1257,7 +1259,6 @@ WalletService.prototype._getBlockchainExplorer = function(networkName) {
   if (self.blockchainExplorer) {
     return self.blockchainExplorer;
   }
-
   // Use network alias to lookup configuration.
   var network = self.ctx.Networks.get(networkName);
 
@@ -1292,7 +1293,7 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
   if (addresses.length == 0) {
     return cb(null, []);
   }
-  var networkName = self.ctx.Address(addresses[0]).toObject().networkName;
+  var networkName = self.ctx.Address(addresses[0]).toObject().network;
 
   var bc = self._getBlockchainExplorer(networkName);
   if (!bc) {
@@ -1767,7 +1768,6 @@ WalletService.prototype._sampleFeeLevels = function(networkName, points, cb) {
  */
 WalletService.prototype.getFeeLevels = function(opts, cb) {
   var self = this;
-
   opts = opts || {};
 
   function samplePoints() {
@@ -3051,7 +3051,6 @@ WalletService.prototype.getPendingTxs = function(opts, cb) {
     if (err) {
       return cb(err);
     }
-
     lodash.each(txps, function(txp) {
       txp.deleteLockTime = self.getRemainingDeleteLockTime(txp);
     });
@@ -3133,13 +3132,14 @@ WalletService.prototype.getNotifications = function(opts, cb) {
 };
 
 WalletService.prototype._normalizeTxHistory = function(txs) {
+  var self = this;
   var now = Math.floor(Date.now() / 1000);
 
   return lodash.map([].concat(txs), function(tx) {
     var inputs = lodash.map(tx.vin, function(item) {
       return {
         address: item.addr,
-        amount: item.valueAtomic,
+        amount: self.ctx.Unit(item.value, 'standard').toAtomicUnit(),
       }
     });
 
@@ -3281,7 +3281,6 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
       var inputs, outputs;
 
       if (tx.outputs.length || tx.inputs.length) {
-
         inputs = classify(tx.inputs);
         outputs = classify(tx.outputs);
 
@@ -3389,7 +3388,6 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
     var network = self.ctx.Networks.get(a.network);  // ctx.Address network is a network alias
 
     async.series([
-
       function(next) {
         if (!useCache) {
           return next();
@@ -3528,9 +3526,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
       var from = opts.skip || 0;
       var to = from + opts.limit;
 
-
       async.waterfall([
-
         function(next) {
           getNormalizedTxs(addresses, from, to, next);
         },
@@ -3544,7 +3540,6 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
           }
 
           async.parallel([
-
             function(done) {
               self.storage.fetchTxs(self.walletId, {
                 minTs: minTs,
@@ -3568,7 +3563,6 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
         if (err) {
           return cb(err);
         }
-
         var finalTxs = decorate(wallet, res.txs.items, addresses, res.txps, res.notes);
 
         tagLowFees(wallet, finalTxs, function(err) {

@@ -43,12 +43,10 @@ log.debug = log.verbose;
  */
 class ExpressApp {
   constructor(config) {
-    $.checkArgument(config, 'No configuration provided for Express app');
-
     this.config = config || baseConfig;
 
     if (!this.config.basePath) {
-      throw 'Cannot start Express server, \'no basePath\' configuration found';
+      throw 'Cannot start Express server, no basePath configuration';
     }
 
     this.app = express();
@@ -232,9 +230,9 @@ ExpressApp.prototype.start = function(opts, cb) {
     }
 
     if (auth) {
-      BchWalletService.Server.getInstanceWithAuth(opts.serviceOpts, config, auth, cb);
+      BchWalletService.Server.getInstanceWithAuth(opts.serviceOpts, self.config, auth, cb);
     } else {
-      BchWalletService.Server.getInstance(opts.serviceOpts, config, cb);
+      BchWalletService.Server.getInstance(opts.serviceOpts, self.config, cb);
     }
   };
 
@@ -259,9 +257,9 @@ ExpressApp.prototype.start = function(opts, cb) {
     }
 
     if (auth) {
-      LtcWalletService.Server.getInstanceWithAuth(opts.serviceOpts, config, auth, cb);
+      LtcWalletService.Server.getInstanceWithAuth(opts.serviceOpts, self.config, auth, cb);
     } else {
-      LtcWalletService.Server.getInstance(opts.serviceOpts, config, cb);
+      LtcWalletService.Server.getInstance(opts.serviceOpts, self.config, cb);
     }
   };
 

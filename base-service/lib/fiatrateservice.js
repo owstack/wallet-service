@@ -3,6 +3,7 @@
 var owsCommon = require('@owstack/ows-common');
 var async = require('async');
 var baseConfig = require('../../config');
+var Context = owsCommon.util.Context;
 var Defaults = require('./common/defaults');
 var log = require('npmlog');
 var request = require('request');
@@ -53,8 +54,11 @@ FiatRateService.prototype.init = function(opts, cb) {
       if (opts.storage) {
         self.storage = opts.storage;
         done();
+      } else if (self.config.storage) {
+        self.storage = self.config.storage;
+        done();
       } else {
-        self.storage = new Storage(); // Create with no context (not required for this service)
+        self.storage = new Storage(new Context()); // Create with empty context (none for this service)
         self.storage.connect(self.config.storageOpts, done);
       }
     },

@@ -116,6 +116,9 @@ EmailService.prototype.start = function(opts, cb) {
       if (opts.storage) {
         self.storage = opts.storage;
         done();
+      } else if (self.config.storage) {
+        self.storage = self.config.storage;
+        done();
       } else {
         self.storage = new self.ctx.Storage();
         self.storage.connect(self.config.storageOpts, done);

@@ -9,14 +9,14 @@ var config = require('../../config');
 var log = require('npmlog');
 var mongodb = require('mongodb');
 var moment = require('moment');
-var storage = require('./storage');
+var Storage = require('./storage');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 log.disableColor();
 
-var INITIAL_DATE = '2015-01-01';
+var INITIAL_DATE = '2019-01-01';
 
 class Stats {
   constructor(context, opts) {
@@ -133,7 +133,7 @@ Stats.prototype._getNewWallets = function(cb) {
         merge: 'stats_wallets',
       }
     };
-    self.db.collection(storage.collections.WALLETS)
+    self.db.collection(Storage.collections.WALLETS)
       .mapReduce(map, reduce, opts, function(err, collection, stats) {
         return cb(err);
       });
@@ -254,7 +254,7 @@ Stats.prototype._getTxProposals = function(cb) {
         merge: 'stats_txps',
       }
     };
-    self.db.collection(storage.collections.TXS)
+    self.db.collection(Storage.collections.TXS)
       .mapReduce(map, reduce, opts, function(err, collection, stats) {
         return cb(err);
       });

@@ -21,7 +21,6 @@ var FIELDS = [
   'walletId',
   'creatorId',
   'creatorName',
-  'currency',
   'networkName',
   'outputs',
   'amount',
@@ -105,10 +104,11 @@ class TxProposal {
       address = this.ctx.Address(this.outputs[0].toAddress).toObject();
     } catch (ex) {}
 
-    this.networkName = opts.networkName || address.network;
+    try {
+      this.networkName = opts.networkName || address.network;
+    } catch (ex) {}
     $.checkState(lodash.includes(lodash.values([this.LIVENET.name, this.TESTNET.name]), this.networkName));
 
-    this.currency = this.LIVENET.currency; // Can use either LIVENET/TESTNET since currency is the same.
     this.setInputs(opts.inputs);
     this.fee = opts.fee;
   }

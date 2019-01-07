@@ -9,18 +9,16 @@ var BaseBlockchainExplorer = BaseWalletService.BlockchainExplorer;
 
 var Explorer = require('./blockchainexplorers/explorer');
 var Networks = cLib.Networks;
-var Server = require('./server');
 
 var context = new Context({
 	Explorer: Explorer,
-	Networks: Networks,
-	Server: Server
+	Networks: Networks
 });
 
 class CBlockchainExplorer extends BaseBlockchainExplorer {
 	constructor(opts, config) {
 		// Returns a different class.
-	  return super(context, opts, config);		
+	  super(context, opts, config);		
 	}
 };
 

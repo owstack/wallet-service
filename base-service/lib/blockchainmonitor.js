@@ -4,6 +4,7 @@ var owsCommon = require('@owstack/ows-common');
 var async = require('async');
 var baseConfig = require('../../config');
 var Constants = owsCommon.Constants;
+var Context = owsCommon.util.Context;
 var Lock = require('./lock');
 var log = require('npmlog');
 var MessageBroker = require('./messagebroker');
@@ -80,8 +81,11 @@ BlockchainMonitor.prototype.start = function(opts, cb) {
       if (opts.storage) {
         self.storage = opts.storage;
         done();
+      } else if (self.config.storage) {
+        self.storage = self.config.storage;
+        done();
       } else {
-        self.storage = new Storage();
+        self.storage = new Storage(new Context()); // Create with empty context (none for this service)
         self.storage.connect(self.config.storageOpts, done);
       }
     },
