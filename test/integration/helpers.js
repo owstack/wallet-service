@@ -114,7 +114,8 @@ helpers.getAuthServer = function(serviceName, copayerId, cb) {
   var opts = {
     blockchainExplorer: helpers.getBlockchainExplorer(serviceName),
     request: sinon.stub(),
-    storage: helpers.getStorage(serviceName)
+    storage: helpers.getStorage(serviceName),
+    force: true
   };
 
   Server.getInstanceWithAuth(opts, testConfig, {
@@ -185,7 +186,8 @@ helpers.createAndJoinWallet = function(serviceName, m, n, opts, cb) {
   var serverOpts = {
     blockchainExplorer: helpers.getBlockchainExplorer(serviceName),
     storage: helpers.getStorage(serviceName),
-    request: sinon.stub()
+    request: sinon.stub(),
+    force: true
   };
 
   new Server(serverOpts, testConfig, function(server) {

@@ -115,10 +115,10 @@ var config = {
           url: 'http://bch.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
-        // testnet: {
-        //   url: 'https://test-insight.bitpay.com',
-        //   apiPrefix: '/api'
-        // }
+        /*testnet: {
+          url: '',
+          apiPrefix: ''
+        }*/
       }
     }
   },
@@ -133,10 +133,10 @@ var config = {
           url: 'http://ltc.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
-        // testnet: {
-        //   url: 'https://test-insight.bitpay.com',
-        //   apiPrefix: '/api'
-        // }
+        /*testnet: {
+          url: '',
+          apiPrefix: ''
+        }*/
       }
     }
   }

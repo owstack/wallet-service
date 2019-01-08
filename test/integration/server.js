@@ -64,7 +64,8 @@ describe('Wallet service', function() {
         clientVersion: 'wc-0.0.1',
         blockchainExplorer: blockchainExplorer,
         request: request,
-        storage: helpers.getStorage(serviceName)
+        storage: helpers.getStorage(serviceName),
+        force: true
       }, testConfig, function(server) {
         server.getClientVersion().should.equal('wc-0.0.1');
       });
@@ -75,14 +76,16 @@ describe('Wallet service', function() {
         clientVersion: 'dummy-1.0.0',
         blockchainExplorer: blockchainExplorer,
         request: request,
-        storage: helpers.getStorage(serviceName)
+        storage: helpers.getStorage(serviceName),
+        force: true
       }, testConfig, function(server) {
         server.clientVersion.should.equal('dummy-1.0.0');
 
         Server.getInstance({
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, function(server) {
           (server.clientVersion == null).should.be.true;
         });
@@ -102,7 +105,8 @@ describe('Wallet service', function() {
           clientVersion: 'wc-2.0.0',
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, {
           copayerId: wallet.copayers[0].id,
           message: 'hello world',
@@ -123,7 +127,8 @@ describe('Wallet service', function() {
       Server.getInstanceWithAuth({
         blockchainExplorer: blockchainExplorer,
         request: request,
-        storage: helpers.getStorage(serviceName)
+        storage: helpers.getStorage(serviceName),
+        force: true
       }, testConfig, {
         copayerId: 'dummy',
         message: message,
@@ -140,7 +145,8 @@ describe('Wallet service', function() {
         Server.getInstanceWithAuth({
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, {
           copayerId: wallet.copayers[0].id,
           message: 'dummy',
@@ -172,7 +178,8 @@ describe('Wallet service', function() {
         Server.getInstanceWithAuth({
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, {
           copayerId: wallet.copayers[0].id,
           message: 'hello world',
@@ -202,7 +209,8 @@ describe('Wallet service', function() {
       Server.getInstanceWithAuth({
         blockchainExplorer: blockchainExplorer,
         request: request,
-        storage: helpers.getStorage(serviceName)
+        storage: helpers.getStorage(serviceName),
+        force: true
       }, testConfig, {
         copayerId: server.copayerId,
         session: 'dummy'
@@ -217,7 +225,8 @@ describe('Wallet service', function() {
           Server.getInstanceWithAuth({
             blockchainExplorer: blockchainExplorer,
             request: request,
-            storage: helpers.getStorage(serviceName)
+            storage: helpers.getStorage(serviceName),
+            force: true
           }, testConfig, {
             copayerId: server.copayerId,
             session: token,
@@ -260,7 +269,8 @@ describe('Wallet service', function() {
           Server.getInstanceWithAuth({
             blockchainExplorer: blockchainExplorer,
             request: request,
-            storage: helpers.getStorage(serviceName)
+            storage: helpers.getStorage(serviceName),
+            force: true
           }, testConfig, {
             copayerId: server.copayerId,
             session: token,
@@ -285,7 +295,8 @@ describe('Wallet service', function() {
           Server.getInstanceWithAuth({
             blockchainExplorer: blockchainExplorer,
             request: request,
-            storage: helpers.getStorage(serviceName)
+            storage: helpers.getStorage(serviceName),
+            force: true
           }, testConfig, {
             copayerId: server.copayerId,
             session: token,
@@ -480,7 +491,8 @@ describe('Wallet service', function() {
         Server.getInstance({
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, function(s) {
           server = s;
           done();
@@ -571,7 +583,8 @@ describe('Wallet service', function() {
         Server.getInstance({
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, function(s) {
           server = s;
 
@@ -867,7 +880,8 @@ describe('Wallet service', function() {
         Server.getInstance({
           blockchainExplorer: blockchainExplorer,
           request: request,
-          storage: helpers.getStorage(serviceName)
+          storage: helpers.getStorage(serviceName),
+          force: true
         }, testConfig, function(s) {
           server = s;
           done();
@@ -1697,7 +1711,8 @@ describe('Wallet service', function() {
         clientVersion: helpers.CLIENT_VERSION,
         blockchainExplorer: blockchainExplorer,
         request: request,
-        storage: helpers.getStorage(serviceName)
+        storage: helpers.getStorage(serviceName),
+        force: true
       }, testConfig, {
         copayerId: copayerId,
         message: msg,

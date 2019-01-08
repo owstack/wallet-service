@@ -34,7 +34,6 @@ var config = {
   },
 /*
   lockOpts: {
-    //  To use locker-server, uncomment this:
     lockerServer: {
       host: 'localhost',
       port: 3231
@@ -48,24 +47,23 @@ var config = {
     //   url: 'http://remotehost:3380'
     // }
   },
-*/
-  // To use email notifications:
-  // emailOpts: {
-  //   transport: {
-  //     host: 'localhost',
-  //     port: 25,
-  //     ignoreTLS: true,
-  //   },
-  //   defaultLanguage: 'en',
-  //   subjectPrefix: '[Wallet Service]',
-  //   from: 'wallet-service@owstack.com',
-  //   templatePath: './lib/templates',
-  //   publicTxUrlTemplate: {
-  //     'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
-  //     'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
-  //   }
-  // },
 
+  emailOpts: {
+    transport: {
+      host: 'localhost',
+      port: 25,
+      ignoreTLS: true,
+    },
+    defaultLanguage: 'en',
+    subjectPrefix: '[Wallet Service]',
+    from: 'wallet-service@owstack.com',
+    templatePath: './lib/templates',
+    publicTxUrlTemplate: {
+      'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
+      'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
+    }
+  },
+*/
   // Sendgrid.
   // const sgMail = require('@sendgrid/mail');
   // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -82,7 +80,7 @@ var config = {
   },
 
   fiatRateServiceOpts: {
-    defaultProvider: 'BitPay',
+    defaultProvider: 'OpenWalletStack',
     fetchInterval: 60 // in minutes
   },
 

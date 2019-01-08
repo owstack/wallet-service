@@ -49,13 +49,13 @@ class CServer extends BaseServer {
  *
  */
 CServer.getInstance = function(opts, config, cb) {
-	if (!instance) {
+	if (instance && opts.force == false) {
+		cb(instance);
+	} else {
 	  new CServer(opts, config, function(server) {
 	  	instance = server;
 	  	cb(server);
 	  });
-	} else {
-		cb(instance);
 	}
 };
 

@@ -279,7 +279,6 @@ WalletService.getInstanceWithAuth = function(opts, config, auth, cb) {
 
 WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
   var self = this;
-
   if (auth.session) {
     if (!self.checkRequired(auth, ['copayerId', 'session'], cb)) {
       return;

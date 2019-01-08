@@ -53,7 +53,8 @@ describe('Multiple wallet services', function() {
             clientVersion: 'wc-0.0.1',
             blockchainExplorer: blockchainExplorer,
             request: request,
-            storage: helpers.getStorage(serviceName)
+            storage: helpers.getStorage(serviceName),
+            force: true
           }, testConfig, function(server) {
             server.getClientVersion().should.equal('wc-0.0.1');
           });
@@ -64,14 +65,16 @@ describe('Multiple wallet services', function() {
             clientVersion: 'dummy-1.0.0',
             blockchainExplorer: blockchainExplorer,
             request: request,
-            storage: helpers.getStorage(serviceName)
+            storage: helpers.getStorage(serviceName),
+            force: true
           }, testConfig, function(server) {
             server.clientVersion.should.equal('dummy-1.0.0');
 
             Server.getInstance({
               blockchainExplorer: blockchainExplorer,
               request: request,
-              storage: helpers.getStorage(serviceName)
+              storage: helpers.getStorage(serviceName),
+              force: true
             }, testConfig, function(server) {
               (server.clientVersion == null).should.be.true;
             });
@@ -91,7 +94,8 @@ describe('Multiple wallet services', function() {
               clientVersion: 'wc-2.0.0',
               blockchainExplorer: blockchainExplorer,
               request: request,
-              storage: helpers.getStorage(serviceName)
+              storage: helpers.getStorage(serviceName),
+              force: true
             }, testConfig, {
               copayerId: wallet.copayers[0].id,
               message: 'hello world',
@@ -149,7 +153,8 @@ describe('Multiple wallet services', function() {
             Server.getInstance({
               blockchainExplorer: blockchainExplorer,
               request: request,
-              storage: helpers.getStorage(serviceName)
+              storage: helpers.getStorage(serviceName),
+              force: true
             }, testConfig, function(s) {
               server = s;
 
