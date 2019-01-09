@@ -131,21 +131,21 @@ WalletService.prototype.initialize = function(opts, config, cb) {
   }
 
   function initStorage(cb) {
+    if (opts.storage) {
+      storage = opts.storage;
+      return cb();
+    }
+
     if (!storage) {
-      if (opts.storage) {
-        storage = opts.storage;
+      var newStorage = new self.ctx.Storage();
+      newStorage.connect(self.config.storageOpts, function(err) {
+        if (err) {
+          return cb(err);
+        }
+        storage = newStorage;
+        self.config.storage = storage;
         return cb();
-      } else {
-        var newStorage = new self.ctx.Storage();
-        newStorage.connect(self.config.storageOpts, function(err) {
-          if (err) {
-            return cb(err);
-          }
-          storage = newStorage;
-          self.config.storage = storage;
-          return cb();
-        });
-      }
+      });
     } else {
       return cb();
     }
@@ -402,7 +402,7 @@ WalletService.prototype.logout = function(opts, cb) {
  * Gets the storage for this instance of the server.
  */
 WalletService.prototype.getStorage = function() {
-  return this.storage;
+  return storage;
 };
 
 /**
