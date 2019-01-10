@@ -58,8 +58,11 @@ FiatRateService.prototype.init = function(opts, cb) {
         self.storage = self.config.storage;
         done();
       } else {
-        self.storage = new Storage(new Context()); // Create with empty context (none for this service)
-        self.storage.connect(self.config.storageOpts, done);
+        // Create with empty context (none for this service).
+        self.storage = new Storage(new Context(), self.config.storageOpts, {
+          creator: 'FiatRateService'
+        });
+        self.storage.connect(done);
       }
     },
   ], function(err) {

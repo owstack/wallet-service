@@ -170,7 +170,7 @@ Wallet.prototype.createAddress = function(isChange) {
   $.checkState(this.isComplete());
 
   var self = this;
-  var path = this.addressManager.getNewAddressPath(isChange);
+  var path = self.addressManager.getNewAddressPath(isChange);
   var address = new self.ctx.Address().derive(self.id, self.addressType, self.publicKeyRing, path, self.m, self.networkName, isChange);
   return address;
 };

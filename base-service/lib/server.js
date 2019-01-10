@@ -34,7 +34,6 @@ var serviceVersion;
 var lock;
 var fiatRateService;
 var messageBroker;
-var storage;
 
 /**
  * Creates an instance of the Wallet Service.
@@ -132,18 +131,21 @@ WalletService.prototype.initialize = function(opts, config, cb) {
 
   function initStorage(cb) {
     if (opts.storage) {
-      storage = opts.storage;
+      self.storage = opts.storage;
       return cb();
     }
 
-    if (!storage) {
-      var newStorage = new self.ctx.Storage();
-      newStorage.connect(self.config.storageOpts, function(err) {
+    if (!self.storage) {
+      var newStorage = new self.ctx.Storage(self.config.storageOpts, {
+        creator: 'WalletService (' + self.LIVENET.currency + ')'
+      });
+
+      newStorage.connect(function(err) {
         if (err) {
           return cb(err);
         }
-        storage = newStorage;
-        self.config.storage = storage;
+        self.storage = newStorage;
+        self.config.storage = self.storage;
         return cb();
       });
     } else {
@@ -179,7 +181,7 @@ WalletService.prototype.initialize = function(opts, config, cb) {
     } else {
       var newFiatRateService = new FiatRateService(self.config);
       newFiatRateService.init({
-        storage: storage
+        storage: self.storage
       } , function(err) {
         if (err) {
           return cb(err);
@@ -237,12 +239,12 @@ WalletService.prototype.shutDown = function(cb) {
     messageBroker = undefined;
   }
 
-  if (storage) {
-    storage.disconnect(function(err) {
+  if (self.storage) {
+    self.storage.disconnect(function(err) {
       if (err) {
         return cb(err);
       }
-      storage = undefined;
+      self.storage = undefined;
       return cb();
     });
   } else {
@@ -292,7 +294,7 @@ WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
   }
 
   function withSignature(cb) {
-    storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
+    self.storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
       if (err) {
         return cb(err);
       }
@@ -317,7 +319,7 @@ WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
   };
 
   function withSession(cb) {
-    storage.getSession(auth.copayerId, function(err, s) {
+    self.storage.getSession(auth.copayerId, function(err, s) {
       if (err) {
         return cb(err);
       }
@@ -327,7 +329,7 @@ WalletService.prototype.initInstanceWithAuth = function(auth, cb) {
         return cb(new ClientError(Errors.codes.NOT_AUTHORIZED, 'Session expired'));
       }
 
-      storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
+      self.storage.fetchCopayerLookup(auth.copayerId, function(err, copayer) {
         if (err) {
           return cb(err);
         }
@@ -358,7 +360,7 @@ WalletService.prototype.login = function(opts, cb) {
   async.series([
 
     function(next) {
-      storage.getSession(self.copayerId, function(err, s) {
+      self.storage.getSession(self.copayerId, function(err, s) {
         if (err) {
           return next(err);
         }
@@ -378,7 +380,7 @@ WalletService.prototype.login = function(opts, cb) {
       next();
     },
     function(next) {
-      storage.storeSession(session, next);
+      self.storage.storeSession(session, next);
     },
   ], function(err) {
     if (err) {
@@ -395,14 +397,14 @@ WalletService.prototype.login = function(opts, cb) {
 WalletService.prototype.logout = function(opts, cb) {
   var self = this;
 
-  storage.removeSession(self.copayerId, cb);
+  self.storage.removeSession(self.copayerId, cb);
 };
 
 /**
  * Gets the storage for this instance of the server.
  */
 WalletService.prototype.getStorage = function() {
-  return storage;
+  return self.storage;
 };
 
 /**
@@ -462,7 +464,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
         return acb();
       }
 
-      storage.fetchWallet(opts.id, function(err, wallet) {
+      self.storage.fetchWallet(opts.id, function(err, wallet) {
         if (wallet) {
           return acb(Errors.WALLET_ALREADY_EXISTS);
         }
@@ -482,7 +484,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
         addressType: addressType,
       });
 
-      storage.storeWallet(wallet, function(err) {
+      self.storage.storeWallet(wallet, function(err) {
         log.debug('Wallet created', wallet.id, opts.networkName);
         newWallet = wallet;
         return acb(err);
@@ -500,7 +502,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
  */
 WalletService.prototype.getWallet = function(opts, cb) {
   var self = this;
-  storage.fetchWallet(self.walletId, function(err, wallet) {
+  self.storage.fetchWallet(self.walletId, function(err, wallet) {
     if (err) {
       return cb(err);
     }
@@ -528,7 +530,7 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
   async.parallel([
 
     function(done) {
-      storage.fetchWallet(opts.identifier, function(err, wallet) {
+      self.storage.fetchWallet(opts.identifier, function(err, wallet) {
         if (wallet) {
           walletId = wallet.id;
         }
@@ -536,7 +538,7 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
       });
     },
     function(done) {
-      storage.fetchAddress(opts.identifier, function(err, address) {
+      self.storage.fetchAddress(opts.identifier, function(err, address) {
         if (address) {
           walletId = address.walletId;
         }
@@ -544,7 +546,7 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
       });
     },
     function(done) {
-      storage.fetchTxByHash(opts.identifier, function(err, tx) {
+      self.storage.fetchTxByHash(opts.identifier, function(err, tx) {
         if (tx) {
           walletId = tx.walletId;
         }
@@ -556,7 +558,7 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
       return cb(err);
     }
     if (walletId) {
-      return storage.fetchWallet(walletId, cb);
+      return self.storage.fetchWallet(walletId, cb);
     }
 
     var re = /^[\da-f]+$/gi;
@@ -577,7 +579,7 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
         var outputs = lodash.head(self._normalizeTxHistory(tx)).outputs;
         var toAddresses = lodash.map(outputs, 'address');
         async.detect(toAddresses, function(addressStr, nextAddress) {
-          storage.fetchAddress(addressStr, function(err, address) {
+          self.storage.fetchAddress(addressStr, function(err, address) {
             if (err || !address) {
               return nextAddress(false);
             }
@@ -592,7 +594,7 @@ WalletService.prototype.getWalletFromIdentifier = function(opts, cb) {
       if (!walletId) {
         return cb();
       }
-      return storage.fetchWallet(walletId, cb);
+      return self.storage.fetchWallet(walletId, cb);
     });
   });
 };
@@ -637,6 +639,7 @@ WalletService.prototype.getStatus = function(opts, cb) {
       });
     },
     function(next) {
+console.log('WalletService.prototype.getStatus getBalance');
       self.getBalance(opts, function(err, balance) {
         if (err) {
           return next(err);
@@ -646,6 +649,7 @@ WalletService.prototype.getStatus = function(opts, cb) {
       });
     },
     function(next) {
+console.log('WalletService.prototype.getStatus getPendingTxs');
       self.getPendingTxs({}, function(err, pendingTxps) {
         if (err) {          
           return next(err);
@@ -655,6 +659,7 @@ WalletService.prototype.getStatus = function(opts, cb) {
       });
     },
     function(next) {
+console.log('WalletService.prototype.getStatus getPreferences');
       self.getPreferences({}, function(err, preferences) {
         if (err) {
           return next(err);
@@ -731,7 +736,7 @@ WalletService.prototype._notify = function(type, data, opts, cb) {
 
   $.checkState(walletId);
 
-  storage.fetchWallet(walletId, function(err, wallet) {
+  self.storage.fetchWallet(walletId, function(err, wallet) {
     if (err) {
       return cb(err);
     }
@@ -745,7 +750,7 @@ WalletService.prototype._notify = function(type, data, opts, cb) {
       networkName: opts.isGlobal && !wallet ? walletId : wallet.networkName,
     });
 
-    storage.storeNotification(walletId, notification, function(err) {
+    self.storage.storeNotification(walletId, notification, function(err) {
       messageBroker.send(notification);
       return cb();
     });
@@ -783,7 +788,7 @@ WalletService.prototype._addCopayerToWallet = function(wallet, opts, cb) {
     derivationStrategy: wallet.derivationStrategy,
   });
 
-  storage.fetchCopayerLookup(copayer.id, function(err, res) {
+  self.storage.fetchCopayerLookup(copayer.id, function(err, res) {
     if (err) {
       return cb(err);
     }
@@ -799,7 +804,7 @@ WalletService.prototype._addCopayerToWallet = function(wallet, opts, cb) {
     }
 
     wallet.addCopayer(copayer);
-    storage.storeWalletAndUpdateCopayersLookup(wallet, function(err) {
+    self.storage.storeWalletAndUpdateCopayersLookup(wallet, function(err) {
       if (err) {
         return cb(err);
       }
@@ -836,7 +841,7 @@ WalletService.prototype._addCopayerToWallet = function(wallet, opts, cb) {
 WalletService.prototype._addKeyToCopayer = function(wallet, copayer, opts, cb) {
   var self = this;
   wallet.addCopayerRequestKey(copayer.copayerId, opts.requestPubKey, opts.signature, opts.restrictions, opts.name);
-  storage.storeWalletAndUpdateCopayersLookup(wallet, function(err) {
+  self.storage.storeWalletAndUpdateCopayersLookup(wallet, function(err) {
     if (err) {
       return cb(err);
     }
@@ -867,14 +872,14 @@ WalletService.prototype.addAccess = function(opts, cb) {
     return;
   }
 
-  storage.fetchCopayerLookup(opts.copayerId, function(err, copayer) {
+  self.storage.fetchCopayerLookup(opts.copayerId, function(err, copayer) {
     if (err) {
       return cb(err);
     }
     if (!copayer) {
       return cb(Errors.NOT_AUTHORIZED);
     }
-    storage.fetchWallet(copayer.walletId, function(err, wallet) {
+    self.storage.fetchWallet(copayer.walletId, function(err, wallet) {
       if (err) {
         return cb(err);
       }
@@ -967,7 +972,7 @@ WalletService.prototype.joinWallet = function(opts, cb) {
   self.walletId = opts.walletId;
 
   self._runLocked(cb, function(cb) {
-    storage.fetchWallet(opts.walletId, function(err, wallet) {
+    self.storage.fetchWallet(opts.walletId, function(err, wallet) {
       if (err) {
         return cb(err);
       }
@@ -1051,7 +1056,7 @@ WalletService.prototype.savePreferences = function(opts, cb) {
   }
 
   self._runLocked(cb, function(cb) {
-    storage.fetchPreferences(self.walletId, self.copayerId, function(err, oldPref) {
+    self.storage.fetchPreferences(self.walletId, self.copayerId, function(err, oldPref) {
       if (err) {
         return cb(err);
       }
@@ -1063,7 +1068,7 @@ WalletService.prototype.savePreferences = function(opts, cb) {
 
       var preferences = Model.Preferences.fromObj(lodash.defaults(newPref, opts, oldPref));
 
-      storage.storePreferences(preferences, function(err) {
+      self.storage.storePreferences(preferences, function(err) {
         return cb(err);
       });
     });
@@ -1078,7 +1083,7 @@ WalletService.prototype.savePreferences = function(opts, cb) {
 WalletService.prototype.getPreferences = function(opts, cb) {
   var self = this;
 
-  storage.fetchPreferences(self.walletId, self.copayerId, function(err, preferences) {
+  self.storage.fetchPreferences(self.walletId, self.copayerId, function(err, preferences) {
     if (err) {
       return cb(err);
     }
@@ -1093,7 +1098,7 @@ WalletService.prototype._canCreateAddress = function(ignoreMaxGap, cb) {
     return cb(null, true);
   }
 
-  storage.fetchAddresses(self.walletId, function(err, addresses) {
+  self.storage.fetchAddresses(self.walletId, function(err, addresses) {
     if (err) {
       return cb(err);
     }
@@ -1130,7 +1135,7 @@ WalletService.prototype._canCreateAddress = function(ignoreMaxGap, cb) {
 
       var address = latestAddresses[i];
       address.hasActivity = true;
-      storage.storeAddress(address, function(err) {
+      self.storage.storeAddress(address, function(err) {
         return cb(err, true);
       });
     });
@@ -1150,7 +1155,7 @@ WalletService.prototype.createAddress = function(opts, cb) {
 
   function createNewAddress(wallet, cb) {
     var address = wallet.createAddress(false);
-    storage.storeAddressAndWallet(wallet, address, function(err) {
+    self.storage.storeAddressAndWallet(wallet, address, function(err) {
       if (err) {
         return cb(err);
       }
@@ -1164,7 +1169,7 @@ WalletService.prototype.createAddress = function(opts, cb) {
   };
 
   function getFirstAddress(wallet, cb) {
-    storage.fetchAddresses(self.walletId, function(err, addresses) {
+    self.storage.fetchAddresses(self.walletId, function(err, addresses) {
       if (err) {
         return cb(err);
       }
@@ -1210,7 +1215,7 @@ WalletService.prototype.getMainAddresses = function(opts, cb) {
   var self = this;
 
   opts = opts || {};
-  storage.fetchAddresses(self.walletId, function(err, addresses) {
+  self.storage.fetchAddresses(self.walletId, function(err, addresses) {
     if (err) {
       return cb(err);
     }
@@ -1334,7 +1339,7 @@ WalletService.prototype._getUtxosForCurrentWallet = function(addresses, cb) {
         allAddresses = addresses;
         return next();
       }
-      storage.fetchAddresses(self.walletId, function(err, addresses) {
+      self.storage.fetchAddresses(self.walletId, function(err, addresses) {
         allAddresses = addresses;
         return next();
       });
@@ -1379,7 +1384,7 @@ WalletService.prototype._getUtxosForCurrentWallet = function(addresses, cb) {
       // list of UTXOs returned by the block explorer. This counteracts any out-of-sync
       // effects between broadcasting a tx and getting the list of UTXOs.
       // This is especially true in the case of having multiple instances of the block explorer.
-      storage.fetchBroadcastedTxs(self.walletId, {
+      self.storage.fetchBroadcastedTxs(self.walletId, {
         minTs: now - 24 * 3600,
         limit: 100
       }, function(err, txs) {
@@ -1478,7 +1483,7 @@ WalletService.prototype._getBalanceFromAddresses = function(addresses, cb) {
 WalletService.prototype._getBalanceOneStep = function(opts, cb) {
   var self = this;
 
-  storage.fetchAddresses(self.walletId, function(err, addresses) {
+  self.storage.fetchAddresses(self.walletId, function(err, addresses) {
     if (err) {
       return cb(err);
     }
@@ -1491,11 +1496,11 @@ WalletService.prototype._getBalanceOneStep = function(opts, cb) {
       async.series([
 
         function(next) {
-          storage.cleanActiveAddresses(self.walletId, next);
+          self.storage.cleanActiveAddresses(self.walletId, next);
         },
         function(next) {
           var active = lodash.map(balance.byAddress, 'address')
-          storage.storeActiveAddresses(self.walletId, active, next);
+          self.storage.storeActiveAddresses(self.walletId, active, next);
         },
       ], function(err) {
         if (err) {
@@ -1510,7 +1515,7 @@ WalletService.prototype._getBalanceOneStep = function(opts, cb) {
 WalletService.prototype._getActiveAddresses = function(cb) {
   var self = this;
 
-  storage.fetchActiveAddresses(self.walletId, function(err, active) {
+  self.storage.fetchActiveAddresses(self.walletId, function(err, active) {
     if (err) {
       log.warn('Could not fetch active addresses from cache', err);
       return cb();
@@ -1520,7 +1525,7 @@ WalletService.prototype._getActiveAddresses = function(cb) {
       return cb();
     }
 
-    storage.fetchAddresses(self.walletId, function(err, allAddresses) {
+    self.storage.fetchAddresses(self.walletId, function(err, allAddresses) {
       if (err) {
         return cb(err);
       }
@@ -1556,7 +1561,7 @@ WalletService.prototype.getBalance = function(opts, cb) {
     return self._getBalanceOneStep(opts, cb);
   }
 
-  storage.countAddresses(self.walletId, function(err, nbAddresses) {
+  self.storage.countAddresses(self.walletId, function(err, nbAddresses) {
     if (err) {
       return cb(err);
     }
@@ -2142,7 +2147,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
 
 WalletService.prototype._canCreateTx = function(cb) {
   var self = this;
-  storage.fetchLastTxs(self.walletId, self.copayerId, 5 + self.ctx.Defaults.BACKOFF_OFFSET, function(err, txs) {
+  self.storage.fetchLastTxs(self.walletId, self.copayerId, 5 + self.ctx.Defaults.BACKOFF_OFFSET, function(err, txs) {
     if (err) {
       return cb(err);
     }
@@ -2347,7 +2352,7 @@ WalletService.prototype.createTx = function(opts, cb) {
 
   function getChangeAddress(wallet, cb) {
     if (wallet.singleAddress) {
-      storage.fetchAddresses(self.walletId, function(err, addresses) {
+      self.storage.fetchAddresses(self.walletId, function(err, addresses) {
         if (err) {
           return cb(err);
         }
@@ -2358,7 +2363,7 @@ WalletService.prototype.createTx = function(opts, cb) {
       });
     } else {
       if (opts.changeAddress) {
-        storage.fetchAddress(opts.changeAddress, function(err, address) {
+        self.storage.fetchAddress(opts.changeAddress, function(err, address) {
           if (err) {
             return cb(Errors.INVALID_CHANGE_ADDRESS);
           }
@@ -2374,7 +2379,7 @@ WalletService.prototype.createTx = function(opts, cb) {
     if (!txProposalId) {
       return cb();
     }
-    storage.fetchTx(self.walletId, txProposalId, cb);
+    self.storage.fetchTx(self.walletId, txProposalId, cb);
   };
 
   self._runLocked(cb, function(cb) {
@@ -2463,13 +2468,13 @@ WalletService.prototype.createTx = function(opts, cb) {
             if (!changeAddress || wallet.singleAddress || opts.dryRun) {
               return next();
             }
-            storage.storeAddressAndWallet(wallet, txp.changeAddress, next);
+            self.storage.storeAddressAndWallet(wallet, txp.changeAddress, next);
           },
           function(next) {
             if (opts.dryRun) {
               return next();
             }
-            storage.storeTx(wallet.id, txp, function(err) {
+            self.storage.storeTx(wallet.id, txp, function(err) {
               next(err);
             });
           },
@@ -2512,7 +2517,7 @@ WalletService.prototype.publishTx = function(opts, cb) {
       if (err) {
         return cb(err);
       }
-      storage.fetchTx(self.walletId, opts.txProposalId, function(err, txp) {
+      self.storage.fetchTx(self.walletId, opts.txProposalId, function(err, txp) {
         if (err) {
           return cb(err);
         }
@@ -2561,7 +2566,7 @@ WalletService.prototype.publishTx = function(opts, cb) {
           }
 
           txp.status = 'pending';
-          storage.storeTx(self.walletId, txp, function(err) {
+          self.storage.storeTx(self.walletId, txp, function(err) {
             if (err) {
               return cb(err);
             }
@@ -2585,7 +2590,7 @@ WalletService.prototype.publishTx = function(opts, cb) {
 WalletService.prototype.getTx = function(opts, cb) {
   var self = this;
 
-  storage.fetchTx(self.walletId, opts.txProposalId, function(err, txp) {
+  self.storage.fetchTx(self.walletId, opts.txProposalId, function(err, txp) {
     if (err) {
       return cb(err);
     }
@@ -2597,7 +2602,7 @@ WalletService.prototype.getTx = function(opts, cb) {
       return cb(null, txp);
     }
 
-    storage.fetchTxNote(self.walletId, txp.txid, function(err, note) {
+    self.storage.fetchTxNote(self.walletId, txp.txid, function(err, note) {
       if (err) {
         log.warn('Error fetching tx note for ' + txp.txid);
       }
@@ -2621,7 +2626,7 @@ WalletService.prototype.editTxNote = function(opts, cb) {
   }
 
   self._runLocked(cb, function(cb) {
-    storage.fetchTxNote(self.walletId, opts.txid, function(err, note) {
+    self.storage.fetchTxNote(self.walletId, opts.txid, function(err, note) {
       if (err) {
         return cb(err);
       }
@@ -2636,11 +2641,11 @@ WalletService.prototype.editTxNote = function(opts, cb) {
       } else {
         note.edit(opts.body, self.copayerId);
       }
-      storage.storeTxNote(note, function(err) {
+      self.storage.storeTxNote(note, function(err) {
         if (err) {
           return cb(err);
         }
-        storage.fetchTxNote(self.walletId, opts.txid, cb);
+        self.storage.fetchTxNote(self.walletId, opts.txid, cb);
       });
     });
   });
@@ -2657,7 +2662,7 @@ WalletService.prototype.getTxNote = function(opts, cb) {
   if (!self.checkRequired(opts, 'txid', cb)) {
     return;
   }
-  storage.fetchTxNote(self.walletId, opts.txid, cb);
+  self.storage.fetchTxNote(self.walletId, opts.txid, cb);
 };
 
 /**
@@ -2669,7 +2674,7 @@ WalletService.prototype.getTxNotes = function(opts, cb) {
   var self = this;
 
   opts = opts || {};
-  storage.fetchTxNotes(self.walletId, opts, cb);
+  self.storage.fetchTxNotes(self.walletId, opts, cb);
 };
 
 /**
@@ -2683,7 +2688,7 @@ WalletService.prototype.removeWallet = function(opts, cb) {
   var self = this;
 
   self._runLocked(cb, function(cb) {
-    storage.removeWallet(self.walletId, cb);
+    self.storage.removeWallet(self.walletId, cb);
   });
 };
 
@@ -2742,7 +2747,7 @@ WalletService.prototype.removePendingTx = function(opts, cb) {
         return cb(Errors.TX_CANNOT_REMOVE);
       }
 
-      storage.removeTx(self.walletId, txp.id, function() {
+      self.storage.removeTx(self.walletId, txp.id, function() {
         self._notifyTxProposalAction('TxProposalRemoved', txp, cb);
       });
     });
@@ -2855,7 +2860,7 @@ WalletService.prototype.signTx = function(opts, cb) {
         return cb(ex);
       }
 
-      storage.storeTx(self.walletId, txp, function(err) {
+      self.storage.storeTx(self.walletId, txp, function(err) {
         if (err) {
           return cb(err);
         }
@@ -2888,7 +2893,7 @@ WalletService.prototype._processBroadcast = function(txp, opts, cb) {
   opts = opts || {};
 
   txp.setBroadcasted();
-  storage.storeTx(self.walletId, txp, function(err) {
+  self.storage.storeTx(self.walletId, txp, function(err) {
     if (err) {
       return cb(err);
     }
@@ -2902,7 +2907,7 @@ WalletService.prototype._processBroadcast = function(txp, opts, cb) {
       self._notifyTxProposalAction('NewOutgoingTx', txp, extraArgs);
     }
 
-    storage.softResetTxHistoryCache(self.walletId, function() {
+    self.storage.softResetTxHistoryCache(self.walletId, function() {
       return cb(err, txp);
     });
   });
@@ -3009,7 +3014,7 @@ WalletService.prototype.rejectTx = function(opts, cb) {
 
     txp.reject(self.copayerId, opts.reason);
 
-    storage.storeTx(self.walletId, txp, function(err) {
+    self.storage.storeTx(self.walletId, txp, function(err) {
       if (err) {
         return cb(err);
       }
@@ -3048,7 +3053,7 @@ WalletService.prototype.rejectTx = function(opts, cb) {
 WalletService.prototype.getPendingTxs = function(opts, cb) {
   var self = this;
 
-  storage.fetchPendingTxs(self.walletId, function(err, txps) {
+  self.storage.fetchPendingTxs(self.walletId, function(err, txps) {
     if (err) {
       return cb(err);
     }
@@ -3088,7 +3093,7 @@ WalletService.prototype.getPendingTxs = function(opts, cb) {
  */
 WalletService.prototype.getTxs = function(opts, cb) {
   var self = this;
-  storage.fetchTxs(self.walletId, opts, function(err, txps) {
+  self.storage.fetchTxs(self.walletId, opts, function(err, txps) {
     if (err) {
       return cb(err);
     }
@@ -3116,7 +3121,7 @@ WalletService.prototype.getNotifications = function(opts, cb) {
     // Wallet id = network name for global notifications.
     // See BlockchainMonitor.prototype._notifyNewBlock().
     async.map([wallet.networkName, self.walletId], function(walletId, next) {
-      storage.fetchNotifications(walletId, opts.notificationId, opts.minTs || 0, next);
+      self.storage.fetchNotifications(walletId, opts.notificationId, opts.minTs || 0, next);
     }, function(err, res) {
       if (err) {
         return cb(err);
@@ -3394,7 +3399,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
           return next();
         }
 
-        storage.getTxHistoryCache(self.walletId, from, to, function(err, res) {
+        self.storage.getTxHistoryCache(self.walletId, from, to, function(err, res) {
           if (err) {
             return next(err);
           }
@@ -3445,7 +3450,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
         if (fwdIndex < 0) {
           fwdIndex = 0;
         }
-        storage.storeTxHistoryCache(self.walletId, totalItems, fwdIndex, txsToCache, next);
+        self.storage.storeTxHistoryCache(self.walletId, totalItems, fwdIndex, txsToCache, next);
       },
       function(next) {
         if (!useCache || !fromCache) {
@@ -3516,7 +3521,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
     }
 
     // Get addresses for this wallet
-    storage.fetchAddresses(self.walletId, function(err, addresses) {
+    self.storage.fetchAddresses(self.walletId, function(err, addresses) {
       if (err) {
         return cb(err);
       }
@@ -3542,13 +3547,13 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
 
           async.parallel([
             function(done) {
-              storage.fetchTxs(self.walletId, {
+              self.storage.fetchTxs(self.walletId, {
                 minTs: minTs,
                 maxTs: maxTs
               }, done);
             },
             function(done) {
-              storage.fetchTxNotes(self.walletId, {
+              self.storage.fetchTxNotes(self.walletId, {
                 minTs: minTs
               }, done);
             },
@@ -3636,8 +3641,8 @@ WalletService.prototype.scan = function(opts, cb) {
 
       wallet.scanStatus = 'running';
 
-      storage.clearTxHistoryCache(self.walletId, function() {
-        storage.storeWallet(wallet, function(err) {
+      self.storage.clearTxHistoryCache(self.walletId, function() {
+        self.storage.storeWallet(wallet, function(err) {
           if (err) {
             return cb(err);
           }
@@ -3665,15 +3670,15 @@ WalletService.prototype.scan = function(opts, cb) {
               if (err) {
                 return next(err);
               }
-              storage.storeAddressAndWallet(wallet, addresses, next);
+              self.storage.storeAddressAndWallet(wallet, addresses, next);
             });
           }, function(error) {
-            storage.fetchWallet(wallet.id, function(err, wallet) {
+            self.storage.fetchWallet(wallet.id, function(err, wallet) {
               if (err) {
                 return cb(err);
               }
               wallet.scanStatus = error ? 'error' : 'success';
-              storage.storeWallet(wallet, function() {
+              self.storage.storeWallet(wallet, function() {
                 return cb(error);
               });
             })
@@ -3767,7 +3772,7 @@ WalletService.prototype.pushNotificationsSubscribe = function(opts, cb) {
     platform: opts.platform,
   });
 
-  storage.storePushNotificationSub(sub, cb);
+  self.storage.storePushNotificationSub(sub, cb);
 };
 
 /**
@@ -3781,7 +3786,7 @@ WalletService.prototype.pushNotificationsUnsubscribe = function(opts, cb) {
   if (!self.checkRequired(opts, ['token'], cb)) {
     return;
   }
-  storage.removePushNotificationSub(self.copayerId, opts.token, cb);
+  self.storage.removePushNotificationSub(self.copayerId, opts.token, cb);
 };
 
 /**
@@ -3802,7 +3807,7 @@ WalletService.prototype.txConfirmationSubscribe = function(opts, cb) {
     txid: opts.txid,
   });
 
-  storage.storeTxConfirmationSub(sub, cb);
+  self.storage.storeTxConfirmationSub(sub, cb);
 };
 
 /**
@@ -3817,7 +3822,7 @@ WalletService.prototype.txConfirmationUnsubscribe = function(opts, cb) {
     return;
   }
 
-  storage.removeTxConfirmationSub(self.copayerId, opts.txid, cb);
+  self.storage.removeTxConfirmationSub(self.copayerId, opts.txid, cb);
 };
 
 module.exports = WalletService;

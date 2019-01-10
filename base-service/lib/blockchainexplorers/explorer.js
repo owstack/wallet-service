@@ -33,10 +33,10 @@ class Explorer {
 var _parseErr = function(err, res) {
   if (err) {
     log.warn('Explorer error: ', err);
-    return "Explorer Error";
+    return 'Explorer Error';
   }
-  log.warn("Explorer " + res.request.href + " Returned Status: " + res.statusCode);
-  return "Error querying the blockchain";
+  log.warn('Explorer ' + res.request.href + ' Returned Status: ' + res.statusCode);
+  return 'Error querying the blockchain';
 };
 
 Explorer.prototype._doRequest = function(args, cb) {

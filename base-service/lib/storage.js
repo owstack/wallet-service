@@ -29,107 +29,110 @@ var collections = {
 };
 
 class Storage {
-  constructor(context, opts) {
+  constructor(context, config, opts) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
     context.inject(this);
 
     opts = opts || {};
-    this.db = opts.db;
+    opts.creator = opts.creator || 'unknown';
+
+    this.config = config || {};
+    this.opts = opts;
   }
 };
 
+//var db;
+Storage.db;
+
 Storage.prototype._createIndexes = function() {
-  this.db.collection(collections.WALLETS).createIndex({
+  Storage.db.collection(collections.WALLETS).createIndex({
     id: 1
   });
-  this.db.collection(collections.COPAYERS_LOOKUP).createIndex({
+  Storage.db.collection(collections.COPAYERS_LOOKUP).createIndex({
     copayerId: 1
   });
-  this.db.collection(collections.TXS).createIndex({
+  Storage.db.collection(collections.TXS).createIndex({
     walletId: 1,
     id: 1,
   });
-  this.db.collection(collections.TXS).createIndex({
+  Storage.db.collection(collections.TXS).createIndex({
     walletId: 1,
     isPending: 1,
     txid: 1,
   });
-  this.db.collection(collections.TXS).createIndex({
+  Storage.db.collection(collections.TXS).createIndex({
     walletId: 1,
     createdOn: -1,
   });
-  this.db.collection(collections.NOTIFICATIONS).createIndex({
+  Storage.db.collection(collections.NOTIFICATIONS).createIndex({
     walletId: 1,
     id: 1,
   });
-  this.db.collection(collections.ADDRESSES).createIndex({
+  Storage.db.collection(collections.ADDRESSES).createIndex({
     walletId: 1,
     createdOn: 1,
   });
-  this.db.collection(collections.ADDRESSES).createIndex({
+  Storage.db.collection(collections.ADDRESSES).createIndex({
     address: 1,
   });
-  this.db.collection(collections.EMAIL_QUEUE).createIndex({
+  Storage.db.collection(collections.EMAIL_QUEUE).createIndex({
     notificationId: 1,
   });
-  this.db.collection(collections.CACHE).createIndex({
+  Storage.db.collection(collections.CACHE).createIndex({
     walletId: 1,
     type: 1,
     key: 1,
   });
-  this.db.collection(collections.TX_NOTES).createIndex({
+  Storage.db.collection(collections.TX_NOTES).createIndex({
     walletId: 1,
     txid: 1,
   });
-  this.db.collection(collections.PUSH_NOTIFICATION_SUBS).createIndex({
+  Storage.db.collection(collections.PUSH_NOTIFICATION_SUBS).createIndex({
     copayerId: 1,
   });
-  this.db.collection(collections.TX_CONFIRMATION_SUBS).createIndex({
+  Storage.db.collection(collections.TX_CONFIRMATION_SUBS).createIndex({
     copayerId: 1,
     txid: 1,
   });
-  this.db.collection(collections.SESSIONS).createIndex({
+  Storage.db.collection(collections.SESSIONS).createIndex({
     copayerId: 1
   });
 };
 
-Storage.prototype.connect = function(opts, cb) {
+Storage.prototype.connect = function(cb) {
   var self = this;
 
-  opts = opts || {};
-
-  if (this.db) {
+  if (Storage.db) {
     return cb();
   }
 
-  var config = opts.mongoDb || {};
+  var config = self.config.mongoDb || {};
   mongodb.MongoClient.connect(config.uri, function(err, db) {
     if (err) {
-      log.error('Unable to connect to the mongoDB. Check the credentials.');
+      log.error('Unable to connect to the mongoDB for ' + self.opts.creator + '. Check the credentials.');
       return cb(err);
     }
-    self.db = db;
+    Storage.db = db;
     self._createIndexes();
-    console.log('Connection established to mongoDB');
+    console.log('Connection established to mongoDB for ' + self.opts.creator);
     return cb();
   });
 };
 
 Storage.prototype.disconnect = function(cb) {
-  var self = this;
-  this.db.close(true, function(err) {
+  Storage.db.close(true, function(err) {
     if (err) {
       return cb(err);
     }
-    self.db = null;
+    Storage.db = null;
     return cb();
   });
 };
 
 Storage.prototype.fetchWallet = function(id, cb) {
   var self = this;
-  this.db.collection(collections.WALLETS).findOne({
+  Storage.db.collection(collections.WALLETS).findOne({
     id: id
   }, function(err, result) {
     if (err) {
@@ -143,7 +146,7 @@ Storage.prototype.fetchWallet = function(id, cb) {
 };
 
 Storage.prototype.storeWallet = function(wallet, cb) {
-  this.db.collection(collections.WALLETS).update({
+  Storage.db.collection(collections.WALLETS).update({
     id: wallet.id
   }, wallet.toObject(), {
     w: 1,
@@ -163,7 +166,7 @@ Storage.prototype.storeWalletAndUpdateCopayersLookup = function(wallet, cb) {
     };
   });
 
-  this.db.collection(collections.COPAYERS_LOOKUP).remove({
+  Storage.db.collection(collections.COPAYERS_LOOKUP).remove({
     walletId: wallet.id
   }, {
     w: 1
@@ -171,7 +174,7 @@ Storage.prototype.storeWalletAndUpdateCopayersLookup = function(wallet, cb) {
     if (err) {
       return cb(err);
     }
-    self.db.collection(collections.COPAYERS_LOOKUP).insert(copayerLookups, {
+    Storage.db.collection(collections.COPAYERS_LOOKUP).insert(copayerLookups, {
       w: 1
     }, function(err) {
       if (err) {
@@ -183,8 +186,7 @@ Storage.prototype.storeWalletAndUpdateCopayersLookup = function(wallet, cb) {
 };
 
 Storage.prototype.fetchCopayerLookup = function(copayerId, cb) {
-
-  this.db.collection(collections.COPAYERS_LOOKUP).findOne({
+  Storage.db.collection(collections.COPAYERS_LOOKUP).findOne({
     copayerId: copayerId
   }, function(err, result) {
     if (err) {
@@ -233,7 +235,7 @@ Storage.prototype._completeTxData = function(walletId, txs, cb) {
 Storage.prototype.fetchTx = function(walletId, txProposalId, cb) {
   var self = this;
 
-  this.db.collection(collections.TXS).findOne({
+  Storage.db.collection(collections.TXS).findOne({
     id: txProposalId,
     walletId: walletId
   }, function(err, result) {
@@ -251,7 +253,7 @@ Storage.prototype.fetchTx = function(walletId, txProposalId, cb) {
 Storage.prototype.fetchTxByHash = function(hash, cb) {
   var self = this;
 
-  this.db.collection(collections.TXS).findOne({
+  Storage.db.collection(collections.TXS).findOne({
     txid: hash,
   }, function(err, result) {
     if (err) {
@@ -268,7 +270,7 @@ Storage.prototype.fetchTxByHash = function(hash, cb) {
 Storage.prototype.fetchLastTxs = function(walletId, creatorId, limit, cb) {
   var self = this;
 
-  this.db.collection(collections.TXS).find({
+  Storage.db.collection(collections.TXS).find({
     walletId: walletId,
     creatorId: creatorId,
   }, {
@@ -292,7 +294,7 @@ Storage.prototype.fetchLastTxs = function(walletId, creatorId, limit, cb) {
 Storage.prototype.fetchPendingTxs = function(walletId, cb) {
   var self = this;
 
-  self.db.collection(collections.TXS).find({
+  Storage.db.collection(collections.TXS).find({
     walletId: walletId,
     isPending: true,
   }).sort({
@@ -351,7 +353,7 @@ Storage.prototype.fetchTxs = function(walletId, opts, cb) {
     mods.limit = opts.limit;
   }
 
-  this.db.collection(collections.TXS).find(filter, mods).sort({
+  Storage.db.collection(collections.TXS).find(filter, mods).sort({
     createdOn: -1
   }).toArray(function(err, result) {
     if (err) {
@@ -401,7 +403,7 @@ Storage.prototype.fetchBroadcastedTxs = function(walletId, opts, cb) {
     mods.limit = opts.limit;
   }
 
-  this.db.collection(collections.TXS).find(filter, mods).sort({
+  Storage.db.collection(collections.TXS).find(filter, mods).sort({
     createdOn: -1
   }).toArray(function(err, result) {
     if (err) {
@@ -425,18 +427,18 @@ Storage.prototype.fetchBroadcastedTxs = function(walletId, opts, cb) {
  * @returns {Notification[]} Notifications
  */
 Storage.prototype.fetchNotifications = function(walletId, notificationId, minTs, cb) {
+  var self = this;
+
   function makeId(timestamp) {
     return lodash.padStart(timestamp, 14, '0') + lodash.repeat('0', 4);
   };
-
-  var self = this;
 
   var minId = makeId(minTs);
   if (notificationId) {
     minId = notificationId > minId ? notificationId : minId;
   }
 
-  this.db.collection(collections.NOTIFICATIONS)
+  Storage.db.collection(collections.NOTIFICATIONS)
     .find({
       walletId: walletId,
       id: {
@@ -462,14 +464,14 @@ Storage.prototype.fetchNotifications = function(walletId, notificationId, minTs,
 
 // TODO: remove walletId from signature
 Storage.prototype.storeNotification = function(walletId, notification, cb) {
-  this.db.collection(collections.NOTIFICATIONS).insert(notification, {
+  Storage.db.collection(collections.NOTIFICATIONS).insert(notification, {
     w: 1
   }, cb);
 };
 
 // TODO: remove walletId from signature
 Storage.prototype.storeTx = function(walletId, txp, cb) {
-  this.db.collection(collections.TXS).update({
+  Storage.db.collection(collections.TXS).update({
     id: txp.id,
     walletId: walletId
   }, txp.toObject(), {
@@ -479,7 +481,7 @@ Storage.prototype.storeTx = function(walletId, txp, cb) {
 };
 
 Storage.prototype.removeTx = function(walletId, txProposalId, cb) {
-  this.db.collection(collections.TXS).findAndRemove({
+  Storage.db.collection(collections.TXS).findAndRemove({
     id: txProposalId,
     walletId: walletId
   }, {
@@ -488,19 +490,16 @@ Storage.prototype.removeTx = function(walletId, txProposalId, cb) {
 };
 
 Storage.prototype.removeWallet = function(walletId, cb) {
-  var self = this;
-
   async.parallel([
-
     function(next) {
-      self.db.collection(collections.WALLETS).findAndRemove({
+      Storage.db.collection(collections.WALLETS).findAndRemove({
         id: walletId
       }, next);
     },
     function(next) {
       var otherCollections = lodash.without(lodash.values(collections), collections.WALLETS);
       async.each(otherCollections, function(col, next) {
-        self.db.collection(col).remove({
+        Storage.db.collection(col).remove({
           walletId: walletId
         }, next);
       }, next);
@@ -511,7 +510,7 @@ Storage.prototype.removeWallet = function(walletId, cb) {
 Storage.prototype.fetchAddresses = function(walletId, cb) {
   var self = this;
 
-  this.db.collection(collections.ADDRESSES).find({
+  Storage.db.collection(collections.ADDRESSES).find({
     walletId: walletId,
   }).sort({
     createdOn: 1
@@ -530,15 +529,13 @@ Storage.prototype.fetchAddresses = function(walletId, cb) {
 };
 
 Storage.prototype.countAddresses = function(walletId, cb) {
-  this.db.collection(collections.ADDRESSES).find({
+  Storage.db.collection(collections.ADDRESSES).find({
     walletId: walletId,
   }).count(cb);
 };
 
 Storage.prototype.storeAddress = function(address, cb) {
-  var self = this;
-
-  self.db.collection(collections.ADDRESSES).update({
+  Storage.db.collection(collections.ADDRESSES).update({
     address: address.address
   }, address, {
     w: 1,
@@ -558,7 +555,7 @@ Storage.prototype.storeAddressAndWallet = function(wallet, addresses, cb) {
       return (address.toObject ? address.toObject() : address);
     });
 
-    self.db.collection(collections.ADDRESSES).insert(addrs, {
+    Storage.db.collection(collections.ADDRESSES).insert(addrs, {
       w: 1
     }, cb);
   };
@@ -569,7 +566,7 @@ Storage.prototype.storeAddressAndWallet = function(wallet, addresses, cb) {
   }
 
   async.filter(addresses, function(address, next) {
-    self.db.collection(collections.ADDRESSES).findOne({
+    Storage.db.collection(collections.ADDRESSES).findOne({
       address: address.address,
     }, {
       walletId: true,
@@ -600,7 +597,7 @@ Storage.prototype.storeAddressAndWallet = function(wallet, addresses, cb) {
 Storage.prototype.fetchAddress = function(address, cb) {
   var self = this;
 
-  this.db.collection(collections.ADDRESSES).findOne({
+  Storage.db.collection(collections.ADDRESSES).findOne({
     address: address,
   }, function(err, result) {
     if (err) {
@@ -615,7 +612,7 @@ Storage.prototype.fetchAddress = function(address, cb) {
 };
 
 Storage.prototype.fetchPreferences = function(walletId, copayerId, cb) {
-  this.db.collection(collections.PREFERENCES).find({
+  Storage.db.collection(collections.PREFERENCES).find({
     walletId: walletId,
   }).toArray(function(err, result) {
     if (err) {
@@ -642,7 +639,7 @@ Storage.prototype.fetchPreferences = function(walletId, copayerId, cb) {
 };
 
 Storage.prototype.storePreferences = function(preferences, cb) {
-  this.db.collection(collections.PREFERENCES).update({
+  Storage.db.collection(collections.PREFERENCES).update({
     walletId: preferences.walletId,
     copayerId: preferences.copayerId,
   }, preferences, {
@@ -652,7 +649,7 @@ Storage.prototype.storePreferences = function(preferences, cb) {
 };
 
 Storage.prototype.storeEmail = function(email, cb) {
-  this.db.collection(collections.EMAIL_QUEUE).update({
+  Storage.db.collection(collections.EMAIL_QUEUE).update({
     id: email.id,
   }, email, {
     w: 1,
@@ -661,7 +658,7 @@ Storage.prototype.storeEmail = function(email, cb) {
 };
 
 Storage.prototype.fetchUnsentEmails = function(cb) {
-  this.db.collection(collections.EMAIL_QUEUE).find({
+  Storage.db.collection(collections.EMAIL_QUEUE).find({
     status: 'pending',
   }).toArray(function(err, result) {
     if (err) {
@@ -675,7 +672,7 @@ Storage.prototype.fetchUnsentEmails = function(cb) {
 };
 
 Storage.prototype.fetchEmailByNotification = function(notificationId, cb) {
-  this.db.collection(collections.EMAIL_QUEUE).findOne({
+  Storage.db.collection(collections.EMAIL_QUEUE).findOne({
     notificationId: notificationId,
   }, function(err, result) {
     if (err) {
@@ -690,12 +687,9 @@ Storage.prototype.fetchEmailByNotification = function(notificationId, cb) {
 };
 
 Storage.prototype.cleanActiveAddresses = function(walletId, cb) {
-  var self = this;
-
   async.series([
-
     function(next) {
-      self.db.collection(collections.CACHE).remove({
+      Storage.db.collection(collections.CACHE).remove({
         walletId: walletId,
         type: 'activeAddresses',
       }, {
@@ -703,7 +697,7 @@ Storage.prototype.cleanActiveAddresses = function(walletId, cb) {
       }, next);
     },
     function(next) {
-      self.db.collection(collections.CACHE).insert({
+      Storage.db.collection(collections.CACHE).insert({
         walletId: walletId,
         type: 'activeAddresses',
         key: null
@@ -715,15 +709,13 @@ Storage.prototype.cleanActiveAddresses = function(walletId, cb) {
 };
 
 Storage.prototype.storeActiveAddresses = function(walletId, addresses, cb) {
-  var self = this;
-
   async.each(addresses, function(address, next) {
     var record = {
       walletId: walletId,
       type: 'activeAddresses',
       key: address,
     };
-    self.db.collection(collections.CACHE).update({
+    Storage.db.collection(collections.CACHE).update({
       walletId: record.walletId,
       type: record.type,
       key: record.key,
@@ -739,11 +731,10 @@ Storage.prototype.storeActiveAddresses = function(walletId, addresses, cb) {
 //                       ^to     <=  ^from
 //                       ^fwdIndex  =>  ^end
 Storage.prototype.getTxHistoryCache = function(walletId, from, to, cb) {
-  var self = this;
   $.checkArgument(from >= 0);
   $.checkArgument(from <= to);
 
-  self.db.collection(collections.CACHE).findOne({
+  Storage.db.collection(collections.CACHE).findOne({
     walletId: walletId,
     type: 'historyCacheStatus',
     key: null
@@ -773,7 +764,7 @@ Storage.prototype.getTxHistoryCache = function(walletId, from, to, cb) {
     }
 
     // Cache is OK.
-    self.db.collection(collections.CACHE).find({
+    Storage.db.collection(collections.CACHE).find({
       walletId: walletId,
       type: 'historyCache',
       key: {
@@ -803,7 +794,7 @@ Storage.prototype.getTxHistoryCache = function(walletId, from, to, cb) {
 };
 
 Storage.prototype.softResetAllTxHistoryCache = function(cb) {
-  this.db.collection(collections.CACHE).update({
+  Storage.db.collection(collections.CACHE).update({
     type: 'historyCacheStatus',
   }, {
     isUpdated: false,
@@ -813,7 +804,7 @@ Storage.prototype.softResetAllTxHistoryCache = function(cb) {
 };
 
 Storage.prototype.softResetTxHistoryCache = function(walletId, cb) {
-  this.db.collection(collections.CACHE).update({
+  Storage.db.collection(collections.CACHE).update({
     walletId: walletId,
     type: 'historyCacheStatus',
     key: null
@@ -826,8 +817,7 @@ Storage.prototype.softResetTxHistoryCache = function(walletId, cb) {
 };
 
 Storage.prototype.clearTxHistoryCache = function(walletId, cb) {
-  var self = this;
-  self.db.collection(collections.CACHE).remove({
+  Storage.db.collection(collections.CACHE).remove({
     walletId: walletId,
     type: 'historyCache',
   }, {
@@ -836,7 +826,7 @@ Storage.prototype.clearTxHistoryCache = function(walletId, cb) {
     if (err) {
       return cb(err);
     }
-    self.db.collection(collections.CACHE).remove({
+    Storage.db.collection(collections.CACHE).remove({
       walletId: walletId,
       type: 'historyCacheStatus',
       key: null
@@ -853,8 +843,6 @@ Storage.prototype.storeTxHistoryCache = function(walletId, totalItems, firstPosi
   $.shouldBeNumber(totalItems);
   $.checkArgument(totalItems >= 0);
 
-  var self = this;
-
   lodash.each(items, function(item, i) {
     item.position = firstPosition + i;
   });
@@ -864,7 +852,7 @@ Storage.prototype.storeTxHistoryCache = function(walletId, totalItems, firstPosi
   async.each(items, function(item, next) {
     var pos = item.position;
     delete item.position;
-    self.db.collection(collections.CACHE).update({
+    Storage.db.collection(collections.CACHE).update({
       walletId: walletId,
       type: 'historyCache',
       key: pos,
@@ -882,7 +870,7 @@ Storage.prototype.storeTxHistoryCache = function(walletId, totalItems, firstPosi
       return cb(err);
     }
 
-    self.db.collection(collections.CACHE).update({
+    Storage.db.collection(collections.CACHE).update({
       walletId: walletId,
       type: 'historyCacheStatus',
       key: null
@@ -902,9 +890,7 @@ Storage.prototype.storeTxHistoryCache = function(walletId, totalItems, firstPosi
 };
 
 Storage.prototype.fetchActiveAddresses = function(walletId, cb) {
-  var self = this;
-
-  self.db.collection(collections.CACHE).find({
+  Storage.db.collection(collections.CACHE).find({
     walletId: walletId,
     type: 'activeAddresses',
   }).toArray(function(err, result) {
@@ -920,11 +906,9 @@ Storage.prototype.fetchActiveAddresses = function(walletId, cb) {
 };
 
 Storage.prototype.storeFiatRate = function(providerName, rates, cb) {
-  var self = this;
-
   var now = Date.now();
   async.each(rates, function(rate, next) {
-    self.db.collection(collections.FIAT_RATES).insert({
+    Storage.db.collection(collections.FIAT_RATES).insert({
       provider: providerName,
       ts: now,
       code: rate.code,
@@ -936,8 +920,7 @@ Storage.prototype.storeFiatRate = function(providerName, rates, cb) {
 };
 
 Storage.prototype.fetchFiatRate = function(providerName, code, ts, cb) {
-  var self = this;
-  self.db.collection(collections.FIAT_RATES).find({
+  Storage.db.collection(collections.FIAT_RATES).find({
     provider: providerName,
     code: code,
     ts: {
@@ -956,7 +939,7 @@ Storage.prototype.fetchFiatRate = function(providerName, code, ts, cb) {
 Storage.prototype.fetchTxNote = function(walletId, txid, cb) {
   var self = this;
 
-  self.db.collection(collections.TX_NOTES).findOne({
+  Storage.db.collection(collections.TX_NOTES).findOne({
     walletId: walletId,
     txid: txid,
   }, function(err, result) {
@@ -1000,7 +983,7 @@ Storage.prototype.fetchTxNotes = function(walletId, opts, cb) {
   if (lodash.isNumber(opts.minTs)) filter.editedOn = {
     $gte: opts.minTs
   };
-  this.db.collection(collections.TX_NOTES).find(filter).toArray(function(err, result) {
+  Storage.db.collection(collections.TX_NOTES).find(filter).toArray(function(err, result) {
     if (err) {
       return cb(err);
     }
@@ -1012,7 +995,7 @@ Storage.prototype.fetchTxNotes = function(walletId, opts, cb) {
 };
 
 Storage.prototype.storeTxNote = function(txNote, cb) {
-  this.db.collection(collections.TX_NOTES).update({
+  Storage.db.collection(collections.TX_NOTES).update({
     txid: txNote.txid,
     walletId: txNote.walletId
   }, txNote.toObject(), {
@@ -1024,7 +1007,7 @@ Storage.prototype.storeTxNote = function(txNote, cb) {
 Storage.prototype.getSession = function(copayerId, cb) {
   var self = this;
 
-  self.db.collection(collections.SESSIONS).findOne({
+  Storage.db.collection(collections.SESSIONS).findOne({
       copayerId: copayerId,
     },
     function(err, result) {
@@ -1036,7 +1019,7 @@ Storage.prototype.getSession = function(copayerId, cb) {
 };
 
 Storage.prototype.storeSession = function(session, cb) {
-  this.db.collection(collections.SESSIONS).update({
+  Storage.db.collection(collections.SESSIONS).update({
     copayerId: session.copayerId,
   }, session.toObject(), {
     w: 1,
@@ -1045,7 +1028,7 @@ Storage.prototype.storeSession = function(session, cb) {
 };
 
 Storage.prototype.fetchPushNotificationSubs = function(copayerId, cb) {
-  this.db.collection(collections.PUSH_NOTIFICATION_SUBS).find({
+  Storage.db.collection(collections.PUSH_NOTIFICATION_SUBS).find({
     copayerId: copayerId,
   }).toArray(function(err, result) {
     if (err) {
@@ -1064,7 +1047,7 @@ Storage.prototype.fetchPushNotificationSubs = function(copayerId, cb) {
 };
 
 Storage.prototype.storePushNotificationSub = function(pushNotificationSub, cb) {
-  this.db.collection(collections.PUSH_NOTIFICATION_SUBS).update({
+  Storage.db.collection(collections.PUSH_NOTIFICATION_SUBS).update({
     copayerId: pushNotificationSub.copayerId,
     token: pushNotificationSub.token,
   }, pushNotificationSub, {
@@ -1074,7 +1057,7 @@ Storage.prototype.storePushNotificationSub = function(pushNotificationSub, cb) {
 };
 
 Storage.prototype.removePushNotificationSub = function(copayerId, token, cb) {
-  this.db.collection(collections.PUSH_NOTIFICATION_SUBS).remove({
+  Storage.db.collection(collections.PUSH_NOTIFICATION_SUBS).remove({
     copayerId: copayerId,
     token: token,
   }, {
@@ -1090,7 +1073,7 @@ Storage.prototype.fetchActiveTxConfirmationSubs = function(copayerId, cb) {
     filter.copayerId = copayerId;
   }
 
-  this.db.collection(collections.TX_CONFIRMATION_SUBS).find(filter)
+  Storage.db.collection(collections.TX_CONFIRMATION_SUBS).find(filter)
     .toArray(function(err, result) {
       if (err) {
         return cb(err);
@@ -1108,7 +1091,7 @@ Storage.prototype.fetchActiveTxConfirmationSubs = function(copayerId, cb) {
 };
 
 Storage.prototype.storeTxConfirmationSub = function(txConfirmationSub, cb) {
-  this.db.collection(collections.TX_CONFIRMATION_SUBS).update({
+  Storage.db.collection(collections.TX_CONFIRMATION_SUBS).update({
     copayerId: txConfirmationSub.copayerId,
     txid: txConfirmationSub.txid,
   }, txConfirmationSub, {
@@ -1118,7 +1101,7 @@ Storage.prototype.storeTxConfirmationSub = function(txConfirmationSub, cb) {
 };
 
 Storage.prototype.removeTxConfirmationSub = function(copayerId, txid, cb) {
-  this.db.collection(collections.TX_CONFIRMATION_SUBS).remove({
+  Storage.db.collection(collections.TX_CONFIRMATION_SUBS).remove({
     copayerId: copayerId,
     txid: txid,
   }, {
@@ -1130,8 +1113,7 @@ Storage.prototype._dump = function(cb, fn) {
   fn = fn || console.log;
   cb = cb || function() {};
 
-  var self = this;
-  this.db.collections(function(err, collections) {
+  Storage.db.collections(function(err, collections) {
     if (err) {
       return cb(err);
     }

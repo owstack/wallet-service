@@ -19,8 +19,8 @@ var context = new Context({
 });
 
 class CStorage extends BaseStorage {
-	constructor(config) {
-	  super(context, config);
+	constructor(config, opts) {
+	  super(context, config, opts);
 	}
 };
 

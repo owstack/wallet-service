@@ -120,8 +120,10 @@ EmailService.prototype.start = function(opts, cb) {
         self.storage = self.config.storage;
         done();
       } else {
-        self.storage = new self.ctx.Storage();
-        self.storage.connect(self.config.storageOpts, done);
+        self.storage = new self.ctx.Storage(self.config.storageOpts, {
+          creator: 'EmailService (' + self.LIVENET.currency + ')'
+        });
+        self.storage.connect(done);
       }
     },
     function(done) {
