@@ -41,7 +41,9 @@ class Storage {
     this.opts = opts;
 
     // If a database object is provided then use it.
-    Storage.db = this.opts.db;
+    if (this.opts.db) {
+      Storage.db = this.opts.db;
+    }
   }
 };
 

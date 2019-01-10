@@ -20,6 +20,9 @@ var Stats = require('./stats');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
 
+var Context = owsCommon.util.Context;
+var Storage = require('./storage');
+
 log.disableColor();
 log.debug = log.verbose;
 
@@ -50,6 +53,17 @@ class ExpressApp {
     }
 
     this.app = express();
+
+    // Establish a database connection.
+    var storage = new Storage(new Context(), this.config.storageOpts, {
+      creator: 'Wallet Services'
+    });
+
+    storage.connect(function(err) {
+      if (err) {
+        console.log(err);
+      }
+    });
   }
 };
 
