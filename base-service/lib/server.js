@@ -639,7 +639,6 @@ WalletService.prototype.getStatus = function(opts, cb) {
       });
     },
     function(next) {
-console.log('WalletService.prototype.getStatus getBalance');
       self.getBalance(opts, function(err, balance) {
         if (err) {
           return next(err);
@@ -649,7 +648,6 @@ console.log('WalletService.prototype.getStatus getBalance');
       });
     },
     function(next) {
-console.log('WalletService.prototype.getStatus getPendingTxs');
       self.getPendingTxs({}, function(err, pendingTxps) {
         if (err) {          
           return next(err);
@@ -659,7 +657,6 @@ console.log('WalletService.prototype.getStatus getPendingTxs');
       });
     },
     function(next) {
-console.log('WalletService.prototype.getStatus getPreferences');
       self.getPreferences({}, function(err, preferences) {
         if (err) {
           return next(err);
