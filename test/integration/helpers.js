@@ -53,7 +53,7 @@ helpers.before = function(serviceName, cb) {
     }
   }
   getDb(function(db) {
-    storage[serviceName] = new Services[serviceName].Storage({
+    storage[serviceName] = new Services[serviceName].Storage(null, {
       db: db
     });
     return cb();
@@ -61,10 +61,10 @@ helpers.before = function(serviceName, cb) {
 };
 
 helpers.beforeEach = function(serviceName, cb) {
-  if (!storage[serviceName].db) {
+  if (!storage[serviceName].opts.db) {
     return cb('Error - no storage for test');
   }
-  storage[serviceName].db.dropDatabase(function(err) {
+  storage[serviceName].opts.db.dropDatabase(function(err) {
     if (err) {
       return cb(err);
     }

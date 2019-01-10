@@ -162,7 +162,7 @@ describe('Wallet service', function() {
     it('should get server instance for support staff', function(done) {
       helpers.createAndJoinWallet(serviceName, 1, 1, function(s, wallet) {
         var collections = require('../../base-service/lib/storage').collections;
-        s.getStorage().db.collection(collections.COPAYERS_LOOKUP).update({
+        s.getStorage().getDB().collection(collections.COPAYERS_LOOKUP).update({
           copayerId: wallet.copayers[0].id
         }, {
           $set: {

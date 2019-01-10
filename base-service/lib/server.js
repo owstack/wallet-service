@@ -395,16 +395,14 @@ WalletService.prototype.login = function(opts, cb) {
 };
 
 WalletService.prototype.logout = function(opts, cb) {
-  var self = this;
-
-  self.storage.removeSession(self.copayerId, cb);
+  this.storage.removeSession(this.copayerId, cb);
 };
 
 /**
  * Gets the storage for this instance of the server.
  */
 WalletService.prototype.getStorage = function() {
-  return self.storage;
+  return this.storage;
 };
 
 /**

@@ -41,7 +41,7 @@ function resetDb(cb) {
 describe('Storage', function() {
   before(function(done) {
     openDb(function() {
-      storage = new Storage({
+      storage = new Storage(null, {
         db: db
       });
       done();

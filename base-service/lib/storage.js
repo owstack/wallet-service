@@ -39,10 +39,12 @@ class Storage {
 
     this.config = config || {};
     this.opts = opts;
+
+    // If a database object is provided then use it.
+    Storage.db = this.opts.db;
   }
 };
 
-//var db;
 Storage.db;
 
 Storage.prototype._createIndexes = function() {
@@ -128,6 +130,10 @@ Storage.prototype.disconnect = function(cb) {
     Storage.db = null;
     return cb();
   });
+};
+
+Storage.prototype.getDB = function() {
+  return Storage.db;
 };
 
 Storage.prototype.fetchWallet = function(id, cb) {
