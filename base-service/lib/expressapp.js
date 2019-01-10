@@ -11,17 +11,16 @@ var bodyParser = require('body-parser');
 var compression = require('compression');
 var ClientError = require('./errors/clienterror');
 var Constants = require('./common/constants');
+var Context = owsCommon.util.Context;
 var Defaults = require('./common/defaults');
 var express = require('express');
 var log = require('npmlog');
 var morgan = require('morgan');
 var RateLimit = require('express-rate-limit');
 var Stats = require('./stats');
+var Storage = require('./storage');
 var lodash = owsCommon.deps.lodash;
 var $ = require('preconditions').singleton();
-
-var Context = owsCommon.util.Context;
-var Storage = require('./storage');
 
 log.disableColor();
 log.debug = log.verbose;
