@@ -11,27 +11,11 @@ Defaults.MIN_TX_FEE = 0;
 Defaults.MAX_TX_FEE = 0.1 * 1e8;
 Defaults.MAX_TX_SIZE_IN_KB = 100;
 
-Defaults.MAX_KEYS = 100;
-
-// Time after which a tx proposal can be erased by any copayer. in seconds
-Defaults.DELETE_LOCKTIME = 600;
-
-// Allowed consecutive txp rejections before backoff is applied.
-Defaults.BACKOFF_OFFSET = 10;
-
-// Time a copayer need to wait to create a new tx after her previous proposal was rejected. in seconds.
-Defaults.BACKOFF_TIME = 600;
-
-Defaults.MAX_MAIN_ADDRESS_GAP = 20;
-
-// TODO: should allow different gap sizes for external/internal chains
-Defaults.SCAN_ADDRESS_GAP = Defaults.MAX_MAIN_ADDRESS_GAP + 20;
-
 Defaults.FEE_LEVELS = [{
   name: 'urgent',
   nbBlocks: 2,
   multiplier: 1.5,
-  defaultValue: 150000,
+  defaultValue: 150000
 }, {
   name: 'priority',
   nbBlocks: 2,
@@ -52,16 +36,11 @@ Defaults.FEE_LEVELS = [{
 
 Defaults.DEFAULT_FEE_PER_KB = Defaults.FEE_LEVELS[1].defaultValue;
 
-// How many levels to fallback to if the value returned by the network for a given nbBlocks is -1
+// How many levels to fallback to if the value returned by the network for a given nbBlocks is -1.
 Defaults.FEE_LEVELS_FALLBACK = 2;
 
-// Minimum nb of addresses a wallet must have to start using 2-step balance optimization
-Defaults.TWO_STEP_BALANCE_THRESHOLD = 100;
-
-Defaults.HISTORY_LIMIT = 50;
-
 // The maximum amount of an UTXO to be considered too big to be used in the tx before exploring smaller
-// alternatives (proportinal to tx amount).
+// alternatives (proportional to tx amount).
 Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR = 2;
 
 // The minimum amount an UTXO need to contribute proportional to tx amount.
@@ -74,33 +53,10 @@ Defaults.UTXO_SELECTION_MAX_FEE_VS_TX_AMOUNT_FACTOR = 0.05;
 // when fees are significant (proportional to how much we would pay for using that big input only).
 Defaults.UTXO_SELECTION_MAX_FEE_VS_SINGLE_UTXO_FEE_FACTOR = 5;
 
-// Minimum allowed amount for tx outputs (including change) in SAT
+// Minimum allowed amount for tx outputs (including change) in atomic units.
 Defaults.MIN_OUTPUT_AMOUNT = 5000;
 
-// Number of confirmations from which tx in history will be cached 
-// (ie we consider them inmutables)
+// Number of confirmations from which tx in history will be cached (we consider them inmutable).
 Defaults.CONFIRMATIONS_TO_START_CACHING = 6 * 6; // ~ 6hrs
-
-// Number of addresses from which tx history is enabled in a wallet
-Defaults.HISTORY_CACHE_ADDRESS_THRESOLD = 100;
-
-// Cache time for blockchain height (in seconds)
-Defaults.BLOCKHEIGHT_CACHE_TIME = 10 * 60;
-
-Defaults.SESSION_EXPIRATION = 1 * 60 * 60; // 1 hour to session expiration
-
-Defaults.RateLimit = {
-  createWallet: {
-    windowMs: 60 * 60 * 1000, // hour window 
-    delayAfter: 10, // begin slowing down responses after the 3rd request 
-    delayMs: 3000, // slow down subsequent responses by 3 seconds per request 
-    max: 20, // start blocking after 20 request
-    message: "Too many wallets created from this IP, please try again after an hour"
-  },
-  // otherPosts: {
-  //   windowMs: 60 * 60 * 1000, // 1 hour window 
-  //   max: 1200 , // 1 post every 3 sec average, max.
-  // },
-};
 
 module.exports = Defaults;
