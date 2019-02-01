@@ -534,7 +534,6 @@ describe('Push notifications', function() {
           }), function(arg) {
             return arg.body.notification.title == 'New copayer';
           });
-
           server.getWallet(null, function(err, wallet) {
             /*
               First call - copayer2 joined
