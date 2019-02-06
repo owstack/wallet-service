@@ -142,11 +142,11 @@ BlockchainMonitor.prototype._handleThirdPartyBroadcasts = function(data, process
     var walletId = txp.walletId;
 
     if (!processIt) {
-      log.info('Detected broadcast ' + data.txid + ' of an accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.ctx.Unit().atomicsName() + ']');
+      log.info('Detected broadcast ' + data.txid + ' of an accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.ctx.Unit().atomicsAccessor() + ']');
       return setTimeout(self._handleThirdPartyBroadcasts.bind(self, data, true), 20 * 1000);
     }
 
-    log.info('Processing accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.ctx.Unit().atomicsName() + ']');
+    log.info('Processing accepted txp [' + txp.id + '] for wallet ' + walletId + ' [' + txp.amount + ' ' + self.ctx.Unit().atomicsAccessor() + ']');
 
     txp.setBroadcasted();
 
@@ -219,7 +219,7 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(data) {
           }
 
           wallet = w;
-          log.info('Incoming tx for wallet ' + wallet.id + ' [' + out.amount + ' ' + self.ctx.Unit().atomicsName() + ' -> ' + out.address + ']');
+          log.info('Incoming tx for wallet ' + wallet.id + ' [' + out.amount + ' ' + self.ctx.Unit().atomicsAccessor() + ' -> ' + out.address + ']');
           next();
         });
 

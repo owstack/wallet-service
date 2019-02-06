@@ -58,7 +58,7 @@ class TxProposal {
     // Set some frequently used contant values based on context.
     this.LIVENET = this.ctx.Networks.livenet;
     this.TESTNET = this.ctx.Networks.testnet;
-    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.atomicsAccessor = this.ctx.Unit().atomicsAccessor();
 
     opts = opts || {};
 
@@ -182,7 +182,7 @@ TxProposal.prototype._buildTx = function() {
     if (o.script) {
       var arg = {};
       arg.script = o.script;
-      arg[self.atomicsName] = o.amount;
+      arg[self.atomicsAccessor] = o.amount;
       t.addOutput(new self.ctx.Transaction.Output(arg));
     } else {
       t.to(o.toAddress, o.amount);
@@ -209,8 +209,8 @@ TxProposal.prototype._buildTx = function() {
   }
 
   // Validate actual inputs vs outputs independently
-  var totalInputs = lodash.sumBy(t.inputs, 'output.'+self.atomicsName);
-  var totalOutputs = lodash.sumBy(t.outputs, self.atomicsName);
+  var totalInputs = lodash.sumBy(t.inputs, 'output.'+self.atomicsAccessor);
+  var totalOutputs = lodash.sumBy(t.outputs, self.atomicsAccessor);
 
   $.checkState(totalInputs > 0 && totalOutputs > 0 && totalInputs >= totalOutputs);
   $.checkState(totalInputs - totalOutputs <= this.ctx.Defaults.MAX_TX_FEE);

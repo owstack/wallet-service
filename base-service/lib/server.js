@@ -49,7 +49,7 @@ class WalletService {
     this.LIVENET = this.ctx.Networks.livenet;
     this.TESTNET = this.ctx.Networks.testnet;
 
-    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.atomicsAccessor = this.ctx.Unit().atomicsAccessor();
     this.utils = new this.ctx.Utils();
 
     this.initialize(opts, config, cb);
@@ -1307,10 +1307,10 @@ WalletService.prototype._getUtxos = function(addresses, cb) {
     }
 
     var utxos = lodash.map(utxos, function(utxo) {
-      var u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', self.atomicsName, 'confirmations']);
+      var u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', self.atomicsAccessor, 'confirmations']);
       u.confirmations = u.confirmations || 0;
       u.locked = false;
-      u[self.atomicsName] = lodash.isNumber(u[self.atomicsName]) ? +u[self.atomicsName] : self.ctx.Utils.strip(u.amount * 1e8);
+      u[self.atomicsAccessor] = lodash.isNumber(u[self.atomicsAccessor]) ? +u[self.atomicsAccessor] : self.ctx.Utils.strip(u.amount * 1e8);
       delete u.amount;
       return u;
     });
@@ -1434,10 +1434,10 @@ WalletService.prototype._totalizeUtxos = function(utxos) {
   var self = this;
 
   var balance = {
-    totalAmount: lodash.sumBy(utxos, self.atomicsName),
-    lockedAmount: lodash.sumBy(lodash.filter(utxos, 'locked'), self.atomicsName),
-    totalConfirmedAmount: lodash.sumBy(lodash.filter(utxos, 'confirmations'), self.atomicsName),
-    lockedConfirmedAmount: lodash.sumBy(lodash.filter(lodash.filter(utxos, 'locked'), 'confirmations'), self.atomicsName),
+    totalAmount: lodash.sumBy(utxos, self.atomicsAccessor),
+    lockedAmount: lodash.sumBy(lodash.filter(utxos, 'locked'), self.atomicsAccessor),
+    totalConfirmedAmount: lodash.sumBy(lodash.filter(utxos, 'confirmations'), self.atomicsAccessor),
+    lockedConfirmedAmount: lodash.sumBy(lodash.filter(lodash.filter(utxos, 'locked'), 'confirmations'), self.atomicsAccessor),
   };
   balance.availableAmount = balance.totalAmount - balance.lockedAmount;
   balance.availableConfirmedAmount = balance.totalConfirmedAmount - balance.lockedConfirmedAmount;
@@ -1466,7 +1466,7 @@ WalletService.prototype._getBalanceFromAddresses = function(addresses, cb) {
     });
 
     lodash.each(utxos, function(utxo) {
-      byAddress[utxo.address].amount += utxo[self.atomicsName];
+      byAddress[utxo.address].amount += utxo[self.atomicsAccessor];
     });
 
     balance.byAddress = lodash.values(byAddress);
@@ -1659,7 +1659,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         inputs = lodash.filter(inputs, 'confirmations');
       }
       inputs = lodash.sortBy(inputs, function(input) {
-        return -input[self.atomicsName];
+        return -input[self.atomicsAccessor];
       });
 
       if (lodash.isEmpty(inputs)) {
@@ -1687,18 +1687,18 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         var feePerInput = sizePerInput * txp.feePerKb / 1000.;
 
         var partitionedByAmount = lodash.partition(inputs, function(input) {
-          return input[self.atomicsName] > feePerInput;
+          return input[self.atomicsAccessor] > feePerInput;
         });
 
         info.utxosBelowFee = partitionedByAmount[1].length;
-        info.amountBelowFee = lodash.sumBy(partitionedByAmount[1], self.atomicsName);
+        info.amountBelowFee = lodash.sumBy(partitionedByAmount[1], self.atomicsAccessor);
         inputs = partitionedByAmount[0];
 
         lodash.each(inputs, function(input, i) {
           var sizeInKb = (baseTxpSize + (i + 1) * sizePerInput) / 1000.;
           if (sizeInKb > self.ctx.Defaults.MAX_TX_SIZE_IN_KB) {
             info.utxosAboveMaxSize = inputs.length - i;
-            info.amountAboveMaxSize = lodash.sumBy(lodash.slice(inputs, i), self.atomicsName);
+            info.amountAboveMaxSize = lodash.sumBy(lodash.slice(inputs, i), self.atomicsAccessor);
             return false;
           }
           txp.inputs.push(input);
@@ -1709,7 +1709,7 @@ WalletService.prototype.getSendMaxInfo = function(opts, cb) {
         }
 
         var fee = txp.getEstimatedFee();
-        var amount = lodash.sumBy(txp.inputs, self.atomicsName) - fee;
+        var amount = lodash.sumBy(txp.inputs, self.atomicsAccessor) - fee;
 
         if (amount < self.ctx.Defaults.MIN_OUTPUT_AMOUNT) {
           return cb(null, info);
@@ -1895,7 +1895,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       if (utxo.locked) {
         return false;
       }
-      if (utxo[self.atomicsName] <= feePerInput) {
+      if (utxo[self.atomicsAccessor] <= feePerInput) {
         return false;
       }
       if (txp.excludeUnconfirmedUtxos && !utxo.confirmations) {
@@ -1921,7 +1921,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
   };
 
   function select(utxos, cb) {
-    var totalValueInUtxos = lodash.sumBy(utxos, self.atomicsName);
+    var totalValueInUtxos = lodash.sumBy(utxos, self.atomicsAccessor);
     var netValueInUtxos = totalValueInUtxos - baseTxpFee - (utxos.length * feePerInput);
 
     if (totalValueInUtxos < txpAmount) {
@@ -1937,12 +1937,12 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     log.debug('Big input threshold ' + self.utils.formatAmountInStandard(bigInputThreshold));
 
     var partitions = lodash.partition(utxos, function(utxo) {
-      return utxo[self.atomicsName] > bigInputThreshold;
+      return utxo[self.atomicsAccessor] > bigInputThreshold;
     });
 
-    var bigInputs = lodash.sortBy(partitions[0], self.atomicsName);
+    var bigInputs = lodash.sortBy(partitions[0], self.atomicsAccessor);
     var smallInputs = lodash.sortBy(partitions[1], function(utxo) {
-      return -utxo[self.atomicsName];
+      return -utxo[self.atomicsAccessor];
     });
 
     log.debug('Considering ' + bigInputs.length + ' big inputs (' + self.utils.formatUtxos(bigInputs) + ')');
@@ -1957,13 +1957,13 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
     lodash.each(smallInputs, function(input, i) {
       log.debug('Input #' + i + ': ' + self.utils.formatUtxos(input));
 
-      var netInputAmount = input[self.atomicsName] - feePerInput;
+      var netInputAmount = input[self.atomicsAccessor] - feePerInput;
 
       log.debug('The input contributes ' + self.utils.formatAmountInStandard(netInputAmount));
 
       selected.push(input);
 
-      total += input[self.atomicsName];
+      total += input[self.atomicsAccessor];
       netTotal += netInputAmount;
 
       var txpSize = baseTxpSize + selected.length * sizePerInput;
@@ -2023,7 +2023,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
         var input = lodash.head(bigInputs);
         log.debug('Using big input: ', self.utils.formatUtxos(input));
 
-        total = input[self.atomicsName];
+        total = input[self.atomicsAccessor];
         fee = Math.round(baseTxpFee + feePerInput);
         netTotal = total - fee;
         selected = [input];
@@ -2129,7 +2129,7 @@ WalletService.prototype._selectTxInputs = function(txp, utxosToExclude, cb) {
       var err = self._checkTx(txp);
 
       if (!err) {
-        var change = lodash.sumBy(txp.inputs, self.atomicsName) - lodash.sumBy(txp.outputs, 'amount') - txp.fee;
+        var change = lodash.sumBy(txp.inputs, self.atomicsAccessor) - lodash.sumBy(txp.outputs, 'amount') - txp.fee;
         log.debug('Successfully built transaction. Total fees: ' + self.utils.formatAmountInStandard(txp.fee) + ', total change: ' + self.utils.formatAmountInStandard(change));
       } else {
         log.warn('Error building transaction', err);

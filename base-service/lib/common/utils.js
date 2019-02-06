@@ -14,7 +14,7 @@ class Utils {
     context.inject(this);
 
     // Set some frequently used contant values based on context.
-    this.atomicsName = this.ctx.Unit().atomicsName();
+    this.atomicsAccessor = this.ctx.Unit().atomicsAccessor();
   }
 };
 
@@ -32,7 +32,7 @@ Utils.prototype.formatUtxos = function(utxos) {
   var self = this;
   if (lodash.isEmpty(utxos)) return 'none';
   return lodash.map([].concat(utxos), function(i) {
-    var amount = self.formatAmountInStandard(i[self.atomicsName]);
+    var amount = self.formatAmountInStandard(i[self.atomicsAccessor]);
     var confirmations = i.confirmations ? i.confirmations + 'c' : 'u';
     return amount + '/' + confirmations;
   }).join(', ');

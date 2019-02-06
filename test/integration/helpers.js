@@ -29,7 +29,7 @@ var tingodb = require('tingodb')({memStore: true});
 var Unit = btcLib.Unit;
 var lodash = owsCommon.deps.lodash;
 
-var atomicsName = Unit().atomicsName();
+var atomicsAccessor = Unit().atomicsAccessor();
 var storage = {};
 var blockchainExplorer = {};
 var useMongoDb = !!process.env.USE_MONGO_DB;
@@ -340,7 +340,7 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
           confirmations: parsed.confirmations,
           publicKeys: address.publicKeys,
         };
-        res[atomicsName] = parsed.amount;
+        res[atomicsAccessor] = parsed.amount;
         return res;
       }));
 

@@ -32,7 +32,7 @@ var Utils = WalletService.Utils;
 var Server = WalletService.Server;
 
 var storage, blockchainExplorer, request;
-var atomicsName = Unit().atomicsName();
+var atomicsAccessor = Unit().atomicsAccessor();
 var lodash = owsCommon.deps.lodash;
 
 log.debug = log.verbose;
@@ -1152,7 +1152,7 @@ describe('Wallet service', function() {
             status.pendingTxps.length.should.equal(1);
             var balance = status.balance;
             balance.totalAmount.should.equal(3e8);
-            balance.lockedAmount.should.equal(tx.inputs[0][atomicsName]);
+            balance.lockedAmount.should.equal(tx.inputs[0][atomicsAccessor]);
             balance.availableAmount.should.equal(balance.totalAmount - balance.lockedAmount);
             done();
           });
@@ -1644,7 +1644,7 @@ describe('Wallet service', function() {
           should.not.exist(err);
           should.exist(utxos);
           utxos.length.should.equal(2);
-          lodash.sumBy(utxos, atomicsName).should.equal(3 * 1e8);
+          lodash.sumBy(utxos, atomicsAccessor).should.equal(3 * 1e8);
           server.getMainAddresses({}, function(err, addresses) {
             var utxo = utxos[0];
             var address = lodash.find(addresses, {
@@ -1665,13 +1665,13 @@ describe('Wallet service', function() {
         var address = utxos[0].address;
         var amount = lodash.sumBy(lodash.filter(utxos, {
           address: address
-        }), atomicsName);
+        }), atomicsAccessor);
         server.getUtxos({
           addresses: [address]
         }, function(err, utxos) {
           should.not.exist(err);
           should.exist(utxos);
-          lodash.sumBy(utxos, atomicsName).should.equal(amount);
+          lodash.sumBy(utxos, atomicsAccessor).should.equal(amount);
           done();
         });
       });
@@ -2728,7 +2728,7 @@ describe('Wallet service', function() {
               tx.fee.should.equal(1000e2);
               var t = tx.getTx();
               t.getFee().should.equal(1000e2);
-              t.getChangeOutput()[atomicsName].should.equal(3e8 - 0.8e8 - 1000e2);
+              t.getChangeOutput()[atomicsAccessor].should.equal(3e8 - 0.8e8 - 1000e2);
               done();
             });
           });
@@ -3222,7 +3222,7 @@ describe('Wallet service', function() {
             should.exist(txp);
             var t = txp.getTx().toObject();
             t.outputs.length.should.equal(1);
-            t.outputs[0][atomicsName].should.equal(max);
+            t.outputs[0][atomicsAccessor].should.equal(max);
             done();
           });
         });
@@ -3351,7 +3351,7 @@ describe('Wallet service', function() {
             should.exist(tx);
             var tx1 = tx.getTx();
             tx1.outputs.length.should.equal(1);
-            tx1.outputs[0][atomicsName].should.equal(tx.amount);
+            tx1.outputs[0][atomicsAccessor].should.equal(tx.amount);
             done();
           });
         });
@@ -3407,7 +3407,7 @@ describe('Wallet service', function() {
                 server.getBalance({}, function(err, balance) {
                   should.not.exist(err);
                   balance.totalAmount.should.equal(3.6e8);
-                  var amountInputs = lodash.sumBy(txs[0].inputs, atomicsName);
+                  var amountInputs = lodash.sumBy(txs[0].inputs, atomicsAccessor);
                   balance.lockedAmount.should.equal(amountInputs);
                   balance.lockedAmount.should.be.below(balance.totalAmount);
                   balance.availableAmount.should.equal(balance.totalAmount - balance.lockedAmount);
@@ -3488,7 +3488,7 @@ describe('Wallet service', function() {
             t.getFee().should.equal(tx.fee);
             should.not.exist(t.getChangeOutput());
             t.toObject().inputs.length.should.equal(tx.inputs.length);
-            t.toObject().outputs[0][atomicsName].should.equal(tx.amount);
+            t.toObject().outputs[0][atomicsAccessor].should.equal(tx.amount);
             done();
           });
         });
@@ -3509,8 +3509,8 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             var t = txp.getTx();
-            var changeOutput = t.getChangeOutput()[atomicsName];
-            var outputs = lodash.without(lodash.map(t.outputs, atomicsName), changeOutput);
+            var changeOutput = t.getChangeOutput()[atomicsAccessor];
+            var outputs = lodash.without(lodash.map(t.outputs, atomicsAccessor), changeOutput);
 
             outputs.should.not.deep.equal(lodash.map(txOpts.outputs, 'amount'));
             txOpts.noShuffleOutputs = true;
@@ -3519,8 +3519,8 @@ describe('Wallet service', function() {
               should.exist(txp);
 
               t = txp.getTx();
-              changeOutput = t.getChangeOutput()[atomicsName];
-              outputs = lodash.without(lodash.map(t.outputs, atomicsName), changeOutput);
+              changeOutput = t.getChangeOutput()[atomicsAccessor];
+              outputs = lodash.without(lodash.map(t.outputs, atomicsAccessor), changeOutput);
 
               outputs.should.deep.equal(lodash.map(txOpts.outputs, 'amount'));
               done();
@@ -3726,7 +3726,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(35000);
+            txp.inputs[0][atomicsAccessor].should.equal(35000);
 
             done();
           });
@@ -3739,14 +3739,14 @@ describe('Wallet service', function() {
           var txOpts = {
             outputs: [{
               toAddress: '18PzpUFkFZE8zKWUPvfykkTxmB9oMR8qP7',
-              amount: lodash.sumBy(utxos, atomicsName) - 0.5e8,
+              amount: lodash.sumBy(utxos, atomicsAccessor) - 0.5e8,
             }],
             feePerKb: 100e2,
           };
           server.createTx(txOpts, function(err, txp) {
             should.not.exist(err);
             should.exist(txp);
-            var amounts = lodash.map(txp.inputs, atomicsName);
+            var amounts = lodash.map(txp.inputs, atomicsAccessor);
             amounts.length.should.equal(30);
             lodash.every(amounts, function(amount, i) {
               if (i == 0) return true;
@@ -3770,7 +3770,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(3);
-            txp.inputs[0][atomicsName].should.equal(10000);
+            txp.inputs[0][atomicsAccessor].should.equal(10000);
 
             done();
           });
@@ -3811,7 +3811,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(1e8);
+            txp.inputs[0][atomicsAccessor].should.equal(1e8);
             done();
           });
         });
@@ -3834,7 +3834,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(1e8);
+            txp.inputs[0][atomicsAccessor].should.equal(1e8);
             Defaults.UTXO_SELECTION_MAX_SINGLE_UTXO_FACTOR = _old;
             done();
           });
@@ -3856,7 +3856,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(1e8);
+            txp.inputs[0][atomicsAccessor].should.equal(1e8);
 
             done();
           });
@@ -3876,7 +3876,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(9e8);
+            txp.inputs[0][atomicsAccessor].should.equal(9e8);
             done();
           });
         });
@@ -3900,7 +3900,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(100e8);
+            txp.inputs[0][atomicsAccessor].should.equal(100e8);
             Defaults.UTXO_SELECTION_MIN_TX_AMOUNT_VS_UTXO_FACTOR = _old1;
             Defaults.MAX_TX_SIZE_IN_KB = _old2;
             done();
@@ -4002,7 +4002,7 @@ describe('Wallet service', function() {
             should.not.exist(err);
             should.exist(txp);
             txp.inputs.length.should.equal(1);
-            txp.inputs[0][atomicsName].should.equal(1e8);
+            txp.inputs[0][atomicsAccessor].should.equal(1e8);
             done();
           });
         });
@@ -4060,7 +4060,7 @@ describe('Wallet service', function() {
           server.createTx(txOpts, function(err, txp) {
             should.not.exist(err);
             txp.inputs.length.should.equal(1);
-            (lodash.sumBy(txp.inputs, atomicsName) - txp.outputs[0].amount - txp.fee).should.equal(0);
+            (lodash.sumBy(txp.inputs, atomicsAccessor) - txp.outputs[0].amount - txp.fee).should.equal(0);
             var changeOutput = txp.getTx().getChangeOutput();
             should.not.exist(changeOutput);
             done();
@@ -4758,7 +4758,7 @@ describe('Wallet service', function() {
         }, function(err, info) {
           should.not.exist(err);
           should.exist(info);
-          var amounts = lodash.map(info.inputs, atomicsName);
+          var amounts = lodash.map(info.inputs, atomicsAccessor);
           amounts.length.should.equal(30);
           lodash.every(amounts, function(amount, i) {
             if (i == 0) return true;
@@ -6457,7 +6457,7 @@ describe('Wallet service', function() {
                 time: Date.now() / 1000,
                 inputs: [{
                   address: tx.inputs[0].address,
-                  amount: utxos[0][atomicsName],
+                  amount: utxos[0][atomicsAccessor],
                 }],
                 outputs: [{
                   address: changeAddresses[0].address,
