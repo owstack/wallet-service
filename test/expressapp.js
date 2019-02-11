@@ -57,15 +57,12 @@ describe('ExpressApp', function() {
         }
       });
 
-      it('should handle request with valid x-service header', function(done) {
+      it('should handle request with valid service param', function(done) {
         var TestExpressApp = require(xyExpressApp);
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + testConfig.basePath + '/v1/version',
-            headers: {
-              'x-service': 'bitcoin'
-            }
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/version?service=btc'
           };
 
           request(requestOptions, function(err, res, body) {
@@ -77,15 +74,12 @@ describe('ExpressApp', function() {
         });
       });
 
-      it('should not handle request with invalid x-service header', function(done) {
+      it('should not handle request with invalid service param', function(done) {
         var TestExpressApp = require(xyExpressApp);
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + testConfig.basePath + '/v1/version',
-            headers: {
-              'x-service': 'invalid'
-            }
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/version?service=invalid'
           };
 
           request(requestOptions, function(err, res, body) {
@@ -110,11 +104,10 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + testConfig.basePath + '/v1/wallets',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/wallets?service=btc',
             headers: {
               'x-identity': 'identity',
-              'x-signature': 'signature',
-              'x-service': 'bitcoin'
+              'x-signature': 'signature'
             }
           };
 
@@ -139,11 +132,10 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + testConfig.basePath + '/v1/addresses?limit=4&reverse=1',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/addresses?limit=4&reverse=1&service=btc',
             headers: {
               'x-identity': 'identity',
-              'x-signature': 'signature',
-              'x-service': 'bitcoin'
+              'x-signature': 'signature'
             }
           };
 
@@ -172,11 +164,10 @@ describe('ExpressApp', function() {
 
         start(TestExpressApp, function() {
           var requestOptions = {
-            url: testHost + ':' + testPort + testConfig.basePath + '/v1/sendmaxinfo?feePerKb=10000&returnInputs=1',
+            url: testHost + ':' + testPort + testConfig.basePath + '/v1/sendmaxinfo?feePerKb=10000&returnInputs=1&service=btc',
             headers: {
               'x-identity': 'identity',
-              'x-signature': 'signature',
-              'x-service': 'bitcoin'
+              'x-signature': 'signature'
             }
           };
 
@@ -195,7 +186,7 @@ describe('ExpressApp', function() {
       describe('Balance', function() {
         it('should handle cache argument', function(done) {
           var server = {
-            getBalance: sinon.stub().callsArgWith(1, null, {}),
+            getBalance: sinon.stub().callsArgWith(1, null, {})
           };
 
           sinon.stub(WalletService.Server.prototype, 'initialize').callsArg(1);
@@ -205,11 +196,10 @@ describe('ExpressApp', function() {
 
           start(TestExpressApp, function() {
             var reqOpts = {
-              url: testHost + ':' + testPort + testConfig.basePath + '/v1/balance',
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/balance?service=btc',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-signature': 'signature'
               }
             };
 
@@ -219,7 +209,7 @@ describe('ExpressApp', function() {
               var args = server.getBalance.getCalls()[0].args[0];
               should.not.exist(args.twoStep);
 
-              reqOpts.url += '?twoStep=1';
+              reqOpts.url += '&twoStep=1';
 
               request(reqOpts, function(err, res, body) {
                 should.not.exist(err);
@@ -256,11 +246,10 @@ describe('ExpressApp', function() {
         it('should fetch notifications from a specified id', function(done) {
           start(TestExpressApp, function() {
             var requestOptions = {
-              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?notificationId=123',
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?notificationId=123&service=btc',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-signature': 'signature'
               }
             };
 
@@ -280,11 +269,10 @@ describe('ExpressApp', function() {
         it('should allow custom minTs within limits', function(done) {
           start(TestExpressApp, function() {
             var requestOptions = {
-              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?timeSpan=30',
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?timeSpan=30&service=btc',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-signature': 'signature'
               }
             };
 
@@ -304,11 +292,10 @@ describe('ExpressApp', function() {
           start(TestExpressApp, function() {
             var overLimit  = Defaults.MAX_NOTIFICATIONS_TIMESPAN * 2;
             var requestOptions = {
-              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?timeSpan=' + overLimit ,
+              url: testHost + ':' + testPort + testConfig.basePath + '/v1/notifications' + '?timeSpan=' + overLimit + '&service=btc',
               headers: {
                 'x-identity': 'identity',
-                'x-signature': 'signature',
-                'x-service': 'bitcoin'
+                'x-signature': 'signature'
               }
             };
             request(requestOptions, function(err, res, body) {

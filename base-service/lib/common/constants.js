@@ -3,12 +3,11 @@
 var Constants = {};
 
 /**
- * Defines the service name that must exist in the 'x-service' request header
- * in order to route the request to the correct service. These values equal the
- * BIP21 protocol name (or equivalent for non-bitcoin networks).
+ * Defines the service name that must exist as a 'service' request parameter
+ * in order to route the request to the correct service.
  */
-Constants.SERVICE_BITCOIN = 'bitcoin';
-Constants.SERVICE_BITCOIN_CASH = 'bitcoincash';
-Constants.SERVICE_LITECOIN = 'litecoin';
+Constants.SERVICE_BITCOIN = 'btc';
+Constants.SERVICE_BITCOIN_CASH = 'bch';
+Constants.SERVICE_LITECOIN = 'ltc';
 
 module.exports = Constants;

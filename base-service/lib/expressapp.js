@@ -78,7 +78,7 @@ ExpressApp.prototype.start = function(opts, cb) {
   self.app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'x-signature,x-identity,x-session,x-client-version,x-service,x-wallet-id,X-Requested-With,Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'x-signature,x-identity,x-session,x-client-version,x-wallet-id,X-Requested-With,Content-Type,Authorization');
     next();
   });
 
@@ -116,7 +116,7 @@ ExpressApp.prototype.start = function(opts, cb) {
 
   if (log.level != 'silent') {
     morgan.token('service', function getId(req) {
-      return req.header('x-service')
+      return req.query['service']
     });
 
     morgan.token('walletId', function getId(req) {
@@ -206,7 +206,6 @@ ExpressApp.prototype.start = function(opts, cb) {
       BtcWalletService = require('../../btc-service').WalletService;
     }
 
-    res.setHeader('x-service', req.headers['x-service']);
     res.setHeader('x-service-version', BtcWalletService.Server.getServiceVersion());
 
     opts.serviceOpts = opts.serviceOpts || {};
@@ -235,7 +234,6 @@ ExpressApp.prototype.start = function(opts, cb) {
 
     opts.serviceOpts = opts.serviceOpts || {};
 
-    res.setHeader('x-service', req.headers['x-service']);
     res.setHeader('x-service-version', BchWalletService.Server.getServiceVersion());
 
     if (opts.serviceClassOnly) {
@@ -260,7 +258,6 @@ ExpressApp.prototype.start = function(opts, cb) {
       LtcWalletService = require('../../ltc-service').WalletService;
     }
 
-    res.setHeader('x-service', req.headers['x-service']);
     res.setHeader('x-service-version', LtcWalletService.Server.getServiceVersion());
 
     opts.serviceOpts = opts.serviceOpts || {};
@@ -300,7 +297,7 @@ ExpressApp.prototype.start = function(opts, cb) {
 
     lodash.defaults(opts.serviceOpts, self.opts);
 
-    var service = req.header('x-service');
+    var service = req.query['service'];
     switch (service) {
       case Constants.SERVICE_BITCOIN:      return resolveBtcServer(req, res, cb, auth, opts);
       case Constants.SERVICE_BITCOIN_CASH: return resolveBchServer(req, res, cb, auth, opts);
