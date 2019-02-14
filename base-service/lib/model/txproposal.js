@@ -100,6 +100,10 @@ class TxProposal {
         let address;
         try {
             address = this.ctx.Address(this.outputs[0].toAddress).toObject();
+        } catch (ex) {
+            // nothing
+        }
+        try {
             this.networkName = opts.networkName || address.network;
         } catch (ex) {
             // nothing
@@ -359,7 +363,7 @@ TxProposal.prototype._addSignaturesToTx = function (tx, signatures, xpub) {
             tx.inputs[i].addSignature(tx, s);
             i++;
         } catch (e) {
-            console.error(e);
+            // console.error(e);
         }
     });
 

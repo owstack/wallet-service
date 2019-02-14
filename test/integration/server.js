@@ -2547,9 +2547,6 @@ describe('Wallet service', function () {
                         feePerKb: 123e2,
                     };
                     server.createTx(txOpts, function (err, tx) {
-                        if (err) {
-                            console.error(err);
-                        }
                         should.not.exist(err);
                         should.exist(tx);
                         tx.walletM.should.equal(1);
