@@ -8,7 +8,7 @@ var config = {
   // Log levels; debug, warn, info, error
   log: {
     disable: true,
-    level: 'info'
+    level: 'debug'
   },
 
   // Uncomment to make wallet-service a forking server
@@ -29,7 +29,7 @@ var config = {
 
   storageOpts: {
     mongoDb: {
-      uri: 'mongodb://localhost:27017/btcws'
+      uri: 'mongodb://localhost:27017/ws'
     }
   },
 /*
@@ -42,7 +42,7 @@ var config = {
 
   messageBrokerOpts: {
     port: 3380,
-    // If using a remote server.
+    // If using a remote service.
     // messageBrokerServer: {
     //   url: 'http://remotehost:3380'
     // }
@@ -57,10 +57,10 @@ var config = {
     defaultLanguage: 'en',
     subjectPrefix: '[Wallet Service]',
     from: 'wallet-service@owstack.com',
-    templatePath: './lib/templates',
+    templatePath: '../base-service/lib/templates',
     publicTxUrlTemplate: {
-      'livenet': 'https://explorer.openwalletstack.com/tx/{{txid}}',
-      'testnet': 'https://test-explorer.openwalletstack.com/tx/{{txid}}'
+      livenet: 'http://explorer.openwalletstack.com/tx/{{txid}}',
+      // testnet: 'http://explorer.owstack.org/explorer/tx/{{txid}}'
     }
   },
 */
@@ -80,7 +80,7 @@ var config = {
   },
 
   fiatRateServiceOpts: {
-    defaultProvider: 'OpenWalletStack',
+    provider: 'OpenWalletStack',
     fetchInterval: 60 // in minutes
   },
 
@@ -115,10 +115,10 @@ var config = {
           url: 'http://bch.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
-        testnet: {
-          url: 'https://test-insight.bitpay.com',
-          apiPrefix: '/api'
-        }
+        /*testnet: {
+          url: '',
+          apiPrefix: ''
+        }*/
       }
     }
   },
@@ -133,10 +133,10 @@ var config = {
           url: 'http://ltc.livenet.explorer-api.owstack.org',
           apiPrefix: '/explorer-api'
         },
-        testnet: {
-          url: 'https://test-insight.bitpay.com',
-          apiPrefix: '/api'
-        }
+        /*testnet: {
+          url: '',
+          apiPrefix: ''
+        }*/
       }
     }
   }
