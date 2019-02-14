@@ -1,24 +1,22 @@
-'use strict';
+const cLib = require('../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var cLib = require('../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
+const BaseNode = require('../../base-service').Node;
+const BlockchainMonitor = require('../lib/blockchainmonitor');
+const EmailService = require('../lib/emailservice');
+const Networks = cLib.Networks;
 
-var BaseNode = require('../../base-service').Node;
-var BlockchainMonitor = require('../lib/blockchainmonitor');
-var EmailService = require('../lib/emailservice');
-var Networks = cLib.Networks;
-
-var context = new Context({
-	BlockchainMonitor: BlockchainMonitor,
-	EmailService: EmailService,
-	Networks: Networks
+const context = new Context({
+    BlockchainMonitor: BlockchainMonitor,
+    EmailService: EmailService,
+    Networks: Networks
 });
 
 class CNode extends BaseNode {
-	constructor(config, opts) {
-	  super(context, config, opts);
-	}
-};
+    constructor(config, opts) {
+        super(context, config, opts);
+    }
+}
 
 module.exports = CNode;

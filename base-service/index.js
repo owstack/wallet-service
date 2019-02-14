@@ -1,11 +1,11 @@
-'use strict';
+
 
 /**
  * The base library for the wallet service.
  * @module BaseWalletService
  */
 
-var Service = {};
+const Service = {};
 
 Service.BlockchainMonitor = require('./blockchainmonitor/blockchainmonitor');
 Service.EmailService = require('./emailservice/emailservice');

@@ -1,6 +1,4 @@
-'use strict';
-
-var BlockChainExplorers = {};
+const BlockChainExplorers = {};
 
 BlockChainExplorers.Explorer = require('./explorer');
 BlockChainExplorers.RequestList = require('./request-list');

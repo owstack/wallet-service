@@ -1,23 +1,21 @@
 #!/usr/bin/env node
 
-'use strict';
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
+const BasePushNotificationsService = require('../../base-service').PushNotificationsService;
+const PushNotificationsService = require('../lib/pushnotificationsservice');
 
-var BasePushNotificationsService = require('../../base-service').PushNotificationsService;
-var PushNotificationsService = require('../lib/pushnotificationsservice');
-
-var context = new Context({
-	PushNotificationsService: PushNotificationsService
+const context = new Context({
+    PushNotificationsService: PushNotificationsService
 });
 
 class CPushNotificationsService extends BasePushNotificationsService {
-	constructor(config) {
-	  super(context, config);
-	}
-};
+    constructor(config) {
+        super(context, config);
+    }
+}
 
 // Start the service with base configuration (default) and no options.
-var service = new CPushNotificationsService();
+const service = new CPushNotificationsService();
 service.start();

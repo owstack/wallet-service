@@ -1,9 +1,9 @@
-'use strict';
 
-var baseService = require('../../../base-service');
-var BaseWalletService = baseService.WalletService;
 
-var Defaults = BaseWalletService.Common.Defaults;
+const baseService = require('../../../base-service');
+const BaseWalletService = baseService.WalletService;
+
+const Defaults = BaseWalletService.Common.Defaults;
 
 Defaults.MIN_FEE_PER_KB = 0;
 Defaults.MAX_FEE_PER_KB = 1000000;
@@ -12,26 +12,26 @@ Defaults.MAX_TX_FEE = 0.1 * 1e8;
 Defaults.MAX_TX_SIZE_IN_KB = 100;
 
 Defaults.FEE_LEVELS = [{
-  name: 'urgent',
-  nbBlocks: 2,
-  multiplier: 1.5,
-  defaultValue: 150000
+    name: 'urgent',
+    nbBlocks: 2,
+    multiplier: 1.5,
+    defaultValue: 150000
 }, {
-  name: 'priority',
-  nbBlocks: 2,
-  defaultValue: 100000
+    name: 'priority',
+    nbBlocks: 2,
+    defaultValue: 100000
 }, {
-  name: 'normal',
-  nbBlocks: 3,
-  defaultValue: 80000
+    name: 'normal',
+    nbBlocks: 3,
+    defaultValue: 80000
 }, {
-  name: 'economy',
-  nbBlocks: 6,
-  defaultValue: 50000
+    name: 'economy',
+    nbBlocks: 6,
+    defaultValue: 50000
 }, {
-  name: 'superEconomy',
-  nbBlocks: 24,
-  defaultValue: 20000
+    name: 'superEconomy',
+    nbBlocks: 24,
+    defaultValue: 20000
 }];
 
 Defaults.DEFAULT_FEE_PER_KB = Defaults.FEE_LEVELS[1].defaultValue;

@@ -1,6 +1,4 @@
-'use strict';
-
-var Model = {};
+const Model = {};
 
 Model.Address = require('./address');
 Model.AddressManager = require('./addressmanager');

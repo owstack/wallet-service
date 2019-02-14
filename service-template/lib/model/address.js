@@ -1,38 +1,38 @@
-'use strict';
 
-var cLib = require('../../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseWalletService = require('../../../base-service').WalletService;
-var BaseAddress = BaseWalletService.Model.Address;
+const cLib = require('../../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var Address = cLib.Address;
-var Networks = cLib.Networks;
+const BaseWalletService = require('../../../base-service').WalletService;
+const BaseAddress = BaseWalletService.Model.Address;
 
-var context = new Context({
-	Address: Address,
-	Networks: Networks
+const Address = cLib.Address;
+const Networks = cLib.Networks;
+
+const context = new Context({
+    Address: Address,
+    Networks: Networks
 });
 
 class CAddress extends BaseAddress {
-	constructor() {
+    constructor() {
 	  super(context);
-	}
+    }
+}
+
+/**
+ *
+ */
+CAddress.create = function (opts) {
+    return BaseAddress.create(context, opts);
 };
 
 /**
  *
  */
-CAddress.create = function(opts) {
-	return BaseAddress.create(context, opts);
-};
-
-/**
- *
- */
-CAddress.fromObj = function(obj) {
-	return BaseAddress.fromObj(context, obj);
+CAddress.fromObj = function (obj) {
+    return BaseAddress.fromObj(context, obj);
 };
 
 module.exports = CAddress;

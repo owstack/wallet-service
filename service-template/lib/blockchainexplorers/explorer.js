@@ -1,22 +1,22 @@
-'use strict';
 
-var cLib = require('../../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseWalletService = require('../../../base-service').WalletService;
-var BaseExplorer = BaseWalletService.BlockchainExplorers.Explorer;
+const cLib = require('../../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var Networks = cLib.Networks;
+const BaseWalletService = require('../../../base-service').WalletService;
+const BaseExplorer = BaseWalletService.BlockchainExplorers.Explorer;
 
-var context = new Context({
-	Networks: Networks
+const Networks = cLib.Networks;
+
+const context = new Context({
+    Networks: Networks
 });
 
 class CExplorer extends BaseExplorer {
-	constructor(opts) {
+    constructor(opts) {
 	  super(context, opts);
-	}
-};
+    }
+}
 
 module.exports = CExplorer;

@@ -1,22 +1,22 @@
-'use strict';
 
-var cLib = require('../../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseWalletService = require('../../../base-service').WalletService;
-var BaseUtils = BaseWalletService.Common.Utils;
+const cLib = require('../../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var Unit = cLib.Unit;
+const BaseWalletService = require('../../../base-service').WalletService;
+const BaseUtils = BaseWalletService.Common.Utils;
 
-var context = new Context({
-	Unit: Unit
+const Unit = cLib.Unit;
+
+const context = new Context({
+    Unit: Unit
 });
 
 class CUtils extends BaseUtils {
-	constructor() {
+    constructor() {
 	  super(context);
-	}
-};
+    }
+}
 
 module.exports = CUtils;

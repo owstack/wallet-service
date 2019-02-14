@@ -1,22 +1,22 @@
-'use strict';
 
-var events = require('events');
-var log = require('npmlog');
+
+const events = require('events');
+const log = require('npmlog');
 
 log.debug = log.verbose;
 
-class NotificationBroadcaster {};
+class NotificationBroadcaster {}
 
-NotificationBroadcaster.prototype.broadcast = function(eventName, notification, walletService) {
-  this.emit(eventName, notification, walletService);
+NotificationBroadcaster.prototype.broadcast = function (eventName, notification, walletService) {
+    this.emit(eventName, notification, walletService);
 };
 
-var _instance;
-NotificationBroadcaster.singleton = function() {
-  if (!_instance) {
-    _instance = new NotificationBroadcaster();
-  }
-  return _instance;
+let _instance;
+NotificationBroadcaster.singleton = function () {
+    if (!_instance) {
+        _instance = new NotificationBroadcaster();
+    }
+    return _instance;
 };
 
 module.exports = NotificationBroadcaster.singleton();

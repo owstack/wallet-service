@@ -1,26 +1,26 @@
-'use strict';
 
-var cLib = require('../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseWalletService = require('../../base-service').WalletService;
-var BaseBlockchainMonitor = BaseWalletService.BlockchainMonitor;
+const cLib = require('../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var BlockchainExplorer = require('./blockchainexplorer');
-var Networks = cLib.Networks;
-var Unit = cLib.Unit;
+const BaseWalletService = require('../../base-service').WalletService;
+const BaseBlockchainMonitor = BaseWalletService.BlockchainMonitor;
 
-var context = new Context({
-	BlockchainExplorer: BlockchainExplorer,
-	Networks: Networks,
-	Unit: Unit
+const BlockchainExplorer = require('./blockchainexplorer');
+const Networks = cLib.Networks;
+const Unit = cLib.Unit;
+
+const context = new Context({
+    BlockchainExplorer: BlockchainExplorer,
+    Networks: Networks,
+    Unit: Unit
 });
 
 class CBlockchainMonitor extends BaseBlockchainMonitor {
-	constructor(config) {
+    constructor(config) {
 	  super(context, config);
-	}
-};
+    }
+}
 
 module.exports = CBlockchainMonitor;

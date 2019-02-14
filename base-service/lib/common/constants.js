@@ -1,6 +1,4 @@
-'use strict';
-
-var Constants = {};
+const Constants = {};
 
 /**
  * Defines the service name that must exist as a 'service' request parameter

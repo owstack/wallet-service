@@ -1,9 +1,8 @@
-'use strict';
 
-var Providers = {
-  bitpay: require('./bitpay'),
-  bitstamp: require('./bitstamp'),
-  ows: require('./ows')
-}
+
+const Providers = {
+    bitstamp: require('./bitstamp'),
+    ows: require('./ows')
+};
 
 module.exports = Providers;

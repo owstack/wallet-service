@@ -1,6 +1,4 @@
-'use strict;'
-
-var Service = {};
+const Service = {};
 
 Service.ExpressApp = require('./base-service/lib/expressapp');
 
