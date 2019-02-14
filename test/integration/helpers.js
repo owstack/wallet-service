@@ -247,7 +247,7 @@ helpers.createAndJoinWallet = function(serviceName, m, n, opts, cb) {
 };
 
 helpers.randomTXID = function() {
-  return Hash.sha256(new Buffer(Math.random() * 100000)).toString('hex');;
+  return Hash.sha256(Buffer.from(Math.random() * 100000 + '')).toString('hex');;
 };
 
 helpers.toAtomic = function(serviceName, standards) {
@@ -359,7 +359,7 @@ helpers.stubUtxos = function(server, wallet, amounts, opts, cb) {
 
       return next();
     },
-  ], function(err) {    
+  ], function(err) {
     should.not.exist(err);
     return cb(helpers._utxos);
   });
