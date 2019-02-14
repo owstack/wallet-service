@@ -12,9 +12,16 @@ addons:
     - g++-4.8
     - clang
 node_js:
-  - '8'
+  - '10'
 before_install:
   - export CXX="g++-4.8" CC="gcc-4.8"
+before_script:
+  - ./node_modules/.bin/eslint --quiet .
+  - docker-compose pull
+  - docker-compose up -d
+  - sleep 10
+  - mongo --eval 'rs.initiate()'
+  - sleep 15
 install:
   - npm install
 after_success:
