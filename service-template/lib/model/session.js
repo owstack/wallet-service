@@ -14,7 +14,7 @@ const context = new Context({
 
 class CSession extends BaseSession {
     constructor(opts) {
-	  super(context, opts);
+        super(context, opts);
     }
 }
 

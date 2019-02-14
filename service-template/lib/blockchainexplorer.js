@@ -18,7 +18,7 @@ const context = new Context({
 class CBlockchainExplorer extends BaseBlockchainExplorer {
     constructor(opts, config) {
         // Returns a different class.
-	  super(context, opts, config);
+        super(context, opts, config);
     }
 }
 

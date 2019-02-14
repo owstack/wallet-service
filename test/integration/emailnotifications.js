@@ -100,7 +100,7 @@ describe('Email notifications', function () {
                     }],
                     feePerKb: 100e2
                 };
-                helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function (tx) {
+                helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function () {
                     setTimeout(function () {
                         const calls = mailerStub.sendMail.getCalls();
                         calls.length.should.equal(2);
@@ -137,7 +137,7 @@ describe('Email notifications', function () {
                     }],
                     feePerKb: 100e2
                 };
-                helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function (tx) {
+                helpers.createAndPublishTx(server, txOpts, TestData.copayers[0].privKey_1H_0, function () {
                     setTimeout(function () {
                         const calls = mailerStub.sendMail.getCalls();
                         calls.length.should.equal(0);
@@ -490,7 +490,7 @@ describe('Email notifications', function () {
                             BTC: {}
                         });
 
-                        var publicTxUrlTemplate = {};
+                        const publicTxUrlTemplate = {};
                         publicTxUrlTemplate[Constants.LIVENET] = 'https://explorer.openwalletstack.com/tx/{{txid}}';
                         publicTxUrlTemplate[Constants.TESTNET] = 'https://test-explorer.openwalletstack.com/tx/{{txid}}';
 

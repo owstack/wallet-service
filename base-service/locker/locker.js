@@ -9,7 +9,7 @@ class Service {
     constructor(config) {
         this.lockerService = new Locker();
 
-	  this.config = config || baseConfig;
+        this.config = config || baseConfig;
     }
 }
 

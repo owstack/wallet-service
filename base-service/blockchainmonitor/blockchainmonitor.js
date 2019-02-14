@@ -7,22 +7,22 @@ log.debug = log.verbose;
 
 class Service {
     constructor(context, config) {
-	  // Context defines the coin network and is set by the implementing service in
-	  // order to instance this base service; e.g., btc-service.
+        // Context defines the coin network and is set by the implementing service in
+        // order to instance this base service; e.g., btc-service.
         context.inject(this);
 
-	  this.config = config || baseConfig;
+        this.config = config || baseConfig;
         this.blockchainmonitor = new this.ctx.BlockchainMonitor(this.config);
     }
 }
 
 Service.prototype.start = function () {
     this.blockchainmonitor.start(null, function (err) {
-	  if (err) {
-	  	throw err;
-	  }
+        if (err) {
+            throw err;
+        }
 
-	  console.log('Blockchain monitor started');
+        console.log('Blockchain monitor started');
     });
 };
 

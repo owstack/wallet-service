@@ -16,7 +16,6 @@ const TESTNET = Networks.testnet;
 const owsCommon = require('@owstack/ows-common');
 const keyLib = require('@owstack/key-lib');
 const async = require('async');
-const Constants = WalletService.Constants;
 const Copayer = WalletService.Model.Copayer;
 const Defaults = WalletService.Common.Defaults;
 const helpers = require('./helpers');
@@ -26,7 +25,6 @@ const Storage = WalletService.Storage;
 const testConfig = require('config');
 const TestData = require('../testdata');
 const TxProposal = WalletService.Model.TxProposal;
-const Utils = WalletService.Utils;
 const Server = WalletService.Server;
 
 let storage; let blockchainExplorer; let request;
@@ -94,7 +92,6 @@ describe('Wallet service', function () {
     describe('#getInstanceWithAuth', function () {
         it('should get server instance for existing copayer', function (done) {
             helpers.createAndJoinWallet(serviceName, 1, 2, function (s, wallet) {
-                const xpriv = TestData.copayers[0].xPrivKey;
                 const priv = TestData.copayers[0].privKey_1H_0;
 
                 const sig = helpers.signMessage(serviceName, 'hello world', priv);
@@ -131,7 +128,7 @@ describe('Wallet service', function () {
                 copayerId: 'dummy',
                 message: message,
                 signature: helpers.signMessage(serviceName, message, TestData.copayers[0].privKey_1H_0)
-            }, function (err, server) {
+            }, function (err) {
                 err.code.should.equal('NOT_AUTHORIZED');
                 err.message.should.contain('Copayer not found');
                 done();
@@ -149,7 +146,7 @@ describe('Wallet service', function () {
                     copayerId: wallet.copayers[0].id,
                     message: 'dummy',
                     signature: 'dummy'
-                }, function (err, server) {
+                }, function (err) {
                     err.code.should.equal('NOT_AUTHORIZED');
                     err.message.should.contain('Invalid signature');
                     done();
@@ -168,7 +165,6 @@ describe('Wallet service', function () {
                     }
                 });
 
-                const xpriv = TestData.copayers[0].xPrivKey;
                 const priv = TestData.copayers[0].privKey_1H_0;
 
                 const sig = helpers.signMessage(serviceName, 'hello world', priv);
@@ -194,11 +190,10 @@ describe('Wallet service', function () {
     });
 
     describe('Session management (#login, #logout, #authenticate)', function () {
-        let server; let wallet;
+        let server;
         beforeEach(function (done) {
-            helpers.createAndJoinWallet(serviceName, 1, 2, function (s, w) {
+            helpers.createAndJoinWallet(serviceName, 1, 2, function (s) {
                 server = s;
-                wallet = w;
                 done();
             });
         });
@@ -298,7 +293,7 @@ describe('Wallet service', function () {
                     }, testConfig, {
                         copayerId: server.copayerId,
                         session: token,
-                    }, function (err, server2) {
+                    }, function (err) {
                         should.exist(err);
                         err.code.should.equal('NOT_AUTHORIZED');
                         err.message.should.contain('expired');
@@ -372,8 +367,8 @@ describe('Wallet service', function () {
                 pubKey: TestData.keyPair.pub,
                 id: '1234',
             };
-            server.createWallet(opts, function (err, walletId) {
-                server.createWallet(opts, function (err, walletId) {
+            server.createWallet(opts, function () {
+                server.createWallet(opts, function (err) {
                     err.message.should.contain('Wallet already exists');
                     done();
                 });
@@ -444,7 +439,7 @@ describe('Wallet service', function () {
                 m: -2,
                 n: -2,
                 valid: false,
-            }, ];
+            }];
             const opts = {
                 id: '123',
                 name: 'my wallet',
@@ -462,7 +457,7 @@ describe('Wallet service', function () {
                     }
                     return cb();
                 });
-            }, function (err) {
+            }, function () {
                 done();
             });
         });
@@ -1615,7 +1610,7 @@ describe('Wallet service', function () {
                     unit: 'xxxxx',
                 },
                 expected: 'unit'
-            }, ];
+            }];
             async.each(invalid, function (item, next) {
                 server.savePreferences(item.preferences, function (err) {
                     should.exist(err);
@@ -1900,7 +1895,7 @@ describe('Wallet service', function () {
                     balance.byAddress[1].amount.should.equal(helpers.toAtomic(serviceName, 2));
                     server.getMainAddresses({}, function (err, addresses) {
                         should.not.exist(err);
-                        var addresses = lodash.uniq(lodash.map(addresses, 'address'));
+                        addresses = lodash.uniq(lodash.map(addresses, 'address'));
                         lodash.intersection(addresses, lodash.map(balance.byAddress, 'address')).length.should.equal(2);
                         done();
                     });
@@ -2552,7 +2547,9 @@ describe('Wallet service', function () {
                         feePerKb: 123e2,
                     };
                     server.createTx(txOpts, function (err, tx) {
-                        if(err) console.error(err);
+                        if (err) {
+                            console.error(err);
+                        }
                         should.not.exist(err);
                         should.exist(tx);
                         tx.walletM.should.equal(1);

@@ -133,7 +133,7 @@ const copayers = [{
     xPubKey_1H: 'xpub69D527HrF5ckb2YQqYKLdEhfuP5GC6gQxqR2NgNQuDqPRmWEBd6qNjh8DRJfYzQ4Y2WCw3NWR9Bn3YZkKa2yQiCG2xWKSMnMfg71pFEjCWd',
     privKey_1H_0: '95951f0e40d31bafe54a3098bd0ed898d370cc5d52a9318d7b7b14568da6cb5c',
     pubKey_1H_0: '0266cdb57b8a4d7c1b5b20ddeea43705420c6e3aef2c2979a3768b7b585839a0d3'
-}, ];
+}];
 
 const history = [
     {

@@ -1,5 +1,4 @@
 const chai = require('chai');
-const sinon = require('sinon');
 const should = chai.should();
 
 const Service = require('../');
@@ -43,7 +42,7 @@ describe('Utils', function () {
             }, {
                 args: ['id', 'dummy'],
                 check: ['dummy']
-            }, ];
+            }];
             lodash.each(fixtures, function (f) {
                 Utils.getMissingFields(obj, f.args).should.deep.equal(f.check);
             });

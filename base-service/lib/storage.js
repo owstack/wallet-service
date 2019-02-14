@@ -5,7 +5,6 @@ const async = require('async');
 const log = require('npmlog');
 const Model = require('./model');
 const mongodb = require('mongodb');
-const util = require('util');
 const lodash = owsCommon.deps.lodash;
 const $ = require('preconditions').singleton();
 
@@ -568,7 +567,7 @@ Storage.prototype.storeAddressAndWallet = function (wallet, addresses, cb) {
         }, cb);
     }
 
-    var addresses = [].concat(addresses);
+    addresses = [].concat(addresses);
     if (addresses.length == 0) {
         return cb();
     }

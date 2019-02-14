@@ -1,7 +1,6 @@
 const owsCommon = require('@owstack/ows-common');
 const async = require('async');
 const baseConfig = require('config');
-const Constants = owsCommon.Constants;
 const fs = require('fs');
 const log = require('npmlog');
 const Lock = require('./lock');
@@ -284,7 +283,7 @@ EmailService.prototype._getDataForTemplate = function (notification, recipient, 
 
         if (lodash.includes(['NewIncomingTx', 'NewOutgoingTx'], notification.type) && data.txid) {
             if (wallet.networkName != notification.networkName) {
-                var err = `Network mismatch. Expected ${  wallet.networkName  } to be${  notification.networkName}`;
+                err = `Network mismatch. Expected ${  wallet.networkName  } to be${  notification.networkName}`;
                 return cb(err);
             }
 

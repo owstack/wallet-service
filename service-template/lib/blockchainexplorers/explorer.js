@@ -15,7 +15,7 @@ const context = new Context({
 
 class CExplorer extends BaseExplorer {
     constructor(opts) {
-	  super(context, opts);
+        super(context, opts);
     }
 }
 

@@ -154,7 +154,7 @@ describe('Blockchain monitor', function () {
                     setTimeout(function () {
                         server.getNotifications({}, function (err, notifications) {
                             should.not.exist(err);
-                            var notifications = lodash.filter(notifications, {
+                            notifications = lodash.filter(notifications, {
                                 type: 'TxConfirmation'
                             });
                             notifications.length.should.equal(1);

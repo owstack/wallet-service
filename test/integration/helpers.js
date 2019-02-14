@@ -268,7 +268,7 @@ helpers._parseAmount = function (serviceName, str) {
         str = str.toString();
     }
 
-    const re = /^((?:\d+c)|u)?\s*([\d\.]+)\s*(BTC|bit|satoshi)?$/;
+    const re = /^((?:\d+c)|u)?\s*([\d.]+)\s*(BTC|bit|satoshi)?$/;
     const match = str.match(re);
 
     if (!match) {

@@ -1,7 +1,4 @@
-
-
 const chai = require('chai');
-const sinon = require('sinon');
 const should = chai.should();
 
 const Service = require('../');
@@ -13,7 +10,7 @@ const BlockchainExplorer = WalletService.BlockchainExplorer;
 describe('Blockchain explorer', function () {
     describe('#constructor', function () {
         it('should return a blockchain explorer with basic methods', function () {
-            var exp = new BlockchainExplorer({
+            let exp = new BlockchainExplorer({
                 provider: 'explorer',
                 networkName: 'testnet'
             });
@@ -24,7 +21,7 @@ describe('Blockchain explorer', function () {
             exp.should.respondTo('getAddressActivity');
             exp.should.respondTo('estimateFee');
             exp.should.respondTo('initSocket');
-            var exp = new BlockchainExplorer({
+            exp = new BlockchainExplorer({
                 provider: 'explorer',
                 networkName: 'btc'
             });
@@ -32,7 +29,7 @@ describe('Blockchain explorer', function () {
         });
         it('should fail on unsupported provider', function () {
             (function () {
-                const exp = new BlockchainExplorer({
+                new BlockchainExplorer({
                     provider: 'dummy'
                 });
             }).should.throw('not supported');

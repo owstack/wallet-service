@@ -14,7 +14,7 @@ const context = new Context({
 
 class CBlockchainMonitor extends BaseBlockchainMonitor {
     constructor(config) {
-	  super(context, config);
+        super(context, config);
     }
 }
 

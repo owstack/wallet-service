@@ -17,7 +17,7 @@ const context = new Context({
 
 class CAddress extends BaseAddress {
     constructor() {
-	  super(context);
+        super(context);
     }
 }
 

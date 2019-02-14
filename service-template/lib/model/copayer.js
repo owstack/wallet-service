@@ -1,13 +1,12 @@
 
 
 const owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
+const Context = owsCommon.util.Context;
 
 const BaseWalletService = require('../../../base-service').WalletService;
 const BaseCopayer = BaseWalletService.Model.Copayer;
 
 const Address = require('./address');
-var Context = owsCommon.util.Context;
 
 const context = new Context({
     Address: Address
@@ -15,7 +14,7 @@ const context = new Context({
 
 class CCopayer extends BaseCopayer {
     constructor() {
-	  super(context);
+        super(context);
     }
 }
 

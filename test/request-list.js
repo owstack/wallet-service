@@ -38,7 +38,7 @@ describe('request-list', function () {
         new RequestList({
             hosts: 'url1',
             request: request,
-        }, function (err, res, body) {
+        }, function (err, res) {
             should.not.exist(err);
             res.statusCode.should.be.equal(500);
             done();
@@ -69,7 +69,7 @@ describe('request-list', function () {
         new RequestList({
             hosts: ['url1', 'url2'],
             request: request,
-        }, function (err, res, body) {
+        }, function (err, res) {
             should.not.exist(err);
             res.statusCode.should.be.equal(550);
             done();
@@ -106,7 +106,7 @@ describe('request-list', function () {
         new RequestList({
             hosts: ['url1', 'url2'],
             request: request,
-        }, function (err, res, body) {
+        }, function (err, res) {
             should.not.exist(err);
             res.statusCode.should.be.equal(404);
             done();
@@ -170,7 +170,7 @@ describe('request-list', function () {
         new RequestList({
             hosts: ['url1', 'url2', 'url3'],
             request: request,
-        }, function (err, res, body) {
+        }, function (err, res) {
             should.not.exist(err);
             res.statusCode.should.be.equal(510);
             done();

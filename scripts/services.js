@@ -35,7 +35,7 @@ function createServices() {
         const d = `${__dirname  }/../${  s.dir}`;
         copyDir(`${__dirname  }/../service-template`, d);
 
-        const content = ` var cLib = require('${  s.lib  }'); module.exports = cLib;`;
+        const content = `const cLib = require('${  s.lib  }'); module.exports = cLib;`;
         fs.writeFileSync(`${s.dir  }/cLib.js`, content, 'utf8');
 
         console.log(` > ${  s.coin  } (${  s.lib  }) at ./${  s.dir}`);

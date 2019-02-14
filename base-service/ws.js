@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const async = require('async');
 const baseConfig = require('config');
 const cluster = require('cluster');
 const ExpressApp = require('./lib/expressapp');
@@ -43,7 +42,7 @@ WS.prototype.start = function () {
         }
     }
 
-    if (self.config.cluster && !config.lockOpts.lockerServer) {
+    if (self.config.cluster && !self.config.lockOpts.lockerServer) {
         throw 'When running in cluster mode, locker server must be configured';
     }
 
@@ -53,7 +52,7 @@ WS.prototype.start = function () {
 
     const expressApp = new ExpressApp(self.config);
 
-    function startInstance(cb) {
+    function startInstance() {
         const server = self.config.https ? serverModule.createServer(serverOpts, expressApp.app) : serverModule.Server(expressApp.app);
 
         server.on('connection', function (socket) {

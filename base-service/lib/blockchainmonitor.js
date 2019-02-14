@@ -46,7 +46,7 @@ BlockchainMonitor.prototype.start = function (opts, cb) {
             self.explorers = {};
 
             lodash.forEach([self.LIVENET, self.TESTNET], function (network) {
-                var explorer;
+                let explorer;
 
                 if (self.config[network.currency].blockchainExplorers &&
           self.config[network.currency].blockchainExplorers[network.alias]) {
@@ -61,7 +61,7 @@ BlockchainMonitor.prototype.start = function (opts, cb) {
             self.config[network.currency].blockchainExplorerOpts[provider] &&
             self.config[network.currency].blockchainExplorerOpts[provider][network.alias]) {
 
-                        var explorer = new self.ctx.BlockchainExplorer({
+                        explorer = new self.ctx.BlockchainExplorer({
                             provider: provider,
                             network: network.alias
                         }, self.config);
@@ -214,7 +214,7 @@ BlockchainMonitor.prototype._handleIncomingPayments = function (data) {
         }, function (next) {
             self.storage.fetchWallet(walletId, function (err, w) {
                 if (err) {
-                    return cb(err);
+                    return next(err);
                 }
 
                 wallet = w;

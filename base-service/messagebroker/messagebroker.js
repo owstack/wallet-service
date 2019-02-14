@@ -8,7 +8,7 @@ log.debug = log.verbose;
 
 class Service {
     constructor(config) {
-	  this.config = config || baseConfig;
+        this.config = config || baseConfig;
     }
 }
 
@@ -16,9 +16,9 @@ Service.prototype.start = function () {
     const server = io(this.config.messageBrokerOpts.port);
 
     server.on('connection', function (socket) {
-	  socket.on('msg', function (data) {
-	    server.emit('msg', data);
-	  });
+        socket.on('msg', function (data) {
+            server.emit('msg', data);
+        });
     });
 
     console.log(`Message broker server listening on port ${  this.config.messageBrokerOpts.port}`);

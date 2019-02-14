@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-
-
 const owsCommon = require('@owstack/ows-common');
 
 const async = require('async');
@@ -11,7 +9,6 @@ const mongodb = require('mongodb');
 const moment = require('moment');
 const Storage = require('./storage');
 const lodash = owsCommon.deps.lodash;
-const $ = require('preconditions').singleton();
 
 log.debug = log.verbose;
 log.disableColor();

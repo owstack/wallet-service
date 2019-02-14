@@ -23,7 +23,7 @@ const context = new Context({
 
 class CTxProposal extends BaseTxProposal {
     constructor(opts) {
-	  super(context, opts);
+        super(context, opts);
     }
 }
 

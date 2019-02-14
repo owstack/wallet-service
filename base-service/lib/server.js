@@ -1045,7 +1045,6 @@ WalletService.prototype.savePreferences = function (opts, cb) {
             }
             if (!preference.isValid(value)) {
                 throw `Invalid ${  preference.name}`;
-                return false;
             }
         });
     } catch (ex) {
@@ -1310,7 +1309,7 @@ WalletService.prototype._getUtxos = function (addresses, cb) {
             return cb(err);
         }
 
-        var utxos = lodash.map(utxos, function (utxo) {
+        utxos = lodash.map(utxos, function (utxo) {
             const u = lodash.pick(utxo, ['txid', 'vout', 'address', 'scriptPubKey', 'amount', self.atomicsAccessor, 'confirmations']);
             u.confirmations = u.confirmations || 0;
             u.locked = false;
@@ -2131,7 +2130,7 @@ WalletService.prototype._selectTxInputs = function (txp, utxosToExclude, cb) {
             txp.setInputs(lodash.shuffle(inputs));
             txp.fee = fee;
 
-            var err = self._checkTx(txp);
+            err = self._checkTx(txp);
 
             if (!err) {
                 const change = lodash.sumBy(txp.inputs, self.atomicsAccessor) - lodash.sumBy(txp.outputs, 'amount') - txp.fee;

@@ -17,7 +17,7 @@ const context = new Context({
 
 class CWallet extends BaseWallet {
     constructor(obj) {
-	  super(context, obj);
+        super(context, obj);
     }
 }
 
