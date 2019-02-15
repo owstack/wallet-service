@@ -131,40 +131,40 @@ helpers.getAuthServer = function (serviceName, copayerId, cb) {
     });
 };
 
-helpers._generateCopayersTestData = function (n) {
-    console.log('var copayers = [');
-    lodash.each(lodash.range(n), function (c) {
-        const xpriv = new HDPrivateKey();
-        const xpub = HDPublicKey(xpriv);
-
-        const xpriv_45H = xpriv.deriveChild(45, true);
-        const xpub_45H = HDPublicKey(xpriv_45H);
-        const id45 = Copayer._xPubToCopayerId(xpub_45H.toString());
-
-        const xpriv_44H_0H_0H = xpriv.deriveChild(44, true).deriveChild(0, true).deriveChild(0, true);
-        const xpub_44H_0H_0H = HDPublicKey(xpriv_44H_0H_0H);
-        const id44 = Copayer._xPubToCopayerId(xpub_44H_0H_0H.toString());
-
-        const xpriv_1H = xpriv.deriveChild(1, true);
-        const xpub_1H = HDPublicKey(xpriv_1H);
-        const priv = xpriv_1H.deriveChild(0).privateKey;
-        const pub = xpub_1H.deriveChild(0).publicKey;
-
-        console.log('{id44: ', `'${  id44  }',`);
-        console.log('id45: ', `'${  id45  }',`);
-        console.log('xPrivKey: ', `'${  xpriv.toString()  }',`);
-        console.log('xPubKey: ', `'${  xpub.toString()  }',`);
-        console.log('xPrivKey_45H: ', `'${  xpriv_45H.toString()  }',`);
-        console.log('xPubKey_45H: ', `'${  xpub_45H.toString()  }',`);
-        console.log('xPrivKey_44H_0H_0H: ', `'${  xpriv_44H_0H_0H.toString()  }',`);
-        console.log('xPubKey_44H_0H_0H: ', `'${  xpub_44H_0H_0H.toString()  }',`);
-        console.log('xPrivKey_1H: ', `'${  xpriv_1H.toString()  }',`);
-        console.log('xPubKey_1H: ', `'${  xpub_1H.toString()  }',`);
-        console.log('privKey_1H_0: ', `'${  priv.toString()  }',`);
-        console.log('pubKey_1H_0: ', `'${  pub.toString()  }'},`);
-    });
-    console.log('];');
-};
+// helpers._generateCopayersTestData = function (n) {
+//     console.log('var copayers = [');
+//     lodash.each(lodash.range(n), function (c) {
+//         const xpriv = new HDPrivateKey();
+//         const xpub = HDPublicKey(xpriv);
+//
+//         const xpriv_45H = xpriv.deriveChild(45, true);
+//         const xpub_45H = HDPublicKey(xpriv_45H);
+//         const id45 = Copayer._xPubToCopayerId(xpub_45H.toString());
+//
+//         const xpriv_44H_0H_0H = xpriv.deriveChild(44, true).deriveChild(0, true).deriveChild(0, true);
+//         const xpub_44H_0H_0H = HDPublicKey(xpriv_44H_0H_0H);
+//         const id44 = Copayer._xPubToCopayerId(xpub_44H_0H_0H.toString());
+//
+//         const xpriv_1H = xpriv.deriveChild(1, true);
+//         const xpub_1H = HDPublicKey(xpriv_1H);
+//         const priv = xpriv_1H.deriveChild(0).privateKey;
+//         const pub = xpub_1H.deriveChild(0).publicKey;
+//
+//         console.log('{id44: ', `'${  id44  }',`);
+//         console.log('id45: ', `'${  id45  }',`);
+//         console.log('xPrivKey: ', `'${  xpriv.toString()  }',`);
+//         console.log('xPubKey: ', `'${  xpub.toString()  }',`);
+//         console.log('xPrivKey_45H: ', `'${  xpriv_45H.toString()  }',`);
+//         console.log('xPubKey_45H: ', `'${  xpub_45H.toString()  }',`);
+//         console.log('xPrivKey_44H_0H_0H: ', `'${  xpriv_44H_0H_0H.toString()  }',`);
+//         console.log('xPubKey_44H_0H_0H: ', `'${  xpub_44H_0H_0H.toString()  }',`);
+//         console.log('xPrivKey_1H: ', `'${  xpriv_1H.toString()  }',`);
+//         console.log('xPubKey_1H: ', `'${  xpub_1H.toString()  }',`);
+//         console.log('privKey_1H_0: ', `'${  priv.toString()  }',`);
+//         console.log('pubKey_1H_0: ', `'${  pub.toString()  }'},`);
+//     });
+//     console.log('];');
+// };
 
 helpers.getSignedCopayerOpts = function (serviceName, opts) {
     const Server = Services[serviceName].Server;
