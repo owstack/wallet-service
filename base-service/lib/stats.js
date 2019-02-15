@@ -108,7 +108,7 @@ Stats.prototype._getNewWallets = function (cb) {
             const value = {
                 count: 1
             };
-            emit(key, value);
+            emit(key, value); // eslint-disable-line no-undef
         };
         const reduce = function (k, v) {
             let count = 0;
@@ -225,7 +225,7 @@ Stats.prototype._getTxProposals = function (cb) {
                 count: 1,
                 amount: this.amount
             };
-            emit(key, value);
+            emit(key, value); // eslint-disable-line no-undef
         };
         const reduce = function (k, v) {
             let count = 0;

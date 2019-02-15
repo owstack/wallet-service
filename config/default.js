@@ -1,5 +1,3 @@
-
-
 const config = {
     basePath: '/ws/api',
     port: 3232,
@@ -8,7 +6,7 @@ const config = {
     // Log levels; debug, warn, info, error
     log: {
         disable: true,
-        level: 'info'
+        level: process.env.LOG_LEVEL || 'info'
     },
 
     // Uncomment to make wallet-service a forking server
@@ -29,7 +27,7 @@ const config = {
 
     storageOpts: {
         mongoDb: {
-            uri: 'mongodb://localhost:27017/ws-test'
+            uri: process.env.DB_CONN_STRING || 'mongodb://localhost:27017/ws-test'
         }
     },
 
@@ -43,9 +41,9 @@ const config = {
     pushNotificationsOpts: {
         templatePath: './lib/templates',
         defaultLanguage: 'en',
-        subjectPrefix: '',
+        subjectPrefix: process.env.EMAIL_SUBJECT_PREFIX || '',
         pushServerUrl: 'https://fcm.googleapis.com/fcm',
-        authorizationKey: ''
+        authorizationKey: process.env.GOOGLE_FCM_AUTH_KEY || ''
     },
 
     fiatRateServiceOpts: {
@@ -63,12 +61,8 @@ const config = {
                 // Multiple servers (in priority order)
                 // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: 'http://btc.livenet.explorer-api.owstack.org',
-                    apiPrefix: '/explorer-api'
-                },
-                testnet: {
-                    url: 'https://test-insight.bitpay.com',
-                    apiPrefix: '/api'
+                    url: process.env.BTC_LIVENET_EXPLORER_API || 'http://btc.livenet.explorer-api.owstack.org',
+                    apiPrefix: process.env.BTC_LIVENET_EXPLORER_API_PATH || '/explorer-api'
                 }
             }
         }
@@ -81,13 +75,9 @@ const config = {
                 // Multiple servers (in priority order)
                 // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: 'http://bch.livenet.explorer-api.owstack.org',
-                    apiPrefix: '/explorer-api'
-                },
-                /*testnet: {
-          url: '',
-          apiPrefix: ''
-        }*/
+                    url: process.env.BCH_LIVENET_EXPLORER_API || 'http://bch.livenet.explorer-api.owstack.org',
+                    apiPrefix: process.env.BCH_LIVENET_EXPLORER_API_PATH || '/explorer-api'
+                }
             }
         }
     },
@@ -99,13 +89,9 @@ const config = {
                 // Multiple servers (in priority order)
                 // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: 'http://ltc.livenet.explorer-api.owstack.org',
-                    apiPrefix: '/explorer-api'
-                },
-                /*testnet: {
-          url: '',
-          apiPrefix: ''
-        }*/
+                    url: process.env.LTC_LIVENET_EXPLORER_API || 'http://ltc.livenet.explorer-api.owstack.org',
+                    apiPrefix: process.env.LTC_LIVENET_EXPLORER_API_PATH || '/explorer-api'
+                }
             }
         }
     }

@@ -3,7 +3,6 @@ let BtcWalletService;
 let LtcWalletService;
 
 const owsCommon = require('@owstack/ows-common');
-const async = require('async');
 const baseConfig = require('config');
 const bodyParser = require('body-parser');
 const compression = require('compression');
