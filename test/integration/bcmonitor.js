@@ -11,7 +11,6 @@ const BlockchainMonitor = WalletService.BlockchainMonitor;
 const helpers = require('./helpers');
 const log = require('npmlog');
 const testConfig = require('config');
-const TestData = require('../testdata');
 const lodash = owsCommon.deps.lodash;
 
 log.debug = log.verbose;
@@ -41,6 +40,9 @@ describe('Blockchain monitor', function () {
 
     beforeEach(function (done) {
         helpers.beforeEach(serviceName, function (err, res) {
+            if (err) {
+                return done(err);
+            }
             storage = res.storage;
             blockchainExplorer = res.blockchainExplorer;
             blockchainExplorer.initSocket = sinon.stub().returns(socket);

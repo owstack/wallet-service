@@ -13,7 +13,7 @@ const config = {
 
     storageOpts: {
         mongoDb: {
-            uri: process.env.DB_CONN_STRING || 'mongodb://localhost:27017/ws-test'
+            uri: process.env.DB_CONN_STRING || 'mongodb://localhost:27017/ws_test'
         }
     },
 

@@ -18,7 +18,6 @@ const Constants = owsCommon.Constants;
 const ECDSA = keyLib.crypto.ECDSA;
 const Hash = owsCommon.Hash;
 const HDPrivateKey = keyLib.HDPrivateKey;
-const HDPublicKey = keyLib.HDPublicKey;
 const log = require('npmlog');
 const PrivateKey = keyLib.PrivateKey;
 const testConfig = require('config');
@@ -41,7 +40,7 @@ helpers.before = function (serviceName, cb) {
     function getDb(cb) {
         if (useMongoDb) {
             const mongodb = require('mongodb');
-            mongodb.MongoClient.connect('mongodb://localhost:27017/ws_test', function (err, db) {
+            mongodb.MongoClient.connect(testConfig.storageOpts.mongoDb.uri, function (err, db) {
                 if (err) {
                     throw err;
                 }
@@ -379,7 +378,7 @@ helpers.stubUtxos = function (server, wallet, amounts, opts, cb) {
     });
 };
 
-helpers.stubBroadcast = function (serviceName, thirdPartyBroadcast) {
+helpers.stubBroadcast = function (serviceName) {
     helpers.getBlockchainExplorer(serviceName).broadcast = sinon.stub().callsArgWith(1, null, '112233');
     helpers.getBlockchainExplorer(serviceName).getTransaction = sinon.stub().callsArgWith(1, null, null);
 };
@@ -450,7 +449,7 @@ helpers.clientSign = function (txp, derivedXPrivKey) {
 
     const t = txp.getTx();
 
-    let signatures = lodash.map(privs, function (priv, i) {
+    let signatures = lodash.map(privs, function (priv) {
         return t.getSignatures(priv);
     });
 
