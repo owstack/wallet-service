@@ -10,9 +10,9 @@ const BlockchainExplorer = WalletService.BlockchainExplorer;
 describe('Blockchain explorer', function () {
     describe('#constructor', function () {
         it('should return a blockchain explorer with basic methods', function () {
-            let exp = new BlockchainExplorer({
+            const exp = new BlockchainExplorer({
                 provider: 'explorer',
-                networkName: 'testnet'
+                networkName: 'btc'
             });
             should.exist(exp);
             exp.should.respondTo('broadcast');
@@ -21,11 +21,6 @@ describe('Blockchain explorer', function () {
             exp.should.respondTo('getAddressActivity');
             exp.should.respondTo('estimateFee');
             exp.should.respondTo('initSocket');
-            exp = new BlockchainExplorer({
-                provider: 'explorer',
-                networkName: 'btc'
-            });
-            should.exist(exp);
         });
         it('should fail on unsupported provider', function () {
             (function () {
