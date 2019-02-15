@@ -9,25 +9,42 @@ const config = {
         level: process.env.LOG_LEVEL || 'info'
     },
 
-    // Uncomment to make wallet-service a forking server
-    // cluster: true,
-
-    // Uncomment to set the number or process (will use the nr of availalbe CPUs by default)
-    // clusterInstances: 4,
-
-    // https: true,
-    // privateKeyFile: 'private.pem',
-    // certificateFile: 'cert.pem',
-    ////// The following is only for certs which are not
-    ////// trusted by nodejs 'https' by default
-    ////// CAs like Verisign do not require this
-    // CAinter1: '', // ex. 'COMODORSADomainValidationSecureServerCA.crt'
-    // CAinter2: '', // ex. 'COMODORSAAddTrustCA.crt'
-    // CAroot: '', // ex. 'AddTrustExternalCARoot.crt'
+    cluster: true,
 
     storageOpts: {
         mongoDb: {
             uri: process.env.DB_CONN_STRING || 'mongodb://localhost:27017/ws-test'
+        }
+    },
+
+    lockOpts: {
+        lockerServer: {
+            host: process.env.LOCKER_SERVER_NAME || 'localhost',
+            port: Number(process.env.LOCKER_SERVER_PORT) || 3231
+        }
+    },
+
+    messageBrokerOpts: {
+        port: Number(process.env.MESSAGE_BROKER_PORT) || 3380,
+        // If using a remote service.
+        messageBrokerServer: {
+            url: process.env.MESSAGE_BROKER_URL || `http://localhost:${Number(process.env.MESSAGE_BROKER_PORT) || 3380}`
+        }
+    },
+
+    emailOpts: {
+        transport: {
+            host: process.env.EMAIL_TRANSPORT_HOST || 'localhost',
+            port: Number(process.env.EMAIL_TRANSPORT_PORT) || 25,
+            ignoreTLS: process.env.EMAIL_TRANSPORT_IGNORE_TLS ? true : false
+        },
+        defaultLanguage: 'en',
+        subjectPrefix: process.env.EMAIL_SUBJECT_PREFIX || '[Wallet Service]',
+        from: process.env.EMAIL_FROM || 'wallet-service@owstack.com',
+        templatePath: process.env.EMAIL_TEMPLATE_DIR || './base-service/lib/templates',
+        publicTxUrlTemplate: {
+            livenet: process.env.EMAIL_EXPLORER_URL_TEMPLATE || 'http://explorer.owstack.org/explorer/tx/{{txid}}',
+            // testnet: 'http://explorer.owstack.org/explorer/tx/{{txid}}'
         }
     },
 
@@ -39,7 +56,7 @@ const config = {
     // mailer: sgMail,
 
     pushNotificationsOpts: {
-        templatePath: './lib/templates',
+        templatePath: './base-service/lib/templates',
         defaultLanguage: 'en',
         subjectPrefix: process.env.EMAIL_SUBJECT_PREFIX || '',
         pushServerUrl: 'https://fcm.googleapis.com/fcm',

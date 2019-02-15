@@ -12,15 +12,13 @@ ENV APP_DIR=$HOME_PATH/$APP_NAME
 
 # Set up folder
 RUN mkdir -p $APP_DIR
-RUN chown -R ows:ows $APP_DIR
 
 # install modules
-USER ows
-COPY package.json $APP_DIR
+COPY . $APP_DIR
 WORKDIR $APP_DIR
 RUN npm install
 
-# copy other app files
-COPY . $APP_DIR
+RUN chown -R ows:ows $APP_DIR
+USER ows
 
-CMD ["npm", "run", "help"]
+CMD ["echo", "run", "with", "docker-compose", "up"]
