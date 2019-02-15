@@ -1,75 +1,73 @@
-'use strict';
+const cLib = require('../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var cLib = require('../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
+const BaseWalletService = require('../../base-service').WalletService;
+const BaseServer = BaseWalletService.Server;
 
-var BaseWalletService = require('../../base-service').WalletService;
-var BaseServer = BaseWalletService.Server;
+const Common = require('./common');
+const Model = require('./model');
+const Address = cLib.Address;
+const BlockchainExplorer = require('./blockchainexplorer');
+const Copayer = Model.Copayer;
+const Defaults = Common.Defaults;
+const Networks = cLib.Networks;
+const Session = Model.Session;
+const Storage = require('./storage');
+const Transaction = cLib.Transaction;
+const TxProposal = Model.TxProposal;
+const Unit = cLib.Unit;
+const Utils = Common.Utils;
+const Wallet = Model.Wallet;
 
-var Common = require('./common');
-var Model = require('./model');
-var Address = cLib.Address;
-var BlockchainExplorer = require('./blockchainexplorer');
-var Copayer = Model.Copayer;
-var Defaults = Common.Defaults;
-var Networks = cLib.Networks;
-var Session = Model.Session;
-var Storage = require('./storage');
-var Transaction = cLib.Transaction;
-var TxProposal = Model.TxProposal;
-var Unit = cLib.Unit;
-var Utils = Common.Utils;
-var Wallet = Model.Wallet;
+let instance;
 
-var instance;
-
-var context = new Context({
-	Address: Address,
-	BlockchainExplorer: BlockchainExplorer,
-	Copayer: Copayer,
-	Defaults: Defaults,
-	Networks: Networks,
-	Session: Session,
-	Storage: Storage,
-	Transaction: Transaction,
-	TxProposal: TxProposal,
-	Unit: Unit,
-	Utils: Utils,
-	Wallet: Wallet
+const context = new Context({
+    Address: Address,
+    BlockchainExplorer: BlockchainExplorer,
+    Copayer: Copayer,
+    Defaults: Defaults,
+    Networks: Networks,
+    Session: Session,
+    Storage: Storage,
+    Transaction: Transaction,
+    TxProposal: TxProposal,
+    Unit: Unit,
+    Utils: Utils,
+    Wallet: Wallet
 });
 
 class CServer extends BaseServer {
-	constructor(opts, config, cb) {
-	  super(context, opts, config, cb);
-	}
+    constructor(opts, config, cb) {
+        super(context, opts, config, cb);
+    }
+}
+
+/**
+ *
+ */
+CServer.getInstance = function (opts, config, cb) {
+    if (instance && opts.force == false) {
+        cb(instance);
+    } else {
+        new CServer(opts, config, function (server) {
+            instance = server;
+            cb(server);
+        });
+    }
 };
 
 /**
  *
  */
-CServer.getInstance = function(opts, config, cb) {
-	if (instance && opts.force == false) {
-		cb(instance);
-	} else {
-	  new CServer(opts, config, function(server) {
-	  	instance = server;
-	  	cb(server);
-	  });
-	}
-};
-
-/**
- *
- */
-CServer.getInstanceWithAuth = function(opts, config, auth, cb) {
-  try {
-    CServer.getInstance(opts, config, function(server) {
-		  server.initInstanceWithAuth(auth, cb);
-    });
-  } catch (ex) {
-    return cb(ex);
-  }
+CServer.getInstanceWithAuth = function (opts, config, auth, cb) {
+    try {
+        CServer.getInstance(opts, config, function (server) {
+            server.initInstanceWithAuth(auth, cb);
+        });
+    } catch (ex) {
+        return cb(ex);
+    }
 };
 
 module.exports = CServer;

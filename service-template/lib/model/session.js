@@ -1,28 +1,28 @@
-'use strict';
 
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseWalletService = require('../../../base-service').WalletService;
-var BaseSession = BaseWalletService.Model.Session;
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var Defaults = require('../common/defaults');
+const BaseWalletService = require('../../../base-service').WalletService;
+const BaseSession = BaseWalletService.Model.Session;
 
-var context = new Context({
-	Defaults: Defaults
+const Defaults = require('../common/defaults');
+
+const context = new Context({
+    Defaults: Defaults
 });
 
 class CSession extends BaseSession {
-	constructor(opts) {
-	  super(context, opts);
-	}
-};
+    constructor(opts) {
+        super(context, opts);
+    }
+}
 
 /**
  *
  */
-CSession.fromObj = function(obj) {
-	return BaseSession.fromObj(context, obj);
+CSession.fromObj = function (obj) {
+    return BaseSession.fromObj(context, obj);
 };
 
 module.exports = CSession;

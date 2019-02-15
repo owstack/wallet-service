@@ -1,6 +1,4 @@
-'use strict';
-
-var Errors = {};
+const Errors = {};
 
 Errors.ClientError = require('./clienterror');
 Errors.ErrorDefintions = require('./errordefinitions');

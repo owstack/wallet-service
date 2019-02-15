@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
-'use strict';
 
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseBlockchainMonitor = require('../../base-service').BlockchainMonitor;
-var BlockchainMonitor = require('../lib/blockchainmonitor');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var context = new Context({
-	BlockchainMonitor: BlockchainMonitor
+const BaseBlockchainMonitor = require('../../base-service').BlockchainMonitor;
+const BlockchainMonitor = require('../lib/blockchainmonitor');
+
+const context = new Context({
+    BlockchainMonitor: BlockchainMonitor
 });
 
 class CBlockchainMonitor extends BaseBlockchainMonitor {
-	constructor(config) {
-	  super(context, config);
-	}
-};
+    constructor(config) {
+        super(context, config);
+    }
+}
 
 // Start the service with base configuration (default).
-var service = new CBlockchainMonitor();
+const service = new CBlockchainMonitor();
 service.start();

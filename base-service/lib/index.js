@@ -1,11 +1,9 @@
-'use strict';
-
 /**
  * The base wallet service.
  * @module Base Service
  */
 
-var WalletService = {};
+const WalletService = {};
 
 WalletService.BlockchainExplorer = require('./blockchainexplorer');
 WalletService.BlockchainExplorers = require('./blockchainexplorers');

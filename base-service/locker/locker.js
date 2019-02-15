@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
-'use strict';
 
-var baseConfig = require('../../config');
-var Locker = require('locker-server');
+
+const baseConfig = require('config');
+const Locker = require('locker-server');
 
 class Service {
-	constructor(config) {
-		this.lockerService = new Locker();	
+    constructor(config) {
+        this.lockerService = new Locker();
 
-	  this.config = config || baseConfig;
-	}
-};
+        this.config = config || baseConfig;
+    }
+}
 
-Service.prototype.start = function() {
-	this.lockerService.listen(this.config.lockOpts.lockerServer.port);
-	console.log('Locker service started at port ' + this.config.lockOpts.lockerServer.port);
+Service.prototype.start = function () {
+    this.lockerService.listen(this.config.lockOpts.lockerServer.port);
+    console.log(`Locker service started at port ${  this.config.lockOpts.lockerServer.port}`);
 };
 
 // Start the service with base configuration (default).
-var service = new Service();
+const service = new Service();
 service.start();

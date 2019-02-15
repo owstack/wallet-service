@@ -1,6 +1,4 @@
-'use strict';
-
-var Common = {};
+const Common = {};
 
 Common.Defaults = require('./defaults');
 Common.Utils = require('./utils');

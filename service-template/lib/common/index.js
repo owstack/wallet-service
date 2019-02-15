@@ -1,7 +1,7 @@
-'use strict';
 
-var lodash = require('@owstack/ows-common').deps.lodash;
-var Common = lodash.cloneDeep(require('../../../base-service').WalletService.Common);
+
+const lodash = require('@owstack/ows-common').deps.lodash;
+const Common = lodash.cloneDeep(require('../../../base-service').WalletService.Common);
 
 Common.Defaults = require('./defaults');
 Common.Utils = require('./utils');

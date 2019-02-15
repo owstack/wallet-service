@@ -1,26 +1,26 @@
 #!/usr/bin/env node
 
-'use strict';
 
-var cLib = require('../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseEmailService = require('../../base-service').EmailService;
-var EmailService = require('../lib/emailservice');
-var Networks = cLib.Networks;
+const cLib = require('../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var context = new Context({
-	EmailService: EmailService,
-	Networks: Networks
+const BaseEmailService = require('../../base-service').EmailService;
+const EmailService = require('../lib/emailservice');
+const Networks = cLib.Networks;
+
+const context = new Context({
+    EmailService: EmailService,
+    Networks: Networks
 });
 
 class CEmailService extends BaseEmailService {
-	constructor(config) {
-	  super(context, config);
-	}
-};
+    constructor(config) {
+        super(context, config);
+    }
+}
 
 // Start the service with base configuration (default).
-var service = new CEmailService();
+const service = new CEmailService();
 service.start();

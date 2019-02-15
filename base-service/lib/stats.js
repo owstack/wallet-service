@@ -1,326 +1,325 @@
 #!/usr/bin/env node
 
-'use strict';
+const owsCommon = require('@owstack/ows-common');
 
-var owsCommon = require('@owstack/ows-common');
-
-var async = require('async');
-var config = require('../../config');
-var log = require('npmlog');
-var mongodb = require('mongodb');
-var moment = require('moment');
-var Storage = require('./storage');
-var lodash = owsCommon.deps.lodash;
-var $ = require('preconditions').singleton();
+const async = require('async');
+const config = require('config');
+const log = require('npmlog');
+const mongodb = require('mongodb');
+const moment = require('moment');
+const Storage = require('./storage');
+const lodash = owsCommon.deps.lodash;
 
 log.debug = log.verbose;
 log.disableColor();
 
-var INITIAL_DATE = '2019-01-01';
+const INITIAL_DATE = '2019-01-01';
 
 class Stats {
-  constructor(context, opts) {
+    constructor(context, opts) {
     // Context defines the coin network and is set by the implementing service in
     // order to instance this base service; e.g., btc-service.
-    context.inject(this);
+        context.inject(this);
 
-    // Set some frequently used contant values based on context.
-    this.LIVENET = this.ctx.Networks.livenet;
+        // Set some frequently used contant values based on context.
+        this.LIVENET = this.ctx.Networks.livenet;
 
-    opts = opts || {};
+        opts = opts || {};
 
-    this.networkName = opts.networkName || this.LIVENET.name;
-    this.from = moment(opts.from || INITIAL_DATE);
-    this.to = moment(opts.to);
-    this.fromTs = this.from.startOf('day').valueOf();
-    this.toTs = this.to.endOf('day').valueOf();
-  }
-};
-
-Stats.prototype.run = function(cb) {
-  var self = this;
-
-  var uri = config.storageOpts.mongoDb.uri;
-  mongodb.MongoClient.connect(uri, function(err, db) {
-    if (err) {
-      log.error('Unable to connect to the mongoDB', err);
-      return cb(err, null);
+        this.networkName = opts.networkName || this.LIVENET.name;
+        this.from = moment(opts.from || INITIAL_DATE);
+        this.to = moment(opts.to);
+        this.fromTs = this.from.startOf('day').valueOf();
+        this.toTs = this.to.endOf('day').valueOf();
     }
-    log.info('Connection established to ' + uri);
-    self.db = db;
-    self._getStats(function(err, stats) {
-      if (err) {
-        return cb(err);
-      }
-      return cb(null, stats);
-    });
-  });
-};
+}
 
-Stats.prototype._getStats = function(cb) {
-  var self = this;
-  var result = {};
-  async.parallel([
+Stats.prototype.run = function (cb) {
+    const self = this;
 
-    function(next) {
-      self._getNewWallets(next);
-    },
-    function(next) {
-      self._getTxProposals(next);
-    },
-  ], function(err, results) {
-    if (err) {
-      return cb(err);
-    }
-
-    result.newWallets = results[0];
-    result.txProposals = results[1];
-    return cb(null, result);
-  });
-};
-
-Stats.prototype._getNewWallets = function(cb) {
-  var self = this;
-
-  function getLastDate(cb) {
-    self.db.collection('stats_wallets')
-      .find({})
-      .sort({
-        '_id.day': -1
-      })
-      .limit(1)
-      .toArray(function(err, lastRecord) {
-        if (lodash.isEmpty(lastRecord)) {
-          return cb(null, moment(INITIAL_DATE));
-        }
-        return cb(null, moment(lastRecord[0]._id.day));
-      });
-  };
-
-  function updateStats(from, cb) {
-    var to = moment().subtract(1, 'day').endOf('day');
-    var map = function() {
-      var day = new Date(this.createdOn * 1000);
-      day.setHours(0);
-      day.setMinutes(0);
-      day.setSeconds(0);
-      var key = {
-        day: +day,
-        networkName: this.networkName
-      };
-      var value = {
-        count: 1
-      };
-      emit(key, value);
-    };
-    var reduce = function(k, v) {
-      var count = 0;
-      for (var i = 0; i < v.length; i++) {
-        count += v[i].count;
-      }
-      return {
-        count: count,
-      };
-    };
-    var opts = {
-      query: {
-        createdOn: {
-          $gt: from.unix(),
-          $lte: to.unix(),
-        },
-      },
-      out: {
-        merge: 'stats_wallets',
-      }
-    };
-    self.db.collection(Storage.collections.WALLETS)
-      .mapReduce(map, reduce, opts, function(err, collection, stats) {
-        return cb(err);
-      });
-  };
-
-  function queryStats(cb) {
-    self.db.collection('stats_wallets')
-      .find({
-        '_id.networkName': self.networkName,
-        '_id.day': {
-          $gte: self.fromTs,
-          $lte: self.toTs
-        },
-      })
-      .sort({
-        '_id.day': 1
-      })
-      .toArray(function(err, results) {
+    const uri = config.storageOpts.mongoDb.uri;
+    mongodb.MongoClient.connect(uri, function (err, db) {
         if (err) {
-          return cb(err);
+            log.error('Unable to connect to the mongoDB', err);
+            return cb(err, null);
         }
-        var stats = {};
-        stats.byDay = lodash.map(results, function(record) {
-          var day = moment(record._id.day).format('YYYYMMDD');
-          return {
-            day: day,
-            count: record.value.count
-          };
+        log.info(`Connection established to ${  uri}`);
+        self.db = db;
+        self._getStats(function (err, stats) {
+            if (err) {
+                return cb(err);
+            }
+            return cb(null, stats);
         });
-        return cb(null, stats);
-      });
-  };
-
-  async.series([
-      function(next) {
-        getLastDate(function(err, lastDate) {
-          if (err) {
-            return next(err);
-          }
-
-          lastDate = lastDate.startOf('day');
-          var yesterday = moment().subtract(1, 'day').startOf('day');
-          if (lastDate.isBefore(yesterday)) {
-            // Needs update
-            return updateStats(lastDate, next);
-          }
-          next();
-        });
-      },
-      function(next) {
-        queryStats(next);
-      },
-    ],
-    function(err, res) {
-      if (err) {
-        log.error(err);
-      }
-      return cb(err, res[1]);
     });
 };
 
-Stats.prototype._getTxProposals = function(cb) {
-  var self = this;
+Stats.prototype._getStats = function (cb) {
+    const self = this;
+    const result = {};
+    async.parallel([
 
-  function getLastDate(cb) {
-    self.db.collection('stats_txps')
-      .find({})
-      .sort({
-        '_id.day': -1
-      })
-      .limit(1)
-      .toArray(function(err, lastRecord) {
-        if (lodash.isEmpty(lastRecord)) {
-          return cb(null, moment(INITIAL_DATE));
-        }
-        return cb(null, moment(lastRecord[0]._id.day));
-      });
-  };
-
-  function updateStats(from, cb) {
-    var to = moment().subtract(1, 'day').endOf('day');
-    var map = function() {
-      var day = new Date(this.broadcastedOn * 1000);
-      day.setHours(0);
-      day.setMinutes(0);
-      day.setSeconds(0);
-      var key = {
-        day: +day,
-        networkName: this.networkName,
-      };
-      var value = {
-        count: 1,
-        amount: this.amount
-      };
-      emit(key, value);
-    };
-    var reduce = function(k, v) {
-      var count = 0,
-        amount = 0;
-      for (var i = 0; i < v.length; i++) {
-        count += v[i].count;
-        amount += v[i].amount;
-      }
-      return {
-        count: count,
-        amount: amount,
-      };
-    };
-    var opts = {
-      query: {
-        status: 'broadcasted',
-        broadcastedOn: {
-          $gt: from.unix(),
-          $lte: to.unix(),
+        function (next) {
+            self._getNewWallets(next);
         },
-      },
-      out: {
-        merge: 'stats_txps',
-      }
-    };
-    self.db.collection(Storage.collections.TXS)
-      .mapReduce(map, reduce, opts, function(err, collection, stats) {
-        return cb(err);
-      });
-  };
-
-  function queryStats(cb) {
-    self.db.collection('stats_txps')
-      .find({
-        '_id.networkName': self.networkName,
-        '_id.day': {
-          $gte: self.fromTs,
-          $lte: self.toTs,
+        function (next) {
+            self._getTxProposals(next);
         },
-      })
-      .sort({
-        '_id.day': 1
-      })
-      .toArray(function(err, results) {
+    ], function (err, results) {
         if (err) {
-          return cb(err);
+            return cb(err);
         }
 
-        var stats = {
-          nbByDay: [],
-          amountByDay: []
+        result.newWallets = results[0];
+        result.txProposals = results[1];
+        return cb(null, result);
+    });
+};
+
+Stats.prototype._getNewWallets = function (cb) {
+    const self = this;
+
+    function getLastDate(cb) {
+        self.db.collection('stats_wallets')
+            .find({})
+            .sort({
+                '_id.day': -1
+            })
+            .limit(1)
+            .toArray(function (err, lastRecord) {
+                if (lodash.isEmpty(lastRecord)) {
+                    return cb(null, moment(INITIAL_DATE));
+                }
+                return cb(null, moment(lastRecord[0]._id.day));
+            });
+    }
+
+    function updateStats(from, cb) {
+        const to = moment().subtract(1, 'day').endOf('day');
+        const map = function () {
+            const day = new Date(this.createdOn * 1000);
+            day.setHours(0);
+            day.setMinutes(0);
+            day.setSeconds(0);
+            const key = {
+                day: +day,
+                networkName: this.networkName
+            };
+            const value = {
+                count: 1
+            };
+            emit(key, value); // eslint-disable-line no-undef
         };
-        lodash.each(results, function(record) {
-          var day = moment(record._id.day).format('YYYYMMDD');
-          stats.nbByDay.push({
-            day: day,
-            count: record.value.count,
-          });
-          stats.amountByDay.push({
-            day: day,
-            amount: record.value.amount,
-          });
-        });
-        return cb(null, stats);
-      });
-  };
+        const reduce = function (k, v) {
+            let count = 0;
+            for (let i = 0; i < v.length; i++) {
+                count += v[i].count;
+            }
+            return {
+                count: count,
+            };
+        };
+        const opts = {
+            query: {
+                createdOn: {
+                    $gt: from.unix(),
+                    $lte: to.unix(),
+                },
+            },
+            out: {
+                merge: 'stats_wallets',
+            }
+        };
+        self.db.collection(Storage.collections.WALLETS)
+            .mapReduce(map, reduce, opts, function (err, collection, stats) {
+                return cb(err);
+            });
+    }
 
-  async.series([
-      function(next) {
-        getLastDate(function(err, lastDate) {
-          if (err) {
-            return next(err);
-          }
+    function queryStats(cb) {
+        self.db.collection('stats_wallets')
+            .find({
+                '_id.networkName': self.networkName,
+                '_id.day': {
+                    $gte: self.fromTs,
+                    $lte: self.toTs
+                },
+            })
+            .sort({
+                '_id.day': 1
+            })
+            .toArray(function (err, results) {
+                if (err) {
+                    return cb(err);
+                }
+                const stats = {};
+                stats.byDay = lodash.map(results, function (record) {
+                    const day = moment(record._id.day).format('YYYYMMDD');
+                    return {
+                        day: day,
+                        count: record.value.count
+                    };
+                });
+                return cb(null, stats);
+            });
+    }
 
-          lastDate = lastDate.startOf('day');
-          var yesterday = moment().subtract(1, 'day').startOf('day');
-          if (lastDate.isBefore(yesterday)) {
-            // Needs update
-            return updateStats(lastDate, next);
-          }
-          next();
-        });
-      },
-      function(next) {
-        queryStats(next);
-      },
+    async.series([
+        function (next) {
+            getLastDate(function (err, lastDate) {
+                if (err) {
+                    return next(err);
+                }
+
+                lastDate = lastDate.startOf('day');
+                const yesterday = moment().subtract(1, 'day').startOf('day');
+                if (lastDate.isBefore(yesterday)) {
+                    // Needs update
+                    return updateStats(lastDate, next);
+                }
+                next();
+            });
+        },
+        function (next) {
+            queryStats(next);
+        },
     ],
-    function(err, res) {
-      if (err) {
-        log.error(err);
-      }
-      return cb(err, res[1]);
+    function (err, res) {
+        if (err) {
+            log.error(err);
+        }
+        return cb(err, res[1]);
+    });
+};
+
+Stats.prototype._getTxProposals = function (cb) {
+    const self = this;
+
+    function getLastDate(cb) {
+        self.db.collection('stats_txps')
+            .find({})
+            .sort({
+                '_id.day': -1
+            })
+            .limit(1)
+            .toArray(function (err, lastRecord) {
+                if (lodash.isEmpty(lastRecord)) {
+                    return cb(null, moment(INITIAL_DATE));
+                }
+                return cb(null, moment(lastRecord[0]._id.day));
+            });
+    }
+
+    function updateStats(from, cb) {
+        const to = moment().subtract(1, 'day').endOf('day');
+        const map = function () {
+            const day = new Date(this.broadcastedOn * 1000);
+            day.setHours(0);
+            day.setMinutes(0);
+            day.setSeconds(0);
+            const key = {
+                day: +day,
+                networkName: this.networkName,
+            };
+            const value = {
+                count: 1,
+                amount: this.amount
+            };
+            emit(key, value); // eslint-disable-line no-undef
+        };
+        const reduce = function (k, v) {
+            let count = 0;
+
+
+            let amount = 0;
+            for (let i = 0; i < v.length; i++) {
+                count += v[i].count;
+                amount += v[i].amount;
+            }
+            return {
+                count: count,
+                amount: amount,
+            };
+        };
+        const opts = {
+            query: {
+                status: 'broadcasted',
+                broadcastedOn: {
+                    $gt: from.unix(),
+                    $lte: to.unix(),
+                },
+            },
+            out: {
+                merge: 'stats_txps',
+            }
+        };
+        self.db.collection(Storage.collections.TXS)
+            .mapReduce(map, reduce, opts, function (err, collection, stats) {
+                return cb(err);
+            });
+    }
+
+    function queryStats(cb) {
+        self.db.collection('stats_txps')
+            .find({
+                '_id.networkName': self.networkName,
+                '_id.day': {
+                    $gte: self.fromTs,
+                    $lte: self.toTs,
+                },
+            })
+            .sort({
+                '_id.day': 1
+            })
+            .toArray(function (err, results) {
+                if (err) {
+                    return cb(err);
+                }
+
+                const stats = {
+                    nbByDay: [],
+                    amountByDay: []
+                };
+                lodash.each(results, function (record) {
+                    const day = moment(record._id.day).format('YYYYMMDD');
+                    stats.nbByDay.push({
+                        day: day,
+                        count: record.value.count,
+                    });
+                    stats.amountByDay.push({
+                        day: day,
+                        amount: record.value.amount,
+                    });
+                });
+                return cb(null, stats);
+            });
+    }
+
+    async.series([
+        function (next) {
+            getLastDate(function (err, lastDate) {
+                if (err) {
+                    return next(err);
+                }
+
+                lastDate = lastDate.startOf('day');
+                const yesterday = moment().subtract(1, 'day').startOf('day');
+                if (lastDate.isBefore(yesterday)) {
+                    // Needs update
+                    return updateStats(lastDate, next);
+                }
+                next();
+            });
+        },
+        function (next) {
+            queryStats(next);
+        },
+    ],
+    function (err, res) {
+        if (err) {
+            log.error(err);
+        }
+        return cb(err, res[1]);
     });
 };
 

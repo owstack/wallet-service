@@ -1,37 +1,37 @@
-'use strict';
 
-var cLib = require('../../cLib');
-var owsCommon = require('@owstack/ows-common');
-var Context = owsCommon.util.Context;
 
-var BaseWalletService = require('../../../base-service').WalletService;
-var BaseTxProposal = BaseWalletService.Model.TxProposal;
+const cLib = require('../../cLib');
+const owsCommon = require('@owstack/ows-common');
+const Context = owsCommon.util.Context;
 
-var Address = cLib.Address;
-var Defaults = require('../common/defaults');
-var Networks = cLib.Networks;
-var Transaction = cLib.Transaction;
-var Unit = cLib.Unit;
+const BaseWalletService = require('../../../base-service').WalletService;
+const BaseTxProposal = BaseWalletService.Model.TxProposal;
 
-var context = new Context({
-	Address: Address,
-	Defaults: Defaults,
-	Networks: Networks,
-	Transaction: Transaction,
-	Unit: Unit
+const Address = cLib.Address;
+const Defaults = require('../common/defaults');
+const Networks = cLib.Networks;
+const Transaction = cLib.Transaction;
+const Unit = cLib.Unit;
+
+const context = new Context({
+    Address: Address,
+    Defaults: Defaults,
+    Networks: Networks,
+    Transaction: Transaction,
+    Unit: Unit
 });
 
 class CTxProposal extends BaseTxProposal {
-	constructor(opts) {
-	  super(context, opts);
-	}
-};
+    constructor(opts) {
+        super(context, opts);
+    }
+}
 
 /**
  *
  */
-CTxProposal.fromObj = function(obj) {
-	return BaseTxProposal.fromObj(context, obj);
+CTxProposal.fromObj = function (obj) {
+    return BaseTxProposal.fromObj(context, obj);
 };
 
 module.exports = CTxProposal;

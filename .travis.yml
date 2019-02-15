@@ -1,20 +1,14 @@
 language: node_js
 sudo: false
-compiler:
-  - gcc
-  - clang
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-    - clang
 node_js:
-  - '8'
-before_install:
-  - export CXX="g++-4.8" CC="gcc-4.8"
+  - '10'
+before_script:
+  - ./node_modules/.bin/eslint --quiet .
+  - docker-compose pull mongo
+  - docker-compose up -d mongo
+  - sleep 10
+  - mongo --eval 'rs.initiate()'
+  - sleep 15
 install:
   - npm install
 after_success:

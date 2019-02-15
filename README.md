@@ -1,9 +1,9 @@
 Wallet Service
 ======
 
-[![NPM Package](https://img.shields.io/npm/v/wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/wallet-service)
-[![Build Status](https://img.shields.io/travis/owstack/wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/owstack/wallet-service)
-[![Coverage Status](https://coveralls.io/repos/owstack/=wallet-service/badge.svg?branch=master)](https://coveralls.io/r/owstack/wallet-service?branch=master)
+[![NPM Package](https://img.shields.io/npm/v/@owstack/wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/@owstack/wallet-service)
+[![Build Status](https://img.shields.io/travis/com/owstack/wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.com/owstack/wallet-service)
+[![Coverage Status](https://img.shields.io/coveralls/owstack/wallet-service.svg?style=flat-square)](https://coveralls.io/r/owstack/wallet-service)
 
 A multisignature HD Bitcoin wallet service.
 
@@ -12,7 +12,7 @@ A multisignature HD Bitcoin wallet service.
 The wallet-service facilitates multisig HD wallets creation and operation through a (hopefully) simple and intuitive REST API.
 
 The wallet-service can usually be installed within minutes and accommodates all the needed infrastructure for peers in a multisig wallet to communicate and operate – with minimum server trust.
-  
+
 See [wallet-client](https://github.com/owstack/wallet-client) for the client library that communicates to wallet-service and verifies its response. Also check [wallet-cli](https://github.com/owstack/wallet-cli) for a simple command line wallet implementation that relays on wallet-service.
 
 # Getting Started
@@ -25,7 +25,7 @@ This will launch the wallet-service (with default settings) at `http://localhost
 
 The wallet-sevice needs mongoDB. You can configure the connection at `config.js`
 
-The wallet-service supports SSL and Clustering. For a detailed guide on installing the wallet-service with extra features see [Installing Wallet Service](https://github.com/owstack/wallet-service/blob/master/installation.md). 
+The wallet-service supports SSL and Clustering. For a detailed guide on installing the wallet-service with extra features see [Installing Wallet Service](https://github.com/owstack/wallet-service/blob/master/installation.md).
 
 The wallet-service uses by default a Request Rate Limitation to CreateWallet endpoint. If you need to modify it, check defaults.js' `Defaults.RateLimit`
 
@@ -57,11 +57,11 @@ Returns:
  * Wallet object. (see [fields on the source code](https://github.com/owstack/wallet-service/blob/master/lib/model/wallet.js)).
 
 `/v1/txhistory/`: Get Wallet's transaction history
- 
+
 Optional Arguments:
  * skip: Records to skip from the result (defaults to 0)
  * limit: Total number of records to return (return all available records if not specified).
- 
+
 Returns:
  * History of incoming and outgoing transactions of the wallet. The list is paginated using the `skip` & `limit` params. Each item has the following fields:
  * action ('sent', 'received', 'moved')
@@ -74,8 +74,8 @@ Returns:
  * creatorName
  * message
  * actions array ['createdOn', 'type', 'copayerId', 'copayerName', 'comment']
-  
- 
+
+
 `/v1/txproposals/`:  Get Wallet's pending transaction proposals and their status
 Returns:
  * List of pending TX Proposals. (see [fields on the source code](https://github.com/owstack/wallet-service/blob/master/lib/model/txproposal.js))
@@ -108,18 +108,18 @@ Optional Arguments:
 
 Returns:
  * The fiat exchange rate.
- 
+
 ## POST Endpoints
 `/v1/wallets/`: Create a new Wallet
 
  Required Arguments:
- * name: Name of the wallet 
- * m: Number of required peers to sign transactions 
+ * name: Name of the wallet
+ * m: Number of required peers to sign transactions
  * n: Number of total peers on the wallet
  * pubKey: Wallet Creation Public key to check joining copayer's signatures (the private key is unknown by wallet-service and must be communicated
   by the creator peer to other peers).
 
-Returns: 
+Returns:
  * walletId: Id of the new created wallet
 
 `/v1/wallets/:id/copayers/`: Join a Wallet in creation
@@ -158,24 +158,24 @@ Returns:
 
 Required Arguments:
  * signatures:  All Transaction's input signatures, in order of appearance.
-  
+
 Returns:
  * TX Proposal object. (see [fields on the source code](https://github.com/owstack/wallet-service/blob/master/lib/model/txproposal.js)). `.status` is probably needed in this case.
-  
+
 `/v1/txproposals/:id/broadcast/`: Broadcast a transaction proposal
- 
+
 Returns:
  * TX Proposal object. (see [fields on the source code](https://github.com/owstack/wallet-service/blob/master/lib/model/txproposal.js)). `.status` is probably needed in this case.
-  
+
 `/v1/txproposals/:id/rejections`: Reject a transaction proposal
- 
+
 Returns:
  * TX Proposal object. (see [fields on the source code](https://github.com/owstack/wallet-service/blob/master/lib/model/txproposal.js)). `.status` is probably needed in this case.
 
 `/v1/addresses/scan`: Start an address scan process looking for activity.
 
  Optional Arguments:
- * includeCopayerBranches: Scan all copayer branches following BIP45 recommendation (defaults to false). 
+ * includeCopayerBranches: Scan all copayer branches following BIP45 recommendation (defaults to false).
 
 `/v1/txconfirmations/`: Subscribe to receive push notifications when the specified transaction gets confirmed.
 Required Arguments:
@@ -191,10 +191,10 @@ Required Arguments:
  * TX Proposal object. (see [fields on the source code](https://github.com/owstack/wallet-service/blob/master/lib/model/txproposal.js)). `.id` is probably needed in this case.
 
 `/v1/txconfirmations/:txid`: Unsubscribe from transaction `txid` and no longer listen to its confirmation.
-   
+
 # Push Notifications
   Recomended to complete config.js file:
-  
+
   * [GCM documentation to get your API key](https://developers.google.com/cloud-messaging/gcm)
   * [Apple's Notification guide to know how to get your certificates for APN](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html)
 

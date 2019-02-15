@@ -1,7 +1,5 @@
-'use strict';
-
-var lodash = require('@owstack/ows-common').deps.lodash;
-var WalletService = lodash.cloneDeep(require('../../base-service').WalletService);
+const lodash = require('@owstack/ows-common').deps.lodash;
+const WalletService = lodash.cloneDeep(require('../../base-service').WalletService);
 
 WalletService.BlockchainExplorer = require('./blockchainexplorer');
 WalletService.BlockchainExplorers = require('./blockchainexplorers');

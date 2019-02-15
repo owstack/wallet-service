@@ -1,8 +1,5 @@
-'use strict';
-
-var owsCommon = require('@owstack/ows-common');
-var Uuid = require('uuid');
-var lodash = owsCommon.deps.lodash;
+const owsCommon = require('@owstack/ows-common');
+const lodash = owsCommon.deps.lodash;
 
 /*
  * Notifications examples
@@ -26,40 +23,40 @@ var lodash = owsCommon.deps.lodash;
  * to notify the user
  *
  */
-class Notification {};
+class Notification {}
 
-Notification.create = function(opts) {
-  opts = opts || {};
+Notification.create = function (opts) {
+    opts = opts || {};
 
-  var x = new Notification();
+    const x = new Notification();
 
-  x.version = '1.0.0';
-  var now = Date.now();
+    x.version = '1.0.0';
+    const now = Date.now();
 
-  x.createdOn = Math.floor(now / 1000);
-  x.id = lodash.padStart(now, 14, '0') + lodash.padStart(opts.ticker || 0, 4, '0');
-  x.type = opts.type || 'general';
-  x.data = opts.data;
-  x.walletId = opts.walletId;
-  x.creatorId = opts.creatorId;
-  x.networkName = opts.networkName;
+    x.createdOn = Math.floor(now / 1000);
+    x.id = lodash.padStart(now, 14, '0') + lodash.padStart(opts.ticker || 0, 4, '0');
+    x.type = opts.type || 'general';
+    x.data = opts.data;
+    x.walletId = opts.walletId;
+    x.creatorId = opts.creatorId;
+    x.networkName = opts.networkName;
 
-  return x;
+    return x;
 };
 
-Notification.fromObj = function(obj) {
-  var x = new Notification();
+Notification.fromObj = function (obj) {
+    const x = new Notification();
 
-  x.version = obj.version;
-  x.createdOn = obj.createdOn;
-  x.id = obj.id;
-  x.type = obj.type,
-  x.data = obj.data;
-  x.walletId = obj.walletId;
-  x.creatorId = obj.creatorId;
-  x.networkName = obj.networkName;
+    x.version = obj.version;
+    x.createdOn = obj.createdOn;
+    x.id = obj.id;
+    x.type = obj.type,
+    x.data = obj.data;
+    x.walletId = obj.walletId;
+    x.creatorId = obj.creatorId;
+    x.networkName = obj.networkName;
 
-  return x;
+    return x;
 };
 
 module.exports = Notification;

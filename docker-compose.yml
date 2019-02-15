@@ -1,0 +1,210 @@
+version: '2.1'
+services:
+    mongo:
+        image: mongo:latest
+        ports:
+                - "27017:27017"
+        command: ["mongod", "--replSet", "rs1", "--logpath", "/var/log/mongodb/server.log"]
+        healthcheck:
+                test: ["CMD", "mongo", "--eval", "db.stats()"]
+                interval: 10s
+                timeout: 10s
+                retries: 5
+    mongoconf:
+        image: mongo:latest
+        command: ["mongo", "--host", "mongo", "--eval", "rs.initiate()"]
+        healthcheck:
+                test: ["CMD", "mongo", "--eval", "rs.status()"]
+                interval: 10s
+                timeout: 10s
+                retries: 5
+        depends_on:
+            mongo:
+                condition: service_healthy
+
+    # Base Services
+    locker:
+        build: .
+        image: wallet-service:dev
+        ports:
+                - "3231:3231"
+        command: ["node", "base-service/locker/locker.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+    messagebroker:
+        build: .
+        image: wallet-service:dev
+        ports:
+                - "3380:3380"
+        command: ["node", "base-service/messagebroker/messagebroker.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+    fiatrateservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "base-service/fiatrateservice/fiatrateservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+    ws:
+        build: .
+        image: wallet-service:dev
+        ports:
+                - "3232:3232"
+        command: ["node", "base-service/ws.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+
+    # BTC Services
+    btcblockchainmonitor:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "btc-service/blockchainmonitor/blockchainmonitor.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    btcemailservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "btc-service/emailservice/emailservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    btcpushnotificationsservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "btc-service/pushnotificationsservice/pushnotificationsservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis
+
+    # BCH Services
+    bchblockchainmonitor:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "bch-service/blockchainmonitor/blockchainmonitor.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    bchemailservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "bch-service/emailservice/emailservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    bchpushnotificationsservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "bch-service/pushnotificationsservice/pushnotificationsservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis
+
+    # LTC Services
+    ltcblockchainmonitor:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "ltc-service/blockchainmonitor/blockchainmonitor.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    ltcemailservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "ltc-service/emailservice/emailservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    ltcpushnotificationsservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "ltc-service/pushnotificationsservice/pushnotificationsservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis
