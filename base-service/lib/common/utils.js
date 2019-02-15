@@ -58,7 +58,7 @@ Utils.strip = function(number) {
 
 Utils.hashMessage = function(text, noReverse) {
   $.checkArgument(text);
-  var buf = new Buffer(text);
+  var buf = Buffer.from(text);
   var ret = Hash.sha256sha256(buf);
   if (!noReverse) {
     ret = new BufferReader(ret).readReverse();
@@ -88,7 +88,7 @@ Utils._tryImportPublicKey = function(publicKey) {
   var publicKeyBuffer = publicKey;
   try {
     if (!Buffer.isBuffer(publicKey)) {
-      publicKeyBuffer = new Buffer(publicKey, 'hex');
+      publicKeyBuffer = Buffer.from(publicKey, 'hex');
     }
     return publicKeyBuffer;
   } catch(e) {
@@ -100,7 +100,7 @@ Utils._tryImportSignature = function(signature) {
   try {
     var signatureBuffer = signature;
     if (!Buffer.isBuffer(signature)) {
-      signatureBuffer = new Buffer(signature, 'hex');
+      signatureBuffer = Buffer.from(signature, 'hex');
     }
     return secp256k1.signatureImport(signatureBuffer);
   } catch(e) {
