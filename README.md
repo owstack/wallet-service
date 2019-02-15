@@ -1,7 +1,6 @@
 Wallet Service
 ======
 
-[![NPM Package](https://img.shields.io/npm/v/@owstack/wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/@owstack/wallet-service)
 [![Build Status](https://img.shields.io/travis/com/owstack/wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.com/owstack/wallet-service)
 [![Coverage Status](https://img.shields.io/coveralls/owstack/wallet-service.svg?style=flat-square)](https://coveralls.io/r/owstack/wallet-service)
 
