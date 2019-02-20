@@ -34,7 +34,7 @@ Lock.prototype.runLocked = function (token, cb, task) {
 
     this.lock.locked(token, 5 * 1000, 5 * 60 * 1000, function (err, release) {
         if (err) {
-            console.error(`Locker error: ${err}`);
+            log.error(`Locker error: ${err}`);
             return cb(Errors.WALLET_LOCKED);
         }
         const _cb = function () {

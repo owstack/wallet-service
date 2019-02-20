@@ -5,7 +5,6 @@ const keyLib = require('@owstack/key-lib');
 const async = require('async');
 const baseConfig = require('config');
 const ClientError = require('./errors/clienterror');
-const Common = require('./common');
 const Constants = owsCommon.Constants;
 const EmailValidator = require('email-validator');
 const errors = owsCommon.errors;
@@ -18,8 +17,6 @@ const MessageBroker = require('./messagebroker');
 const Model = require('./model');
 const pkg = require('../../package');
 const PublicKey = keyLib.PublicKey;
-let request = require('request');
-const Stringify = require('json-stable-stringify');
 const lodash = owsCommon.deps.lodash;
 const $ = require('preconditions').singleton();
 
@@ -124,10 +121,6 @@ WalletService.prototype.initialize = function (opts, config, cb) {
     self._setClientVersion(opts.clientVersion);
 
     self.setLog();
-
-    if (opts.request) {
-        request = opts.request;
-    }
 
     function initStorage(cb) {
         if (opts.storage) {
@@ -746,6 +739,9 @@ WalletService.prototype._notify = function (type, data, opts, cb) {
         });
 
         self.storage.storeNotification(walletId, notification, function (err) {
+            if (err) {
+                log.error(err);
+            }
             messageBroker.send(notification);
             return cb();
         });
