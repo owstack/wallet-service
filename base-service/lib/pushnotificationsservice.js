@@ -438,7 +438,7 @@ PushNotificationsService.prototype._makeRequest = function (opts, cb) {
     const self = this;
 
     // If multiple keys the requests are sent to all apps.
-    let keys = self.authorizationKeys.split(',');
+    const keys = self.authorizationKeys.split(',');
     for (let k = 0; k < keys.length; k++) {
         self.request({
             url: `${self.pushServerUrl  }/send`,
