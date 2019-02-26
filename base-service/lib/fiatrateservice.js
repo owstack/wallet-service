@@ -93,7 +93,7 @@ FiatRateService.prototype._fetch = function (cb) {
     cb = cb || function () {};
 
     async.each(self.providers, function (provider, next) {
-        lodash.forEach(Object.keys(provider.currency), function(currencyCode) {
+        lodash.forEach(Object.keys(provider.currency), function (currencyCode) {
             self._retrieve(provider, currencyCode, function (err, res) {
                 if (err) {
                     log.warn(`Error retrieving data for ${provider.name}`, err);

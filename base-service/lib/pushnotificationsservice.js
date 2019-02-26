@@ -438,8 +438,8 @@ PushNotificationsService.prototype._makeRequest = function (opts, cb) {
     const self = this;
 
     // If multiple keys the requests are sent to all apps.
-    var keys = self.authorizationKeys.split(',');
-    for(var k=0; k < keys.length; k++) {
+    let keys = self.authorizationKeys.split(',');
+    for (let k = 0; k < keys.length; k++) {
         self.request({
             url: `${self.pushServerUrl  }/send`,
             method: 'POST',
@@ -449,12 +449,12 @@ PushNotificationsService.prototype._makeRequest = function (opts, cb) {
                 Authorization: `key=${  keys[k]}`,
             },
             body: opts,
-        }, function() {
+        }, function () {
             if (k == keys.length) {
                 cb();
             }
         });
-    };
+    }
 };
 
 module.exports = PushNotificationsService;

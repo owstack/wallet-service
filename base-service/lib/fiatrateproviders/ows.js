@@ -12,7 +12,7 @@ function parseFn(raw) {
         };
     }));
     return rates;
-};
+}
 
 const provider = {
     name: 'OpenWalletStack',
