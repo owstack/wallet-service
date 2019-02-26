@@ -43,12 +43,13 @@ describe('Fiat rate service', function () {
 
     describe('#getRate', function () {
         it('should get current rate', function (done) {
-            service.storage.storeFiatRate('OpenWalletStack', [{
+            service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                 code: 'USD',
                 value: 123.45,
             }], function (err) {
                 should.not.exist(err);
                 service.getRate({
+                    currency: 'BTC',
                     code: 'USD'
                 }, function (err, res) {
                     should.not.exist(err);
@@ -59,17 +60,18 @@ describe('Fiat rate service', function () {
         });
 
         it('should get current rate for different currency', function (done) {
-            service.storage.storeFiatRate('OpenWalletStack', [{
+            service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                 code: 'USD',
                 value: 123.45,
             }], function (err) {
                 should.not.exist(err);
-                service.storage.storeFiatRate('OpenWalletStack', [{
+                service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                     code: 'EUR',
                     value: 345.67,
                 }], function (err) {
                     should.not.exist(err);
                     service.getRate({
+                        currency: 'BTC',
                         code: 'EUR'
                     }, function (err, res) {
                         should.not.exist(err);
@@ -81,22 +83,24 @@ describe('Fiat rate service', function () {
         });
 
         it('should get current rate for different provider', function (done) {
-            service.storage.storeFiatRate('OpenWalletStack', [{
+            service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                 code: 'USD',
                 value: 100.00,
             }], function (err) {
                 should.not.exist(err);
-                service.storage.storeFiatRate('Bitstamp', [{
+                service.storage.storeFiatRate('Bitstamp', 'BTC', [{
                     code: 'USD',
                     value: 200.00,
                 }], function (err) {
                     should.not.exist(err);
                     service.getRate({
+                        currency: 'BTC',
                         code: 'USD'
                     }, function (err, res) {
                         should.not.exist(err);
                         res.rate.should.equal(100.00, 'Should use default provider');
                         service.getRate({
+                            currency: 'BTC',
                             code: 'USD',
                             provider: 'Bitstamp',
                         }, function (err, res) {
@@ -112,18 +116,19 @@ describe('Fiat rate service', function () {
         it('should get rate for specific ts', function (done) {
             const clock = sinon.useFakeTimers(0, 'Date');
             clock.tick(20);
-            service.storage.storeFiatRate('OpenWalletStack', [{
+            service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                 code: 'USD',
                 value: 123.45,
             }], function (err) {
                 should.not.exist(err);
                 clock.tick(100);
-                service.storage.storeFiatRate('OpenWalletStack', [{
+                service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                     code: 'USD',
                     value: 345.67,
                 }], function (err) {
                     should.not.exist(err);
                     service.getRate({
+                        currency: 'BTC',
                         code: 'USD',
                         ts: 50,
                     }, function (err, res) {
@@ -142,7 +147,7 @@ describe('Fiat rate service', function () {
             const clock = sinon.useFakeTimers(0, 'Date');
             async.each([1.00, 2.00, 3.00, 4.00], function (value, next) {
                 clock.tick(100);
-                service.storage.storeFiatRate('OpenWalletStack', [{
+                service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                     code: 'USD',
                     value: value,
                 }, {
@@ -152,6 +157,7 @@ describe('Fiat rate service', function () {
             }, function (err) {
                 should.not.exist(err);
                 service.getRate({
+                    currency: 'BTC',
                     code: 'USD',
                     ts: [50, 100, 199, 500],
                 }, function (err, res) {
@@ -182,13 +188,14 @@ describe('Fiat rate service', function () {
 
         it('should not get rate older than 2hs', function (done) {
             const clock = sinon.useFakeTimers(0, 'Date');
-            service.storage.storeFiatRate('OpenWalletStack', [{
+            service.storage.storeFiatRate('OpenWalletStack', 'BTC', [{
                 code: 'USD',
                 value: 123.45,
             }], function (err) {
                 should.not.exist(err);
                 clock.tick(24 * 3600 * 1000); // Some time in the future
                 service.getRate({
+                    currency: 'BTC',
                     ts: 2 * 3600 * 1000 - 1, // almost 2 hours
                     code: 'USD',
                 }, function (err, res) {
@@ -196,6 +203,7 @@ describe('Fiat rate service', function () {
                     res.rate.should.equal(123.45);
                     res.fetchedOn.should.equal(0);
                     service.getRate({
+                        currency: 'BTC',
                         ts: 2 * 3600 * 1000 + 1, // just past 2 hours
                         code: 'USD',
                     }, function (err, res) {
@@ -213,13 +221,6 @@ describe('Fiat rate service', function () {
     describe('#fetch', function () {
         it('should fetch rates from all providers', function (done) {
             const clock = sinon.useFakeTimers(100, 'Date');
-            const bitpay = [{
-                code: 'USD',
-                rate: 123.45,
-            }, {
-                code: 'EUR',
-                rate: 234.56,
-            }];
             const bitstamp = {
                 last: 120.00,
             };
@@ -231,11 +232,7 @@ describe('Fiat rate service', function () {
                 rate: 234.56,
             }];
             request.get.withArgs({
-                url: 'https://bitpay.com/api/rates/',
-                json: true
-            }).yields(null, null, bitpay);
-            request.get.withArgs({
-                url: 'https://www.bitstamp.net/api/ticker/',
+                url: 'https://www.bitstamp.net/api/v2/ticker/btcusd',
                 json: true
             }).yields(null, null, bitstamp);
             request.get.withArgs({
@@ -246,12 +243,14 @@ describe('Fiat rate service', function () {
             service._fetch(function (err) {
                 should.not.exist(err);
                 service.getRate({
+                    currency: 'BTC',
                     code: 'USD'
                 }, function (err, res) {
                     should.not.exist(err);
                     res.fetchedOn.should.equal(100);
                     res.rate.should.equal(123.45);
                     service.getRate({
+                        currency: 'BTC',
                         code: 'USD',
                         provider: 'Bitstamp',
                     }, function (err, res) {
@@ -259,6 +258,7 @@ describe('Fiat rate service', function () {
                         res.fetchedOn.should.equal(100);
                         res.rate.should.equal(120.00);
                         service.getRate({
+                            currency: 'BTC',
                             code: 'EUR'
                         }, function (err, res) {
                             should.not.exist(err);
@@ -274,13 +274,6 @@ describe('Fiat rate service', function () {
 
         it('should not stop when failing to fetch provider', function (done) {
             const clock = sinon.useFakeTimers(100, 'Date');
-            const bitpay = [{
-                code: 'USD',
-                rate: 123.45,
-            }, {
-                code: 'EUR',
-                rate: 234.56,
-            }];
             const bitstamp = {
                 last: 120.00,
             };
@@ -289,17 +282,14 @@ describe('Fiat rate service', function () {
                 json: true
             }).yields('dummy error', null, null);
             request.get.withArgs({
-                url: 'https://www.bitstamp.net/api/ticker/',
+                url: 'https://www.bitstamp.net/api/v2/ticker/btcusd',
                 json: true
             }).yields(null, null, bitstamp);
-            request.get.withArgs({
-                url: 'https://bitpay.com/api/rates/',
-                json: true
-            }).yields(null, null, bitpay);
 
             service._fetch(function (err) {
                 should.not.exist(err);
                 service.getRate({
+                    currency: 'BTC',
                     code: 'USD'
                 }, function (err, res) {
                     should.not.exist(err);
@@ -307,6 +297,7 @@ describe('Fiat rate service', function () {
                     should.not.exist(res.rate);
                     should.not.exist(res.fetchedOn);
                     service.getRate({
+                        currency: 'BTC',
                         code: 'USD',
                         provider: 'Bitstamp'
                     }, function (err, res) {

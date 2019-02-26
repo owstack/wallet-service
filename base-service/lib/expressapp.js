@@ -869,8 +869,9 @@ ExpressApp.prototype.start = function (opts, cb) {
         });
     });
 
-    router.get('/v1/fiatrates/:code/', function (req, res) {
+    router.get('/v1/fiatrates/:currency/:code/', function (req, res) {
         const opts = {
+            currency: req.params['currency'],
             code: req.params['code'],
             provider: req.query.provider,
             ts: +req.query.ts,
