@@ -91,7 +91,7 @@ PushNotificationsService.prototype.start = function (opts, cb) {
     self.defaultLanguage = pushNotificationsOpts.defaultLanguage;
     self.subjectPrefix = pushNotificationsOpts.subjectPrefix || '';
     self.pushServerUrl = pushNotificationsOpts.pushServerUrl;
-    self.authorizationKeys = pushNotificationsOpts.authorizationKeys.split(',');
+    self.authorizationKeys = pushNotificationsOpts.authorizationKeys;
 
     $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
     $.checkArgument(self.authorizationKeys, 'Missing authorizationKeys attribute in configuration.');
@@ -438,18 +438,23 @@ PushNotificationsService.prototype._makeRequest = function (opts, cb) {
     const self = this;
 
     // If multiple keys the requests are sent to all apps.
-    lodash.forEach(self.authorizationKeys, function (authorizationKey) {
+    var keys = self.authorizationKeys.split(',');
+    for(var k=0; k < keys.length; k++) {
         self.request({
             url: `${self.pushServerUrl  }/send`,
             method: 'POST',
             json: true,
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `key=${  authorizationKey}`,
+                Authorization: `key=${  keys[k]}`,
             },
             body: opts,
-        }, cb);
-    });
+        }, function() {
+            if (k == keys.length) {
+                cb();
+            }
+        });
+    };
 };
 
 module.exports = PushNotificationsService;

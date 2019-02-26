@@ -73,7 +73,7 @@ describe('Push notifications', function () {
                                 defaultLanguage: 'en',
                                 subjectPrefix: '',
                                 pushServerUrl: 'http://localhost:8000',
-                                authorizationKey: 'secret'
+                                authorizationKeys: 'secret1,secret2'
                             }
                         });
                         pushNotificationsService.start({
@@ -110,7 +110,7 @@ describe('Push notifications', function () {
                             const args = lodash.map(calls, function (c) {
                                 return c.args[0];
                             });
-                            calls.length.should.equal(1);
+                            calls.length.should.equal(2);
                             args[0].body.notification.title.should.contain('New payment received');
                             args[0].body.notification.body.should.contain('123,000');
                             done();
@@ -155,7 +155,7 @@ describe('Push notifications', function () {
                 }, function (err) {
                     setTimeout(function () {
                         const calls = requestStub.getCalls();
-                        calls.length.should.equal(1);
+                        calls.length.should.equal(2);
                         done();
                     }, 100);
                 });
@@ -177,7 +177,7 @@ describe('Push notifications', function () {
                     }, function (err) {
                         setTimeout(function () {
                             const calls = requestStub.getCalls();
-                            calls.length.should.equal(1);
+                            calls.length.should.equal(2);
                             done();
                         }, 100);
                     });
@@ -228,7 +228,7 @@ describe('Push notifications', function () {
                                 defaultLanguage: 'en',
                                 subjectPrefix: '',
                                 pushServerUrl: 'http://localhost:8000',
-                                authorizationKey: 'secret'
+                                authorizationKeys: 'secret'
                             }
                         });
                         pushNotificationsService.start({
@@ -484,7 +484,7 @@ describe('Push notifications', function () {
                                 defaultLanguage: 'en',
                                 subjectPrefix: '',
                                 pushServerUrl: 'http://localhost:8000',
-                                authorizationKey: 'secret'
+                                authorizationKeys: 'secret'
                             }
                         });
 
