@@ -91,10 +91,10 @@ PushNotificationsService.prototype.start = function (opts, cb) {
     self.defaultLanguage = pushNotificationsOpts.defaultLanguage;
     self.subjectPrefix = pushNotificationsOpts.subjectPrefix || '';
     self.pushServerUrl = pushNotificationsOpts.pushServerUrl;
-    self.authorizationKey = pushNotificationsOpts.authorizationKey;
+    self.authorizationKeys = pushNotificationsOpts.authorizationKeys.split(',');
 
     $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
-    $.checkArgument(self.authorizationKey, 'Missing authorizationKey attribute in configuration.');
+    $.checkArgument(self.authorizationKeys, 'Missing authorizationKeys attribute in configuration.');
 
     async.parallel([
         function (done) {
@@ -437,16 +437,19 @@ PushNotificationsService.prototype._compileTemplate = function (template, extens
 PushNotificationsService.prototype._makeRequest = function (opts, cb) {
     const self = this;
 
-    self.request({
-        url: `${self.pushServerUrl  }/send`,
-        method: 'POST',
-        json: true,
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `key=${  self.authorizationKey}`,
-        },
-        body: opts,
-    }, cb);
+    // If multiple keys the requests are sent to all apps.
+    lodash.forEach(self.authorizationKeys, function(authorizationKey) {
+        self.request({
+            url: `${self.pushServerUrl  }/send`,
+            method: 'POST',
+            json: true,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `key=${  authorizationKey}`,
+            },
+            body: opts,
+        }, cb);
+    });
 };
 
 module.exports = PushNotificationsService;
