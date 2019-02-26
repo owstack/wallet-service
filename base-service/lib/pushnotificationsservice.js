@@ -438,7 +438,7 @@ PushNotificationsService.prototype._makeRequest = function (opts, cb) {
     const self = this;
 
     // If multiple keys the requests are sent to all apps.
-    lodash.forEach(self.authorizationKeys, function(authorizationKey) {
+    lodash.forEach(self.authorizationKeys, function (authorizationKey) {
         self.request({
             url: `${self.pushServerUrl  }/send`,
             method: 'POST',
