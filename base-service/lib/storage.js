@@ -544,7 +544,7 @@ Storage.prototype.countAddresses = function (walletId, cb) {
 Storage.prototype.storeAddress = function (address, cb) {
     Storage.db.collection(collections.ADDRESSES).update({
         address: address.address
-    }, address, {
+    }, (address.toObject ? address.toObject() : address), {
         w: 1,
         upsert: false,
     }, cb);

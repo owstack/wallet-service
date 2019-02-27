@@ -2845,7 +2845,7 @@ WalletService.prototype.signTx = function (opts, cb) {
                     log.warn('Copayer id:', self.copayerId);
                     log.warn('Client version:', self.clientVersion);
                     log.warn('Arguments:', JSON.stringify(opts));
-                    log.warn('Transaction proposal:', JSON.stringify(txp));
+                    log.warn('Transaction proposal:', JSON.stringify(txp.toObject()));
                     const raw = txp.getTx().uncheckedSerialize();
                     log.warn('Raw tx:', raw);
                     return cb(Errors.BAD_SIGNATURES);
