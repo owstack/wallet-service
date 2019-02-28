@@ -91,10 +91,10 @@ PushNotificationsService.prototype.start = function (opts, cb) {
     self.defaultLanguage = pushNotificationsOpts.defaultLanguage;
     self.subjectPrefix = pushNotificationsOpts.subjectPrefix || '';
     self.pushServerUrl = pushNotificationsOpts.pushServerUrl;
-    self.authorizationKey = pushNotificationsOpts.authorizationKey;
+    self.authorizationKeys = pushNotificationsOpts.authorizationKeys;
 
     $.checkArgument(self.defaultLanguage, 'Missing defaultLanguage attribute in configuration.');
-    $.checkArgument(self.authorizationKey, 'Missing authorizationKey attribute in configuration.');
+    $.checkArgument(self.authorizationKeys, 'Missing authorizationKeys attribute in configuration.');
 
     async.parallel([
         function (done) {
@@ -437,16 +437,24 @@ PushNotificationsService.prototype._compileTemplate = function (template, extens
 PushNotificationsService.prototype._makeRequest = function (opts, cb) {
     const self = this;
 
-    self.request({
-        url: `${self.pushServerUrl  }/send`,
-        method: 'POST',
-        json: true,
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `key=${  self.authorizationKey}`,
-        },
-        body: opts,
-    }, cb);
+    // If multiple keys the requests are sent to all apps.
+    const keys = self.authorizationKeys.split(',');
+    for (let k = 0; k < keys.length; k++) {
+        self.request({
+            url: `${self.pushServerUrl  }/send`,
+            method: 'POST',
+            json: true,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `key=${  keys[k]}`,
+            },
+            body: opts,
+        }, function () {
+            if (k == keys.length) {
+                cb();
+            }
+        });
+    }
 };
 
 module.exports = PushNotificationsService;

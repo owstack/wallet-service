@@ -2845,7 +2845,7 @@ WalletService.prototype.signTx = function (opts, cb) {
                     log.warn('Copayer id:', self.copayerId);
                     log.warn('Client version:', self.clientVersion);
                     log.warn('Arguments:', JSON.stringify(opts));
-                    log.warn('Transaction proposal:', JSON.stringify(txp));
+                    log.warn('Transaction proposal:', JSON.stringify(txp.toObject()));
                     const raw = txp.getTx().uncheckedSerialize();
                     log.warn('Raw tx:', raw);
                     return cb(Errors.BAD_SIGNATURES);
@@ -3724,8 +3724,9 @@ WalletService.prototype.startScan = function (opts, cb) {
 };
 
 /**
- * Returns exchange rate for the specified currency & timestamp.
+ * Returns exchange rate for the specified currency, (fiat ISO) code, and timestamp.
  * @param {Object} opts
+ * @param {string} opts.currency - Blockchain currency code (e.g., 'BTC').
  * @param {string} opts.code - Currency ISO code.
  * @param {Date} [opts.ts] - A timestamp to base the rate on (default Date.now()).
  * @param {String} [opts.provider] - A provider of exchange rates (default 'OpenWalletStack').
@@ -3734,7 +3735,7 @@ WalletService.prototype.startScan = function (opts, cb) {
 WalletService.prototype.getFiatRate = function (opts, cb) {
     const self = this;
 
-    if (!self.checkRequired(opts, ['code'], cb)) {
+    if (!self.checkRequired(opts, ['currency', 'code'], cb)) {
         return;
     }
 
