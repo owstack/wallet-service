@@ -15,7 +15,7 @@ log.disableColor();
 
 const INITIAL_DATE = '2019-01-01';
 
-class Stats extends EventEmitter{
+class Stats extends EventEmitter {
     constructor(context, config, opts) {
         super();
 
