@@ -12,8 +12,8 @@ const context = new Context({
 });
 
 class CStats extends BaseStats {
-    constructor(config) {
-        super(context, config);
+    constructor(config, opts) {
+        super(context, config, opts);
     }
 }
 

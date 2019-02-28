@@ -189,12 +189,12 @@ ExpressApp.prototype.start = function (opts, cb) {
     }
 
     /**
-   * Service resolvers return a constucted server instance for the specified network service.
-   */
+     * Service resolvers return a constucted server instance for the specified network service.
+     */
 
     /**
-   * Bitcoin.
-   */
+     * Bitcoin.
+     */
     function resolveBtcServer(req, res, cb, auth, opts) {
         if (!self.config.BTC) {
             throw 'Cannot instance a BTC server, no configuration found';
@@ -219,8 +219,8 @@ ExpressApp.prototype.start = function (opts, cb) {
     }
 
     /**
-   * Bitcoin Cash.
-   */
+     * Bitcoin Cash.
+     */
     function resolveBchServer(req, res, cb, auth, opts) {
         if (!self.config.BCH) {
             throw 'Cannot instance a BCH server, no configuration found';
@@ -245,8 +245,8 @@ ExpressApp.prototype.start = function (opts, cb) {
     }
 
     /**
-   * Litecoin.
-   */
+     * Litecoin.
+     */
     function resolveLtcServer(req, res, cb, auth, opts) {
         if (!self.config.LTC) {
             throw 'Cannot instance an LTC server, no configuration found';
@@ -271,8 +271,8 @@ ExpressApp.prototype.start = function (opts, cb) {
     }
 
     /**
-   * Return only the service class for the given request.
-   */
+     * Return only the service class for the given request.
+     */
     function resolveService(req, res, cb) {
         const opts = {
             serviceClassOnly: true
@@ -281,9 +281,9 @@ ExpressApp.prototype.start = function (opts, cb) {
     }
 
     /**
-   * Inspect the request header for the requested service and return
-   * a reference to the service object.
-   */
+     * Inspect the request header for the requested service and return
+     * a reference to the service object.
+     */
     function resolveServer(req, res, cb, auth, resolverOpts) {
         $.checkArgument(req && res && cb);
 
@@ -764,7 +764,7 @@ ExpressApp.prototype.start = function (opts, cb) {
             opts.to = req.query.to;
         }
 
-        const stats = new Stats(opts);
+        const stats = new Stats(self.config, opts);
         stats.run(function (err, data) {
             if (err) {
                 return returnError(err, res, req);
