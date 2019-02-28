@@ -1,7 +1,7 @@
 {
   "name": "@owstack/wallet-service",
   "description": "A service for multisignature HD wallets",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "keywords": [
     "bitcoin",
@@ -34,10 +34,10 @@
   },
   "owsNode": "ows-node",
   "dependencies": {
-    "@owstack/bch-lib": "^0.4.0",
-    "@owstack/btc-lib": "^0.1.19",
+    "@owstack/bch-lib": "^0.4.2",
+    "@owstack/btc-lib": "^0.1.21",
     "@owstack/key-lib": "^0.0.37",
-    "@owstack/ltc-lib": "^0.1.17",
+    "@owstack/ltc-lib": "^0.1.20",
     "@owstack/ows-common": "^0.0.16",
     "async": "^0.9.2",
     "body-parser": "^1.11.0",
