@@ -21,7 +21,7 @@ class Explorer {
         $.checkArgument(lodash.includes([this.LIVENET.name, this.TESTNET.name], opts.networkName));
         $.checkArgument(opts.url);
 
-        this.apiPrefix = opts.apiPrefix || '/explorer-api';
+        this.apiPrefix = opts.apiPrefix || '';
         this.networkName = opts.networkName || this.LIVENET.name;
         this.hosts = opts.url;
         this.userAgent = opts.userAgent || 'ws';
