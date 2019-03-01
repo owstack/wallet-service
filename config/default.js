@@ -78,8 +78,8 @@ const config = {
                 // Multiple servers (in priority order)
                 // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: process.env.BTC_LIVENET_EXPLORER_API || 'http://btc.livenet.explorer-api.owstack.org',
-                    apiPrefix: process.env.BTC_LIVENET_EXPLORER_API_PATH || '/explorer-api'
+                    url: process.env.BTC_LIVENET_EXPLORER_API || 'https://btc.livenet.explorer-api.owstack.org',
+                    apiPrefix: process.env.BTC_LIVENET_EXPLORER_API_PATH || ''
                 }
             }
         }
@@ -93,7 +93,7 @@ const config = {
                 // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
                     url: process.env.BCH_LIVENET_EXPLORER_API || 'http://bch.livenet.explorer-api.owstack.org',
-                    apiPrefix: process.env.BCH_LIVENET_EXPLORER_API_PATH || '/explorer-api'
+                    apiPrefix: process.env.BCH_LIVENET_EXPLORER_API_PATH || ''
                 }
             }
         }
@@ -107,7 +107,7 @@ const config = {
                 // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
                     url: process.env.LTC_LIVENET_EXPLORER_API || 'http://ltc.livenet.explorer-api.owstack.org',
-                    apiPrefix: process.env.LTC_LIVENET_EXPLORER_API_PATH || '/explorer-api'
+                    apiPrefix: process.env.LTC_LIVENET_EXPLORER_API_PATH || ''
                 }
             }
         }
