@@ -544,7 +544,7 @@ Storage.prototype.countAddresses = function (walletId, cb) {
 Storage.prototype.storeAddress = function (address, cb) {
     Storage.db.collection(collections.ADDRESSES).update({
         address: address.address
-    }, address, {
+    }, (address.toObject ? address.toObject() : address), {
         w: 1,
         upsert: false,
     }, cb);
@@ -912,13 +912,14 @@ Storage.prototype.fetchActiveAddresses = function (walletId, cb) {
     });
 };
 
-Storage.prototype.storeFiatRate = function (providerName, rates, cb) {
+Storage.prototype.storeFiatRate = function (providerName, currencyCode, rates, cb) {
     const now = Date.now();
     async.each(rates, function (rate, next) {
         Storage.db.collection(collections.FIAT_RATES).insert({
             provider: providerName,
             ts: now,
-            code: rate.code,
+            currency: currencyCode, // blockchain currency
+            code: rate.code, // Fiat currency code
             value: rate.value,
         }, {
             w: 1
@@ -926,9 +927,10 @@ Storage.prototype.storeFiatRate = function (providerName, rates, cb) {
     }, cb);
 };
 
-Storage.prototype.fetchFiatRate = function (providerName, code, ts, cb) {
+Storage.prototype.fetchFiatRate = function (providerName, currencyCode, code, ts, cb) {
     Storage.db.collection(collections.FIAT_RATES).find({
         provider: providerName,
+        currency: currencyCode,
         code: code,
         ts: {
             $lte: ts

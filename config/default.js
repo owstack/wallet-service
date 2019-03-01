@@ -60,7 +60,7 @@ const config = {
         defaultLanguage: 'en',
         subjectPrefix: process.env.EMAIL_SUBJECT_PREFIX || '',
         pushServerUrl: 'https://fcm.googleapis.com/fcm',
-        authorizationKey: process.env.GOOGLE_FCM_AUTH_KEY || ''
+        authorizationKeys: process.env.GOOGLE_FCM_AUTH_KEYS || ''
     },
 
     fiatRateServiceOpts: {

@@ -3,7 +3,7 @@
 const owsCommon = require('@owstack/ows-common');
 
 const async = require('async');
-const config = require('config');
+const EventEmitter = require('events').EventEmitter;
 const log = require('npmlog');
 const mongodb = require('mongodb');
 const moment = require('moment');
@@ -15,15 +15,18 @@ log.disableColor();
 
 const INITIAL_DATE = '2019-01-01';
 
-class Stats {
-    constructor(context, opts) {
-    // Context defines the coin network and is set by the implementing service in
-    // order to instance this base service; e.g., btc-service.
+class Stats extends EventEmitter {
+    constructor(context, config, opts) {
+        super();
+
+        // Context defines the coin network and is set by the implementing service in
+        // order to instance this base service; e.g., btc-service.
         context.inject(this);
 
         // Set some frequently used contant values based on context.
         this.LIVENET = this.ctx.Networks.livenet;
 
+        this.config = config || {};
         opts = opts || {};
 
         this.networkName = opts.networkName || this.LIVENET.name;
@@ -37,7 +40,7 @@ class Stats {
 Stats.prototype.run = function (cb) {
     const self = this;
 
-    const uri = config.storageOpts.mongoDb.uri;
+    const uri = self.config.storageOpts.mongoDb.uri;
     mongodb.MongoClient.connect(uri, function (err, db) {
         if (err) {
             log.error('Unable to connect to the mongoDB', err);
