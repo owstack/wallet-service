@@ -92,21 +92,21 @@ FiatRateService.prototype._fetch = function (cb) {
 
     cb = cb || function () {};
 
-    async.each(self.providers, function (provider, next) {
-        lodash.forEach(Object.keys(provider.currency), function (currencyCode) {
+    async.each(self.providers, function (provider, nextProvider) {
+        async.each(Object.keys(provider.currency), function (currencyCode, nextCurrency) {
             self._retrieve(provider, currencyCode, function (err, res) {
                 if (err) {
                     log.warn(`Error retrieving data for ${provider.name}`, err);
-                    return next();
+                    return nextCurrency();
                 }
                 self.storage.storeFiatRate(provider.name, currencyCode, res, function (err) {
                     if (err) {
                         log.warn(`Error storing ${currencyCode} data for ${provider.name}`, err);
                     }
-                    return next();
+                    return nextCurrency();
                 });
             });
-        });
+        }, nextProvider);
     }, cb);
 };
 
