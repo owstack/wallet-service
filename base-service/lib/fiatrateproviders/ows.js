@@ -8,7 +8,7 @@ function parseFn(raw) {
         }
         return {
             code: d.code,
-            value: d.rate
+            value: parseFloat(d.rate)
         };
     }));
     return rates;
