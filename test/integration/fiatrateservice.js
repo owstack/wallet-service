@@ -343,34 +343,34 @@ describe('Fiat rate service', function () {
         it('should fetch all rates from all ows', function (done) {
             const clock = sinon.useFakeTimers(100, 'Date');
             const owsBTC = [{
-                "symbol": "$",
-                "name": "US Dollar",
-                "symbol_native": "$",
-                "decimal_digits": 2,
-                "rounding": 0,
-                "code": "USD",
-                "name_plural": "US dollars",
-                "rate": "120.00"
+                symbol: '$',
+                name: 'US Dollar',
+                symbol_native: '$',
+                decimal_digits: 2,
+                rounding: 0,
+                code: 'USD',
+                name_plural: 'US dollars',
+                rate: '120.00'
             }];
             const owsBCH = [{
-                "symbol": "$",
-                "name": "US Dollar",
-                "symbol_native": "$",
-                "decimal_digits": 2,
-                "rounding": 0,
-                "code": "USD",
-                "name_plural": "US dollars",
-                "rate": "130.00"
+                symbol: '$',
+                name: 'US Dollar',
+                symbol_native: '$',
+                decimal_digits: 2,
+                rounding: 0,
+                code: 'USD',
+                name_plural: 'US dollars',
+                rate: '130.00'
             }];
             const owsLTC = [{
-                "symbol": "$",
-                "name": "US Dollar",
-                "symbol_native": "$",
-                "decimal_digits": 2,
-                "rounding": 0,
-                "code": "USD",
-                "name_plural": "US dollars",
-                "rate": "140.00"
+                symbol: '$',
+                name: 'US Dollar',
+                symbol_native: '$',
+                decimal_digits: 2,
+                rounding: 0,
+                code: 'USD',
+                name_plural: 'US dollars',
+                rate: '140.00'
             }];
 
             request.get.withArgs({
