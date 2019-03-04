@@ -249,6 +249,7 @@ describe('Fiat rate service', function () {
                     should.not.exist(err);
                     res.fetchedOn.should.equal(100);
                     res.rate.should.equal(123.45);
+
                     service.getRate({
                         currency: 'BTC',
                         code: 'USD',
@@ -257,6 +258,7 @@ describe('Fiat rate service', function () {
                         should.not.exist(err);
                         res.fetchedOn.should.equal(100);
                         res.rate.should.equal(120.00);
+
                         service.getRate({
                             currency: 'BTC',
                             code: 'EUR'
@@ -264,6 +266,159 @@ describe('Fiat rate service', function () {
                             should.not.exist(err);
                             res.fetchedOn.should.equal(100);
                             res.rate.should.equal(234.56);
+                            clock.restore();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should fetch all rates from all bitstamp', function (done) {
+            const clock = sinon.useFakeTimers(100, 'Date');
+            const bitstampBTC = {
+                last: 120.00,
+            };
+            const bitstampBCH = {
+                last: 130.00,
+            };
+            const bitstampLTC = {
+                last: 140.00,
+            };
+
+            request.get.withArgs({
+                url: 'https://www.bitstamp.net/api/v2/ticker/btcusd',
+                json: true
+            }).yields(null, null, bitstampBTC);
+
+            request.get.withArgs({
+                url: 'https://www.bitstamp.net/api/v2/ticker/bchusd',
+                json: true
+            }).yields(null, null, bitstampBCH);
+
+            request.get.withArgs({
+                url: 'https://www.bitstamp.net/api/v2/ticker/ltcusd',
+                json: true
+            }).yields(null, null, bitstampLTC);
+
+            service._fetch(function (err) {
+                should.not.exist(err);
+                // BTC
+                service.getRate({
+                    currency: 'BTC',
+                    code: 'USD',
+                    provider: 'Bitstamp'
+                }, function (err, res) {
+                    should.not.exist(err);
+                    res.fetchedOn.should.equal(100);
+                    res.rate.should.equal(120.00);
+
+                    // BCH
+                    service.getRate({
+                        currency: 'BCH',
+                        code: 'USD',
+                        provider: 'Bitstamp'
+                    }, function (err, res) {
+                        should.not.exist(err);
+                        res.fetchedOn.should.equal(100);
+                        res.rate.should.equal(130.00);
+
+                        // LTC
+                        service.getRate({
+                            currency: 'LTC',
+                            code: 'USD',
+                            provider: 'Bitstamp'
+                        }, function (err, res) {
+                            should.not.exist(err);
+                            res.fetchedOn.should.equal(100);
+                            res.rate.should.equal(140.00);
+                            clock.restore();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should fetch all rates from all ows', function (done) {
+            const clock = sinon.useFakeTimers(100, 'Date');
+            const owsBTC = [{
+                "symbol": "$",
+                "name": "US Dollar",
+                "symbol_native": "$",
+                "decimal_digits": 2,
+                "rounding": 0,
+                "code": "USD",
+                "name_plural": "US dollars",
+                "rate": "120.00"
+            }];
+            const owsBCH = [{
+                "symbol": "$",
+                "name": "US Dollar",
+                "symbol_native": "$",
+                "decimal_digits": 2,
+                "rounding": 0,
+                "code": "USD",
+                "name_plural": "US dollars",
+                "rate": "130.00"
+            }];
+            const owsLTC = [{
+                "symbol": "$",
+                "name": "US Dollar",
+                "symbol_native": "$",
+                "decimal_digits": 2,
+                "rounding": 0,
+                "code": "USD",
+                "name_plural": "US dollars",
+                "rate": "140.00"
+            }];
+
+            request.get.withArgs({
+                url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
+                json: true
+            }).yields(null, null, owsBTC);
+
+            request.get.withArgs({
+                url: 'http://rates.owstack.org/buy/gdax,bitstamp/bchusd/1',
+                json: true
+            }).yields(null, null, owsBCH);
+
+            request.get.withArgs({
+                url: 'http://rates.owstack.org/buy/gdax,bitstamp/ltcusd/1',
+                json: true
+            }).yields(null, null, owsLTC);
+
+            service._fetch(function (err) {
+                should.not.exist(err);
+                // BTC
+                service.getRate({
+                    currency: 'BTC',
+                    code: 'USD',
+                    provider: 'OpenWalletStack'
+                }, function (err, res) {
+                    should.not.exist(err);
+                    res.fetchedOn.should.equal(100);
+                    res.rate.should.equal(120.00);
+
+                    // BCH
+                    service.getRate({
+                        currency: 'BCH',
+                        code: 'USD',
+                        provider: 'OpenWalletStack'
+                    }, function (err, res) {
+                        should.not.exist(err);
+                        res.fetchedOn.should.equal(100);
+                        res.rate.should.equal(130.00);
+
+                        // LTC
+                        service.getRate({
+                            currency: 'LTC',
+                            code: 'USD',
+                            provider: 'OpenWalletStack'
+                        }, function (err, res) {
+                            should.not.exist(err);
+                            res.fetchedOn.should.equal(100);
+                            res.rate.should.equal(140.00);
                             clock.restore();
                             done();
                         });

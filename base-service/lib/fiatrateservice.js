@@ -89,31 +89,33 @@ FiatRateService.prototype.startCron = function (cb) {
 
 FiatRateService.prototype._fetch = function (cb) {
     const self = this;
-
     cb = cb || function () {};
 
-    async.each(self.providers, function (provider, nextProvider) {
-        async.each(Object.keys(provider.currency), function (currencyCode, nextCurrency) {
+    lodash.forEach(self.providers, function (provider) {
+        lodash.forEach(Object.keys(provider.currency), function (currencyCode) {
             self._retrieve(provider, currencyCode, function (err, res) {
                 if (err) {
                     log.warn(`Error retrieving data for ${provider.name}`, err);
-                    return nextCurrency();
+                    return;
                 }
+
                 self.storage.storeFiatRate(provider.name, currencyCode, res, function (err) {
                     if (err) {
                         log.warn(`Error storing ${currencyCode} data for ${provider.name}`, err);
                     }
-                    return nextCurrency();
+                    return;
                 });
             });
-        }, nextProvider);
-    }, cb);
+        });
+    });
+
+    cb();
 };
 
 FiatRateService.prototype._retrieve = function (provider, currencyCode, cb) {
     const self = this;
 
-    log.debug(`Fetching data for ${  provider.name}`);
+    log.debug(`Fetching data for ${provider.name}`);
     self.request.get({
         url: provider.currency[currencyCode].url,
         json: true,
@@ -128,7 +130,6 @@ FiatRateService.prototype._retrieve = function (provider, currencyCode, cb) {
             return cb(new Error(`No parse function for provider ${provider.name}`));
         }
         const rates = provider.currency[currencyCode].parseFn(body);
-
         return cb(null, rates);
     });
 };
