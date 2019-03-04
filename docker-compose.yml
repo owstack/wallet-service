@@ -74,6 +74,35 @@ services:
         environment:
             - DB_CONN_STRING=mongodb://mongo:27017/ws
             - LOCKER_SERVER_NAME=locker
+    mailservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "base-service/emailservice/emailservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+    pushnotificationsservice:
+        build: .
+        image: wallet-service:dev
+        command: ["node", "base-service/pushnotificationsservice/pushnotificationsservice.js"]
+        depends_on:
+            mongo:
+                condition: service_healthy
+            mongoconf:
+                condition: service_started
+            messagebroker:
+                condition: service_started
+        environment:
+            - DB_CONN_STRING=mongodb://mongo:27017/ws
+            - MESSAGE_BROKER_URL=http://messagebroker:3380
+            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis
 
     # BTC Services
     btcblockchainmonitor:
@@ -91,35 +120,6 @@ services:
             - DB_CONN_STRING=mongodb://mongo:27017/ws
             - MESSAGE_BROKER_URL=http://messagebroker:3380
             - LOCKER_SERVER_NAME=locker
-    btcemailservice:
-        build: .
-        image: wallet-service:dev
-        command: ["node", "btc-service/emailservice/emailservice.js"]
-        depends_on:
-            mongo:
-                condition: service_healthy
-            mongoconf:
-                condition: service_started
-            messagebroker:
-                condition: service_started
-        environment:
-            - DB_CONN_STRING=mongodb://mongo:27017/ws
-            - MESSAGE_BROKER_URL=http://messagebroker:3380
-    btcpushnotificationsservice:
-        build: .
-        image: wallet-service:dev
-        command: ["node", "btc-service/pushnotificationsservice/pushnotificationsservice.js"]
-        depends_on:
-            mongo:
-                condition: service_healthy
-            mongoconf:
-                condition: service_started
-            messagebroker:
-                condition: service_started
-        environment:
-            - DB_CONN_STRING=mongodb://mongo:27017/ws
-            - MESSAGE_BROKER_URL=http://messagebroker:3380
-            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis
 
     # BCH Services
     bchblockchainmonitor:
@@ -137,35 +137,6 @@ services:
             - DB_CONN_STRING=mongodb://mongo:27017/ws
             - MESSAGE_BROKER_URL=http://messagebroker:3380
             - LOCKER_SERVER_NAME=locker
-    bchemailservice:
-        build: .
-        image: wallet-service:dev
-        command: ["node", "bch-service/emailservice/emailservice.js"]
-        depends_on:
-            mongo:
-                condition: service_healthy
-            mongoconf:
-                condition: service_started
-            messagebroker:
-                condition: service_started
-        environment:
-            - DB_CONN_STRING=mongodb://mongo:27017/ws
-            - MESSAGE_BROKER_URL=http://messagebroker:3380
-    bchpushnotificationsservice:
-        build: .
-        image: wallet-service:dev
-        command: ["node", "bch-service/pushnotificationsservice/pushnotificationsservice.js"]
-        depends_on:
-            mongo:
-                condition: service_healthy
-            mongoconf:
-                condition: service_started
-            messagebroker:
-                condition: service_started
-        environment:
-            - DB_CONN_STRING=mongodb://mongo:27017/ws
-            - MESSAGE_BROKER_URL=http://messagebroker:3380
-            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis
 
     # LTC Services
     ltcblockchainmonitor:
@@ -183,32 +154,3 @@ services:
             - DB_CONN_STRING=mongodb://mongo:27017/ws
             - MESSAGE_BROKER_URL=http://messagebroker:3380
             - LOCKER_SERVER_NAME=locker
-    ltcemailservice:
-        build: .
-        image: wallet-service:dev
-        command: ["node", "ltc-service/emailservice/emailservice.js"]
-        depends_on:
-            mongo:
-                condition: service_healthy
-            mongoconf:
-                condition: service_started
-            messagebroker:
-                condition: service_started
-        environment:
-            - DB_CONN_STRING=mongodb://mongo:27017/ws
-            - MESSAGE_BROKER_URL=http://messagebroker:3380
-    ltcpushnotificationsservice:
-        build: .
-        image: wallet-service:dev
-        command: ["node", "ltc-service/pushnotificationsservice/pushnotificationsservice.js"]
-        depends_on:
-            mongo:
-                condition: service_healthy
-            mongoconf:
-                condition: service_started
-            messagebroker:
-                condition: service_started
-        environment:
-            - DB_CONN_STRING=mongodb://mongo:27017/ws
-            - MESSAGE_BROKER_URL=http://messagebroker:3380
-            - GOOGLE_FCM_AUTH_KEY=mustSignupForThis

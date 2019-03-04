@@ -48,13 +48,6 @@ const config = {
         }
     },
 
-    // Sendgrid.
-    // const sgMail = require('@sendgrid/mail');
-    // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    //
-    // Add config:
-    // mailer: sgMail,
-
     pushNotificationsOpts: {
         templatePath: './base-service/lib/templates',
         defaultLanguage: 'en',
@@ -114,5 +107,12 @@ const config = {
     }
 
 };
+
+// Sendgrid.
+if (process.env.SENDGRID_API_KEY) {
+    const sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    config.mailer = sgMail;
+}
 
 module.exports = config;
