@@ -51,7 +51,7 @@ const config = {
     pushNotificationsOpts: {
         templatePath: './base-service/lib/templates',
         defaultLanguage: 'en',
-        subjectPrefix: process.env.EMAIL_SUBJECT_PREFIX || '',
+        subjectPrefix: process.env.PUSH_SUBJECT_PREFIX || '',
         pushServerUrl: 'https://fcm.googleapis.com/fcm',
         authorizationKeys: process.env.GOOGLE_FCM_AUTH_KEYS || ''
     },
