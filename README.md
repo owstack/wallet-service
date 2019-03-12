@@ -16,6 +16,14 @@ The wallet-service can usually be installed within minutes and accommodates all 
 See [wallet-client](https://github.com/owstack/wallet-client) for the client library that communicates to wallet-service and verifies its response. Also check [wallet-cli](https://github.com/owstack/wallet-cli) for a simple command line wallet implementation that relays on wallet-service.
 
 # Getting Started
+
+OWStack Wallet Service has been optimized to run in containers such as Docker or Kubernetes.
+
+To run in Docker, see the docker-compose.yml file for an exampe to get started.
+
+For Kubernetes, [see this repo for complete setup](https://github.com/owstack/kubernetes)
+
+# Developing Locally
 ```
  git clone https://github.com/owstack/wallet-service.git
  cd wallet-service && npm start
