@@ -48,17 +48,10 @@ const config = {
         }
     },
 
-    // Sendgrid.
-    // const sgMail = require('@sendgrid/mail');
-    // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    //
-    // Add config:
-    // mailer: sgMail,
-
     pushNotificationsOpts: {
         templatePath: './base-service/lib/templates',
         defaultLanguage: 'en',
-        subjectPrefix: process.env.EMAIL_SUBJECT_PREFIX || '',
+        subjectPrefix: process.env.PUSH_SUBJECT_PREFIX || '',
         pushServerUrl: 'https://fcm.googleapis.com/fcm',
         authorizationKeys: process.env.GOOGLE_FCM_AUTH_KEYS || ''
     },
@@ -114,5 +107,12 @@ const config = {
     }
 
 };
+
+// Sendgrid.
+if (process.env.SENDGRID_API_KEY) {
+    const sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    config.mailer = sgMail;
+}
 
 module.exports = config;
