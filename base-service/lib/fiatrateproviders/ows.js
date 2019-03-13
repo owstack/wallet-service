@@ -1,3 +1,4 @@
+const config = require('config');
 const owsCommon = require('@owstack/ows-common');
 const lodash = owsCommon.deps.lodash;
 
@@ -18,15 +19,15 @@ const provider = {
     name: 'OpenWalletStack',
     currency: {
         BCH: {
-            url: 'http://rates.owstack.org/buy/gdax,bitstamp/bchusd/1',
+            url: `${config.rateServiceOpts.url}/buy/gdax,bitstamp/bchusd/1`,
             parseFn: parseFn
         },
         BTC: {
-            url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
+            url: `${config.rateServiceOpts.url}/buy/gdax,bitstamp/btcusd/1`,
             parseFn: parseFn
         },
         LTC: {
-            url: 'http://rates.owstack.org/buy/gdax,bitstamp/ltcusd/1',
+            url: `${config.rateServiceOpts.url}/buy/gdax,bitstamp/ltcusd/1`,
             parseFn: parseFn
         }
     }
