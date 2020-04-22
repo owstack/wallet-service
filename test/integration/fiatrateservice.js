@@ -1,3 +1,4 @@
+const config = require('config');
 const chai = require('chai');
 const sinon = require('sinon');
 const should = chai.should();
@@ -236,7 +237,7 @@ describe('Fiat rate service', function () {
                 json: true
             }).yields(null, null, bitstamp);
             request.get.withArgs({
-                url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
+                url: `${config.rateServiceOpts.url  }/buy/gdax,bitstamp/btcusd/1`,
                 json: true
             }).yields(null, null, openwalletstack);
 
@@ -374,17 +375,17 @@ describe('Fiat rate service', function () {
             }];
 
             request.get.withArgs({
-                url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
+                url: `${config.rateServiceOpts.url}/buy/gdax,bitstamp/btcusd/1`,
                 json: true
             }).yields(null, null, owsBTC);
 
             request.get.withArgs({
-                url: 'http://rates.owstack.org/buy/gdax,bitstamp/bchusd/1',
+                url: `${config.rateServiceOpts.url}/buy/gdax,bitstamp/bchusd/1`,
                 json: true
             }).yields(null, null, owsBCH);
 
             request.get.withArgs({
-                url: 'http://rates.owstack.org/buy/gdax,bitstamp/ltcusd/1',
+                url: `${config.rateServiceOpts.url}/buy/gdax,bitstamp/ltcusd/1`,
                 json: true
             }).yields(null, null, owsLTC);
 
@@ -433,7 +434,7 @@ describe('Fiat rate service', function () {
                 last: 120.00,
             };
             request.get.withArgs({
-                url: 'http://rates.owstack.org/buy/gdax,bitstamp/btcusd/1',
+                url: `${config.rateServiceOpts.url  }/buy/gdax,bitstamp/btcusd/1`,
                 json: true
             }).yields('dummy error', null, null);
             request.get.withArgs({

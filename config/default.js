@@ -43,8 +43,7 @@ const config = {
         from: process.env.EMAIL_FROM || 'wallet-service@owstack.com',
         templatePath: process.env.EMAIL_TEMPLATE_DIR || './base-service/lib/templates',
         publicTxUrlTemplate: {
-            livenet: process.env.EMAIL_EXPLORER_URL_TEMPLATE || 'http://explorer.owstack.org/explorer/tx/{{txid}}',
-            // testnet: 'http://explorer.owstack.org/explorer/tx/{{txid}}'
+            livenet: process.env.EMAIL_EXPLORER_URL_TEMPLATE || 'http://dev.owstack.org/explorer/btc/tx/{{txid}}',
         }
     },
 
@@ -61,6 +60,10 @@ const config = {
         fetchInterval: 60 // in minutes
     },
 
+    rateServiceOpts: {
+        url: process.env.RATE_SERVICE_URL || 'http://rate-service'
+    },
+
     // Each server (by coin network) has it's own configuration. Where the same services
     // run for each coin network the url's must be unique across all coin networks.
 
@@ -68,10 +71,8 @@ const config = {
         blockchainExplorerOpts: {
             defaultProvider: 'explorer',
             explorer: {
-                // Multiple servers (in priority order)
-                // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: process.env.BTC_LIVENET_EXPLORER_API || 'https://btc.livenet.explorer-api.owstack.org',
+                    url: process.env.BTC_LIVENET_EXPLORER_API || 'http://btc-explorer-api',
                     apiPrefix: process.env.BTC_LIVENET_EXPLORER_API_PATH || ''
                 }
             }
@@ -82,10 +83,8 @@ const config = {
         blockchainExplorerOpts: {
             defaultProvider: 'explorer',
             explorer: {
-                // Multiple servers (in priority order)
-                // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: process.env.BCH_LIVENET_EXPLORER_API || 'http://bch.livenet.explorer-api.owstack.org',
+                    url: process.env.BCH_LIVENET_EXPLORER_API || 'http://bch-explorer-api',
                     apiPrefix: process.env.BCH_LIVENET_EXPLORER_API_PATH || ''
                 }
             }
@@ -96,10 +95,8 @@ const config = {
         blockchainExplorerOpts: {
             defaultProvider: 'explorer',
             explorer: {
-                // Multiple servers (in priority order)
-                // url: ['http://a.b.c', 'https://test-explorer.owstack.com:443'],
                 livenet: {
-                    url: process.env.LTC_LIVENET_EXPLORER_API || 'http://ltc.livenet.explorer-api.owstack.org',
+                    url: process.env.LTC_LIVENET_EXPLORER_API || 'http://ltc-explorer-api',
                     apiPrefix: process.env.LTC_LIVENET_EXPLORER_API_PATH || ''
                 }
             }
